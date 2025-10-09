@@ -1,0 +1,28 @@
+# Configuração de atributos Git para melhorar a detecção de linguagem e Copilot
+
+# Tratamento padrão para todos os arquivos (conversão de finais de linha)
+* text=auto eol=lf
+
+# Arquivos Python
+*.py linguist-language=Python linguist-detectable=true
+
+# Templates HTML/Jinja2
+*.html linguist-language=HTML+Jinja linguist-detectable=true
+
+# Arquivos de banco de dados e arquivos binários
+*.db binary
+*.p binary
+*.pkl binary
+*.pyc binary
+
+# Arquivos de documentação
+*.md linguist-documentation
+LICENSE linguist-documentation
+
+# Arquivos específicos do projeto que devem ser tratados como texto
+setup.sh text eol=lf
+.env.example text eol=lf
+
+# Ignore arquivos na estatística de linguagem
+static/js/lib/* linguist-vendored
+node_modules/* linguist-vendored

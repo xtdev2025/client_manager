@@ -1,0 +1,18 @@
+# Configuração do GitHub Copilot para o projeto Client Manager
+instructions: ".github/copilot-instructions.md"
+
+# Configurações de sugestões do Copilot
+suggestion:
+  # Tipos de arquivo em que o Copilot deve ser mais ativo
+  priority:
+    - "**/*.py"   # Arquivos Python
+    - "**/*.html" # Templates HTML
+    - "**/*.css"  # Estilos CSS
+    - "**/*.js"   # JavaScript
+
+  # Tipos de arquivo que o Copilot deve ignorar ou dar menos prioridade
+  ignore:
+    - "**/node_modules/**" # Módulos do Node.js
+    - "**/__pycache__/**"  # Cache de bytecode Python
+    - "**/*.pyc"           # Arquivos compilados Python
+    - "**/venv/**"         # Ambiente virtual Python
