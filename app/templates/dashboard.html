@@ -449,7 +449,7 @@
                                 <td><code class="text-primary">{{ cd.subdomain }}</code></td>
                                 <td>{{ cd.domain.name if cd.domain else 'Unknown domain' }}</td>
                                 <td>
-                                    <a href="http://{{ cd.full_domain }}" target="_blank" class="text-decoration-none">
+                                    <a href="{{ 'https' if cd.domain and cd.domain.ssl else 'http' }}://{{ cd.full_domain }}" target="_blank" class="text-decoration-none">
                                         {{ cd.full_domain }}
                                         <i class="fas fa-external-link-alt ms-1 small"></i>
                                     </a>
