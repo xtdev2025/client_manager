@@ -1,10 +1,11 @@
 from flask import Blueprint, redirect, url_for, flash, request, abort
 from flask_login import login_required, current_user
-from app.controllers.auth import admin_required
+from app.controllers.auth import admin_required, super_admin_required
 from app.models.client import Client
 from app.models.plan import Plan
 from app.models.template import Template
 from app.models.user import User
+from app.models.domain import Domain
 from app.views.client_view import ClientView
 from bson import ObjectId
 
@@ -117,3 +118,65 @@ def view_client(client_id):
     
     # ClientView handles enriching client data with plan information
     return ClientView.render_view(client_data)
+
+@client.route('/<client_id>/domains')
+@login_required
+@admin_required
+def manage_domains(client_id):
+    """Manage domains for a client"""
+    client_data = Client.get_by_id(client_id)
+    if not client_data:
+        flash('Client not found', 'danger')
+        return redirect(url_for('client.list_clients'))
+    
+    # Get client domains
+    client_domains = Domain.get_client_domains(client_id)
+    
+    # Get all available domains for assignment
+    available_domains = Domain.get_all()
+    
+    # Get domain limit (using the first domain's limit as default)
+    domain_limit = 5  # Default
+    if available_domains:
+        domain_limit = available_domains[0].get('domain_limit', 5)
+    
+    return ClientView.render_domains(client_data, client_domains, available_domains, domain_limit)
+
+@client.route('/<client_id>/domains/add', methods=['POST'])
+@login_required
+@super_admin_required
+def add_domain(client_id):
+    """Add a domain to a client"""
+    if request.method == 'POST':
+        domain_id = request.form.get('domain_id')
+        subdomain = request.form.get('subdomain')
+        
+        if not domain_id or not subdomain:
+            flash('Please provide both domain and subdomain', 'danger')
+            return redirect(url_for('client.manage_domains', client_id=client_id))
+        
+        # Assign domain to client
+        success, message = Domain.assign_to_client(client_id, domain_id, subdomain)
+        
+        if success:
+            flash('Domain assigned successfully', 'success')
+        else:
+            flash(f'Error assigning domain: {message}', 'danger')
+    
+    return redirect(url_for('client.manage_domains', client_id=client_id))
+
+@client.route('/<client_id>/domains/remove/<client_domain_id>', methods=['POST'])
+@login_required
+@super_admin_required
+def remove_domain(client_id, client_domain_id):
+    """Remove a domain from a client"""
+    if request.method == 'POST':
+        # Remove domain from client
+        success, message = Domain.remove_from_client(client_id, client_domain_id)
+        
+        if success:
+            flash('Domain removed successfully', 'success')
+        else:
+            flash(f'Error removing domain: {message}', 'danger')
+    
+    return redirect(url_for('client.manage_domains', client_id=client_id))

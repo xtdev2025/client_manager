@@ -49,6 +49,9 @@ def create_app(config_name=None):
     from app.controllers.main import main as main_blueprint
     app.register_blueprint(main_blueprint)
     
+    from app.controllers.domain import domain as domain_blueprint
+    app.register_blueprint(domain_blueprint)
+    
     # Initialize database with default data if needed
     with app.app_context():
         from app.db_init import initialize_db

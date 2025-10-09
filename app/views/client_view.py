@@ -1,6 +1,7 @@
 from app.views.base_view import BaseView
 from app.models.plan import Plan
 from app.models.template import Template
+from app.models.domain import Domain
 
 class ClientView(BaseView):
     """
@@ -99,4 +100,30 @@ class ClientView(BaseView):
         else:
             client_data['template_name'] = 'No Template'
             
+        # Get client domains
+        client_domains = Domain.get_client_domains(client_data['_id'])
+        client_data['domains'] = client_domains
+        
         return BaseView.render('clients/view.html', client=client_data)
+        
+    @staticmethod
+    def render_domains(client_data, client_domains, available_domains, domain_limit):
+        """
+        Render the client domains management page.
+        
+        Args:
+            client_data (dict): Client data
+            client_domains (list): List of domains assigned to the client
+            available_domains (list): List of all available domains
+            domain_limit (int): Maximum number of domains allowed for this client
+            
+        Returns:
+            str: Rendered client domains template
+        """
+        return BaseView.render(
+            'clients/domains.html',
+            client=client_data,
+            client_domains=client_domains,
+            available_domains=available_domains,
+            domain_limit=domain_limit
+        )

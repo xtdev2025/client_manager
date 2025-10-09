@@ -1,0 +1,102 @@
+{% extends "layout.html" %}
+
+{% block title %}Manage Client Domains - Client Manager{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h2>Manage Domains for {{ client.username }}</h2>
+            <a href="{{ url_for('client.view_client', client_id=client._id) }}" class="btn btn-light">
+                <i class="fas fa-arrow-left"></i> Back to Client
+            </a>
+        </div>
+        <div class="card-body">
+            <h5 class="mb-3">Current Domains</h5>
+            
+            {% if client_domains|length == 0 %}
+            <div class="alert alert-info">
+                This client doesn't have any domains assigned yet.
+            </div>
+            {% else %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Subdomain</th>
+                            <th>Domain</th>
+                            <th>Full Domain</th>
+                            <th>Created At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cd in client_domains %}
+                        <tr>
+                            <td>{{ cd.subdomain }}</td>
+                            <td>{{ cd.domain.name if cd.domain else 'Unknown domain' }}</td>
+                            <td>{{ cd.full_domain }}</td>
+                            <td>{{ cd.createdAt.strftime('%d/%m/%Y %H:%M') if cd.createdAt else 'N/A' }}</td>
+                            <td>
+                                <form method="POST" action="{{ url_for('client.remove_domain', client_id=client._id, client_domain_id=cd._id) }}" 
+                                      class="d-inline" onsubmit="return confirm('Are you sure you want to remove this domain?');">
+                                    <button type="submit" class="btn btn-sm btn-danger">
+                                        <i class="fas fa-trash"></i> Remove
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="domain-usage mt-3">
+                <div class="progress">
+                    <div class="progress-bar" role="progressbar" 
+                         style="width: {{ (client_domains|length / domain_limit) * 100 }}%;" 
+                         aria-valuenow="{{ client_domains|length }}" 
+                         aria-valuemin="0" 
+                         aria-valuemax="{{ domain_limit }}">
+                        {{ client_domains|length }} / {{ domain_limit }}
+                    </div>
+                </div>
+                <small class="text-muted">Domain usage: {{ client_domains|length }} of {{ domain_limit }} available domains</small>
+            </div>
+            {% endif %}
+            
+            {% if client_domains|length < domain_limit %}
+            <hr>
+            <h5 class="mb-3">Add New Domain</h5>
+            <form method="POST" action="{{ url_for('client.add_domain', client_id=client._id) }}" class="row g-3">
+                <div class="col-md-4">
+                    <label for="subdomain" class="form-label">Subdomain*</label>
+                    <input type="text" class="form-control" id="subdomain" name="subdomain" required>
+                    <small class="form-text text-muted">Enter only the subdomain part (e.g., "client1")</small>
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="domain_id" class="form-label">Domain*</label>
+                    <select class="form-select" id="domain_id" name="domain_id" required>
+                        <option value="">Select a domain</option>
+                        {% for domain in available_domains %}
+                        <option value="{{ domain._id }}">{{ domain.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-2 align-self-end">
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="fas fa-plus"></i> Add
+                    </button>
+                </div>
+            </form>
+            {% else %}
+            <div class="alert alert-warning mt-3">
+                <i class="fas fa-exclamation-triangle"></i> This client has reached the maximum number of domains.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

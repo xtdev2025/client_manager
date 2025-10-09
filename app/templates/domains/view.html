@@ -1,0 +1,122 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+            <h2>Detalhes do Domínio</h2>
+            <div>
+                {% if current_user.is_super_admin %}
+                <a href="{{ url_for('domain.edit_domain', domain_id=domain._id) }}" class="btn btn-warning">
+                    <i class="fas fa-edit"></i> Editar
+                </a>
+                {% endif %}
+                <a href="{{ url_for('domain.list_domains') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <dl class="row">
+                        <dt class="col-sm-4">Nome do Domínio:</dt>
+                        <dd class="col-sm-8">{{ domain.name }}</dd>
+                        
+                        <dt class="col-sm-4">Limite de Domínios:</dt>
+                        <dd class="col-sm-8">{{ domain.domain_limit }}</dd>
+                        
+                        <dt class="col-sm-4">SSL:</dt>
+                        <dd class="col-sm-8">
+                            {% if domain.ssl %}
+                            <span class="badge bg-success">Ativo</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Inativo</span>
+                            {% endif %}
+                        </dd>
+                    </dl>
+                </div>
+                <div class="col-md-6">
+                    <dl class="row">
+                        <dt class="col-sm-4">Cloudflare:</dt>
+                        <dd class="col-sm-8">
+                            {% if domain.cloudflare_status %}
+                            <span class="badge bg-success">Ativo</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Inativo</span>
+                            {% endif %}
+                        </dd>
+                        
+                        {% if domain.cloudflare_status %}
+                        <dt class="col-sm-4">E-mail Cloudflare:</dt>
+                        <dd class="col-sm-8">{{ domain.cloudflare_email }}</dd>
+                        {% endif %}
+                        
+                        <dt class="col-sm-4">Criado em:</dt>
+                        <dd class="col-sm-8">{{ domain.createdAt.strftime('%d/%m/%Y %H:%M') if domain.createdAt else 'N/A' }}</dd>
+                        
+                        <dt class="col-sm-4">Atualizado em:</dt>
+                        <dd class="col-sm-8">{{ domain.updatedAt.strftime('%d/%m/%Y %H:%M') if domain.updatedAt else 'N/A' }}</dd>
+                    </dl>
+                </div>
+            </div>
+            
+            {% if current_user.is_super_admin %}
+            <div class="mt-4">
+                <form method="POST" action="{{ url_for('domain.delete_domain', domain_id=domain._id) }}" 
+                      onsubmit="return confirm('Tem certeza que deseja excluir este domínio?');">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Excluir Domínio
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Clients using this domain -->
+    <div class="card">
+        <div class="card-header bg-secondary text-white">
+            <h3>Clientes Utilizando Este Domínio</h3>
+        </div>
+        <div class="card-body">
+            {% if client_domains|length == 0 %}
+            <div class="alert alert-info">
+                Nenhum cliente está usando este domínio.
+            </div>
+            {% else %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Subdomínio</th>
+                            <th>Domínio Completo</th>
+                            <th>Data de Criação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cd in client_domains %}
+                        <tr>
+                            <td>
+                                {% if 'client' in cd %}
+                                <a href="{{ url_for('client.view_client', client_id=cd.client_id) }}">
+                                    {{ cd.client.username }}
+                                </a>
+                                {% else %}
+                                Cliente não encontrado
+                                {% endif %}
+                            </td>
+                            <td>{{ cd.subdomain }}</td>
+                            <td>{{ cd.full_domain }}</td>
+                            <td>{{ cd.createdAt.strftime('%d/%m/%Y %H:%M') if cd.createdAt else 'N/A' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
