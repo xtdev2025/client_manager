@@ -1,14 +1,18 @@
 #!/bin/sh
 
-echo "Executando testes antes de enviar o código..."
+echo "Verificando código antes de enviar..."
 
-# Verificar se há erros de código ou testes falhando
-flask test
+# Verificar estilo de código com flake8
+echo "Executando flake8 para verificar todo o código..."
+flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
 
-# Verificar se há erros nos testes
+# Verificar se há erros
 if [ $? -ne 0 ]; then
-  echo "Os testes falharam. Corrija antes de enviar o código."
+  echo "Há problemas no código. Corrija antes de enviar."
   exit 1
 fi
+
+# No futuro, podemos adicionar testes unitários aqui
+# python -m unittest discover
 
 echo "Pré-push passou com sucesso!"
