@@ -2,163 +2,374 @@
 
 {% block title %}Dashboard - Client Manager{% endblock %}
 
-{% block page_title %}Dashboard{% endblock %}
+{% block page_title %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="mb-1">Dashboard</h1>
+            <p class="text-muted mb-0">Welcome back, {{ user.username }}! Here's what's happening today.</p>
+        </div>
+    </div>
+{% endblock %}
 
 {% block content %}
 <div class="row">
     <!-- Admin Dashboard -->
     {% if user.role in ['admin', 'super_admin'] %}
-    <div class="col-md-4 mb-4">
-        <div class="card bg-primary text-white">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <i class="fas fa-users fa-3x me-3"></i>
+    
+    <!-- Primary Statistics Row -->
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card stat-card stat-card-primary">
+            <div class="card-body position-relative">
+                <div class="d-flex justify-content-between align-items-start">
                     <div>
-                        <h5 class="card-title">Clients</h5>
-                        <h2 class="mb-0">{{ client_count }}</h2>
+                        <div class="stat-label">Total Clients</div>
+                        <div class="stat-number">{{ client_count }}</div>
+                        <div class="stat-change">
+                            <i class="fas fa-check-circle"></i>
+                            <span>{{ active_clients }} active</span>
+                        </div>
+                    </div>
+                    <div class="icon-hover">
+                        <i class="fas fa-users fa-2x opacity-75"></i>
                     </div>
                 </div>
-                <a href="{{ url_for('client.list_clients') }}" class="btn btn-outline-light mt-3">
-                    <i class="fas fa-eye"></i> View All
-                </a>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4 mb-4">
-        <div class="card bg-success text-white">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <i class="fas fa-tags fa-3x me-3"></i>
-                    <div>
-                        <h5 class="card-title">Plans</h5>
-                        <h2 class="mb-0">{{ plan_count }}</h2>
-                    </div>
-                </div>
-                <a href="{{ url_for('plan.list_plans') }}" class="btn btn-outline-light mt-3">
-                    <i class="fas fa-eye"></i> View All
-                </a>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4 mb-4">
-        <div class="card bg-warning text-dark">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <i class="fas fa-user-shield fa-3x me-3"></i>
-                    <div>
-                        <h5 class="card-title">Admins</h5>
-                        <h2 class="mb-0">{{ admin_count }}</h2>
-                    </div>
-                </div>
-                <a href="{{ url_for('admin.list_admins') }}" class="btn btn-outline-dark mt-3">
-                    <i class="fas fa-eye"></i> View All
+                <a href="{{ url_for('client.list_clients') }}" class="btn btn-sm btn-light mt-3">
+                    <i class="fas fa-arrow-right"></i> View All
                 </a>
             </div>
         </div>
     </div>
 
-    <div class="row mt-4">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Quick Actions</h5>
-                </div>
-                <div class="card-body">
-                    <div class="list-group">
-                        <a href="{{ url_for('client.create_client') }}" class="list-group-item list-group-item-action">
-                            <i class="fas fa-user-plus"></i> Add New Client
-                        </a>
-                        <a href="{{ url_for('plan.create_plan') }}" class="list-group-item list-group-item-action">
-                            <i class="fas fa-plus-circle"></i> Create New Plan
-                        </a>
-                        {% if user.role == 'super_admin' %}
-                        <a href="{{ url_for('admin.create_admin') }}" class="list-group-item list-group-item-action">
-                            <i class="fas fa-user-shield"></i> Add New Admin
-                        </a>
-                        {% endif %}
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card stat-card stat-card-success">
+            <div class="card-body position-relative">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stat-label">Total Plans</div>
+                        <div class="stat-number">{{ plan_count }}</div>
+                        <div class="stat-change">
+                            <i class="fas fa-layer-group"></i>
+                            <span>Subscription plans</span>
+                        </div>
                     </div>
+                    <div class="icon-hover">
+                        <i class="fas fa-tags fa-2x opacity-75"></i>
+                    </div>
+                </div>
+                <a href="{{ url_for('plan.list_plans') }}" class="btn btn-sm btn-light mt-3">
+                    <i class="fas fa-arrow-right"></i> View All
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card stat-card stat-card-info">
+            <div class="card-body position-relative">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stat-label">Total Domains</div>
+                        <div class="stat-number">{{ domain_count }}</div>
+                        <div class="stat-change">
+                            <i class="fas fa-globe"></i>
+                            <span>Registered domains</span>
+                        </div>
+                    </div>
+                    <div class="icon-hover">
+                        <i class="fas fa-globe fa-2x opacity-75"></i>
+                    </div>
+                </div>
+                <a href="{{ url_for('domain.list_domains') }}" class="btn btn-sm btn-light mt-3">
+                    <i class="fas fa-arrow-right"></i> View All
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card stat-card stat-card-warning">
+            <div class="card-body position-relative">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stat-label">Admins</div>
+                        <div class="stat-number">{{ admin_count }}</div>
+                        <div class="stat-change">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>System admins</span>
+                        </div>
+                    </div>
+                    <div class="icon-hover">
+                        <i class="fas fa-user-shield fa-2x opacity-75"></i>
+                    </div>
+                </div>
+                <a href="{{ url_for('admin.list_admins') }}" class="btn btn-sm btn-dark mt-3">
+                    <i class="fas fa-arrow-right"></i> View All
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Secondary Statistics Row -->
+    <div class="col-lg-6 col-md-6 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <h6 class="text-muted mb-1">Bank Information</h6>
+                        <h3 class="mb-0">{{ info_count }}</h3>
+                    </div>
+                    <div class="badge bg-primary">
+                        <i class="fas fa-university"></i> {{ active_infos }} Active
+                    </div>
+                </div>
+                <div class="progress" style="height: 6px;">
+                    <div class="progress-bar bg-primary" role="progressbar" 
+                         style="width: {{ (active_infos / info_count * 100) if info_count > 0 else 0 }}%"></div>
+                </div>
+                <small class="text-muted mt-2 d-block">
+                    {% if info_count > 0 %}
+                        {{ "%.1f"|format(active_infos / info_count * 100) }}% are active
+                    {% else %}
+                        No info entries yet
+                    {% endif %}
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6 col-md-6 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <h6 class="text-muted mb-1">Templates</h6>
+                        <h3 class="mb-0">{{ template_count }}</h3>
+                    </div>
+                    <div class="badge bg-secondary">
+                        <i class="fas fa-file-code"></i> Available
+                    </div>
+                </div>
+                <div class="d-flex gap-2 mt-3">
+                    <a href="{{ url_for('template.list_templates') }}" class="btn btn-sm btn-outline-primary flex-fill">
+                        <i class="fas fa-list"></i> View Templates
+                    </a>
+                    <a href="{{ url_for('template.create_template') }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus"></i> New
+                    </a>
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Admin Info</h5>
-                </div>
-                <div class="card-body">
-                    <p><strong>Username:</strong> {{ user.username }}</p>
-                    <p><strong>Role:</strong> {{ user.role }}</p>
-                    <p><strong>Last Login:</strong> {% if user.last_login %}{{ user.last_login.strftime('%Y-%m-%d %H:%M:%S') }}{% else %}N/A{% endif %}</p>
-                    <a href="{{ url_for('admin.profile') }}" class="btn btn-primary">
-                        <i class="fas fa-user-edit"></i> Edit Profile
+    </div>
+
+    <!-- Quick Actions and Admin Info Row -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-bolt text-warning me-2"></i>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('client.create_client') }}" class="btn btn-outline-primary text-start">
+                        <i class="fas fa-user-plus me-2"></i> Add New Client
                     </a>
+                    <a href="{{ url_for('plan.create_plan') }}" class="btn btn-outline-success text-start">
+                        <i class="fas fa-plus-circle me-2"></i> Create New Plan
+                    </a>
+                    <a href="{{ url_for('domain.create_domain') }}" class="btn btn-outline-info text-start">
+                        <i class="fas fa-globe me-2"></i> Register New Domain
+                    </a>
+                    {% if user.role == 'super_admin' %}
+                    <a href="{{ url_for('admin.create_admin') }}" class="btn btn-outline-warning text-start">
+                        <i class="fas fa-user-shield me-2"></i> Add New Admin
+                    </a>
+                    {% endif %}
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-user-circle text-primary me-2"></i>Admin Profile</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-primary bg-opacity-10 rounded-circle p-3 me-3">
+                            <i class="fas fa-user fa-2x text-primary"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0">{{ user.username }}</h5>
+                            <span class="badge bg-primary">{{ user.role }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted d-block mb-1">Last Login</small>
+                    <strong>{% if user.last_login %}{{ user.last_login.strftime('%Y-%m-%d %H:%M:%S') }}{% else %}N/A{% endif %}</strong>
+                </div>
+                <a href="{{ url_for('admin.profile') }}" class="btn btn-primary w-100">
+                    <i class="fas fa-user-edit me-2"></i> Edit Profile
+                </a>
             </div>
         </div>
     </div>
     
     <!-- Client Dashboard -->
     {% else %}
+    
+    <!-- Client Statistics -->
+    <div class="col-lg-4 col-md-6 mb-4">
+        <div class="card stat-card stat-card-primary h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <div class="stat-label">Account Status</div>
+                        {% if user.status == 'active' %}
+                        <div class="stat-number">Active</div>
+                        {% else %}
+                        <div class="stat-number">{{ user.status|title }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="icon-hover">
+                        <i class="fas fa-user-circle fa-2x opacity-75"></i>
+                    </div>
+                </div>
+                <small class="d-block mb-1">@{{ user.username }}</small>
+                <small class="d-block">Member since {{ user.createdAt.strftime('%Y-%m-%d') }}</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4 col-md-6 mb-4">
+        <div class="card stat-card stat-card-info h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <div class="stat-label">Domains</div>
+                        <div class="stat-number">{{ client_domains|length }}</div>
+                    </div>
+                    <div class="icon-hover">
+                        <i class="fas fa-globe fa-2x opacity-75"></i>
+                    </div>
+                </div>
+                <small class="d-block">Registered domains</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4 col-md-6 mb-4">
+        <div class="card stat-card stat-card-success h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <div class="stat-label">Bank Info</div>
+                        <div class="stat-number">{{ client_infos|length }}</div>
+                    </div>
+                    <div class="icon-hover">
+                        <i class="fas fa-university fa-2x opacity-75"></i>
+                    </div>
+                </div>
+                <small class="d-block">Information entries</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account Information Card -->
     <div class="col-md-6 mb-4">
-        <div class="card">
+        <div class="card h-100">
             <div class="card-header">
-                <h5 class="card-title mb-0">Your Information</h5>
+                <h5 class="mb-0"><i class="fas fa-id-card text-primary me-2"></i>Your Information</h5>
             </div>
             <div class="card-body">
-                <p><strong>Username:</strong> {{ user.username }}</p>
-                <p><strong>Status:</strong> 
+                <div class="mb-3 pb-3 border-bottom">
+                    <small class="text-muted d-block mb-1">Username</small>
+                    <strong>{{ user.username }}</strong>
+                </div>
+                <div class="mb-3 pb-3 border-bottom">
+                    <small class="text-muted d-block mb-1">Status</small>
                     {% if user.status == 'active' %}
-                    <span class="badge bg-success">Active</span>
+                    <span class="badge bg-success">
+                        <i class="fas fa-check-circle me-1"></i> Active
+                    </span>
                     {% else %}
-                    <span class="badge bg-danger">{{ user.status }}</span>
+                    <span class="badge bg-danger">
+                        <i class="fas fa-times-circle me-1"></i> {{ user.status }}
+                    </span>
                     {% endif %}
-                </p>
-                <p><strong>Created:</strong> {{ user.createdAt.strftime('%Y-%m-%d') }}</p>
+                </div>
+                <div class="mb-3 pb-3 border-bottom">
+                    <small class="text-muted d-block mb-1">Created</small>
+                    <strong>{{ user.createdAt.strftime('%Y-%m-%d') }}</strong>
+                </div>
                 {% if user.expiredAt %}
-                <p><strong>Expires:</strong> {{ user.expiredAt.strftime('%Y-%m-%d') }}</p>
+                <div>
+                    <small class="text-muted d-block mb-1">Expires</small>
+                    <strong>{{ user.expiredAt.strftime('%Y-%m-%d') }}</strong>
+                </div>
                 {% endif %}
             </div>
         </div>
     </div>
     
     <div class="col-md-6 mb-4">
-        <div class="card">
+        <div class="card h-100">
             <div class="card-header">
-                <h5 class="card-title mb-0">Your Plan</h5>
+                <h5 class="mb-0"><i class="fas fa-tags text-success me-2"></i>Your Plan</h5>
             </div>
             <div class="card-body">
                 {% if plan %}
-                <p><strong>Plan Name:</strong> {{ plan.name }}</p>
-                <p><strong>Description:</strong> {{ plan.description }}</p>
-                <p><strong>Price:</strong> ${{ plan.price }}</p>
-                <p><strong>Duration:</strong> {{ plan.duration_days }} days</p>
+                <div class="mb-3 pb-3 border-bottom">
+                    <small class="text-muted d-block mb-1">Plan Name</small>
+                    <h5 class="mb-0">{{ plan.name }}</h5>
+                </div>
+                <div class="mb-3 pb-3 border-bottom">
+                    <small class="text-muted d-block mb-1">Description</small>
+                    <p class="mb-0">{{ plan.description }}</p>
+                </div>
+                <div class="row">
+                    <div class="col-6 mb-3">
+                        <small class="text-muted d-block mb-1">Price</small>
+                        <strong class="text-success">${{ plan.price }}</strong>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <small class="text-muted d-block mb-1">Duration</small>
+                        <strong>{{ plan.duration_days }} days</strong>
+                    </div>
+                </div>
                 {% else %}
-                <p class="text-center">You don't have an active plan.</p>
-                <p class="text-center">Please contact an administrator to assign a plan.</p>
+                <div class="text-center py-4">
+                    <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                    <p class="text-muted mb-2">You don't have an active plan.</p>
+                    <p class="text-muted small">Please contact an administrator to assign a plan.</p>
+                </div>
                 {% endif %}
             </div>
         </div>
     </div>
     
-    <div class="col-12">
-        <div class="card mb-4">
+    <!-- Bank Information Section -->
+    <div class="col-12 mb-4">
+        <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="card-title mb-0">Your Bank Information</h5>
-                <a href="{{ url_for('info.list_client_infos', client_id=user._id) }}" class="btn btn-sm btn-info">
-                    <i class="fas fa-list"></i> Manage Information
+                <h5 class="mb-0"><i class="fas fa-university text-primary me-2"></i>Your Bank Information</h5>
+                <a href="{{ url_for('info.list_client_infos', client_id=user._id) }}" class="btn btn-sm btn-primary">
+                    <i class="fas fa-cog me-1"></i> Manage Information
                 </a>
             </div>
             <div class="card-body">
                 {% if client_infos|length == 0 %}
-                <div class="text-center">
-                    <p>No bank information entries found.</p>
+                <div class="text-center py-5">
+                    <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                    <p class="text-muted mb-3">No bank information entries found.</p>
                     <a href="{{ url_for('info.create_info', client_id=user._id) }}" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Add Information
+                        <i class="fas fa-plus me-2"></i> Add Information
                     </a>
                 </div>
                 {% else %}
                 <div class="table-responsive">
-                    <table class="table table-striped">
+                    <table class="table table-hover">
                         <thead>
                             <tr>
                                 <th>Agency</th>
@@ -171,24 +382,30 @@
                         <tbody>
                             {% for info in client_infos %}
                             <tr>
-                                <td>{{ info.agencia }}</td>
+                                <td><strong>{{ info.agencia }}</strong></td>
                                 <td>{{ info.conta }}</td>
-                                <td>R$ {{ "%.2f"|format(info.saldo) }}</td>
+                                <td><span class="text-success fw-bold">R$ {{ "%.2f"|format(info.saldo) }}</span></td>
                                 <td>
                                     {% if info.status == 'active' %}
-                                    <span class="badge bg-success">Active</span>
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check-circle me-1"></i> Active
+                                    </span>
                                     {% elif info.status == 'inactive' %}
-                                    <span class="badge bg-warning">Inactive</span>
+                                    <span class="badge bg-warning">
+                                        <i class="fas fa-pause-circle me-1"></i> Inactive
+                                    </span>
                                     {% else %}
                                     <span class="badge bg-secondary">{{ info.status }}</span>
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <div class="btn-group">
-                                        <a href="{{ url_for('info.view_info', info_id=info._id) }}" class="btn btn-sm btn-info">
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ url_for('info.view_info', info_id=info._id) }}" 
+                                           class="btn btn-sm btn-outline-primary" title="View">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        <a href="{{ url_for('info.edit_info', info_id=info._id) }}" class="btn btn-sm btn-warning">
+                                        <a href="{{ url_for('info.edit_info', info_id=info._id) }}" 
+                                           class="btn btn-sm btn-outline-warning" title="Edit">
                                             <i class="fas fa-edit"></i>
                                         </a>
                                     </div>
@@ -203,32 +420,40 @@
         </div>
     </div>
     
+    <!-- Domains Section -->
     <div class="col-12">
         <div class="card">
             <div class="card-header">
-                <h5 class="card-title mb-0">Your Domains</h5>
+                <h5 class="mb-0"><i class="fas fa-globe text-info me-2"></i>Your Domains</h5>
             </div>
             <div class="card-body">
                 {% if client_domains|length == 0 %}
-                <div class="text-center">
-                    <p>No domains assigned yet. Please contact an administrator.</p>
+                <div class="text-center py-5">
+                    <i class="fas fa-globe fa-3x text-muted mb-3"></i>
+                    <p class="text-muted mb-2">No domains assigned yet.</p>
+                    <p class="text-muted small">Please contact an administrator to assign domains to your account.</p>
                 </div>
                 {% else %}
                 <div class="table-responsive">
-                    <table class="table table-striped">
+                    <table class="table table-hover">
                         <thead>
                             <tr>
-                                <th>Subdomain</th>
-                                <th>Domain</th>
-                                <th>Full Domain</th>
+                                <th><i class="fas fa-sitemap me-2"></i>Subdomain</th>
+                                <th><i class="fas fa-server me-2"></i>Domain</th>
+                                <th><i class="fas fa-link me-2"></i>Full Domain</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for cd in client_domains %}
                             <tr>
-                                <td>{{ cd.subdomain }}</td>
+                                <td><code class="text-primary">{{ cd.subdomain }}</code></td>
                                 <td>{{ cd.domain.name if cd.domain else 'Unknown domain' }}</td>
-                                <td>{{ cd.full_domain }}</td>
+                                <td>
+                                    <a href="{{ 'https' if cd.domain and cd.domain.ssl else 'http' }}://{{ cd.full_domain }}" target="_blank" class="text-decoration-none">
+                                        {{ cd.full_domain }}
+                                        <i class="fas fa-external-link-alt ms-1 small"></i>
+                                    </a>
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>
