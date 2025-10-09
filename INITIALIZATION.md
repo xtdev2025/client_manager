@@ -9,7 +9,6 @@ Quando o aplicativo é iniciado pela primeira vez, ele verifica automaticamente 
 1. Se não existir nenhum usuário admin, um super_admin padrão será criado:
    - Username: `superadmin`
    - Senha: `Admin@123`
-   
    **IMPORTANTE**: Por segurança, você deve fazer login e alterar esta senha imediatamente!
 
 2. Se não existirem planos cadastrados, três planos padrão serão criados:
