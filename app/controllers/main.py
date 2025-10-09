@@ -4,6 +4,8 @@ from app.models.user import User
 from app.models.client import Client
 from app.models.admin import Admin
 from app.models.plan import Plan
+from app.models.domain import Domain
+from app.models.info import Info
 from app.views import MainView
 
 main = Blueprint('main', __name__)
@@ -41,8 +43,20 @@ def dashboard():
         plan = None
         if user and user.get('plan_id'):
             plan = Plan.get_by_id(user.get('plan_id'))
+        
+        # Get client domains
+        client_domains = []
+        if user:
+            client_domains = Domain.get_client_domains(user['_id'])
+            
+        # Get client infos
+        client_infos = []
+        if user:
+            client_infos = Info.get_by_client(user['_id'])
             
         return MainView.render_dashboard(
             user,
-            plan=plan
+            plan=plan,
+            client_domains=client_domains,
+            client_infos=client_infos
         )

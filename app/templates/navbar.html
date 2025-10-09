@@ -14,6 +14,16 @@
                     </a>
                 </li>
 
+                <!-- Client-only menu items -->
+                {% if current_user.is_authenticated and not current_user.is_admin %}
+                <li class="nav-item">
+                    <a class="nav-link {% if '/infos/' in request.path %}active{% endif %}" 
+                       href="{{ url_for('info.list_client_infos', client_id=current_user.id) }}">
+                        <i class="fas fa-money-check-alt"></i> My Bank Info
+                    </a>
+                </li>
+                {% endif %}
+
                 <!-- Admin-only menu items -->
                 {% if current_user.is_admin %}
                 <li class="nav-item">

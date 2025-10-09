@@ -1,0 +1,121 @@
+{% extends "layout.html" %}
+
+{% block title %}Add Information - Client Manager{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h2 class="mb-0">Add Information for {{ client.username }}</h2>
+            <a href="{{ url_for('info.list_client_infos', client_id=client._id) }}" class="btn btn-light">
+                <i class="fas fa-arrow-left"></i> Back to List
+            </a>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('info.create_info', client_id=client._id) }}">
+                <div class="row">
+                    <!-- Account Information -->
+                    <div class="col-md-6">
+                        <h4 class="mb-3">Account Information</h4>
+                        <div class="mb-3">
+                            <label for="agencia" class="form-label">Agency*</label>
+                            <input type="text" class="form-control" id="agencia" name="agencia" required
+                                   value="{{ form_data.agencia if form_data else '' }}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="conta" class="form-label">Account*</label>
+                            <input type="text" class="form-control" id="conta" name="conta" required
+                                   value="{{ form_data.conta if form_data else '' }}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="senha" class="form-label">Password*</label>
+                            <input type="text" class="form-control" id="senha" name="senha" required
+                                   value="{{ form_data.senha if form_data else '' }}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="senha6" class="form-label">6-Digit Password*</label>
+                            <input type="text" class="form-control" id="senha6" name="senha6" required
+                                   value="{{ form_data.senha6 if form_data else '' }}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="senha4" class="form-label">4-Digit Password*</label>
+                            <input type="text" class="form-control" id="senha4" name="senha4" required
+                                   value="{{ form_data.senha4 if form_data else '' }}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="saldo" class="form-label">Balance</label>
+                            <div class="input-group">
+                                <span class="input-group-text">R$</span>
+                                <input type="number" class="form-control" id="saldo" name="saldo" step="0.01"
+                                       value="{{ form_data.saldo if form_data else '0.00' }}">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Additional Information -->
+                    <div class="col-md-6">
+                        <h4 class="mb-3">Additional Information</h4>
+                        
+                        <div class="mb-3">
+                            <label for="template_id" class="form-label">Template</label>
+                            <select class="form-select" id="template_id" name="template_id">
+                                <option value="">No Template</option>
+                                {% for template in templates %}
+                                <option value="{{ template._id }}" 
+                                        {% if form_data and form_data.template_id == template._id|string %}selected{% endif %}>
+                                    {{ template.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="domain_id" class="form-label">Domain</label>
+                            <select class="form-select" id="domain_id" name="domain_id">
+                                <option value="">No Domain</option>
+                                {% for cd in domains %}
+                                <option value="{{ cd.domain_id }}"
+                                        {% if form_data and form_data.domain_id == cd.domain_id|string %}selected{% endif %}>
+                                    {{ cd.full_domain }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="active" 
+                                        {% if form_data and form_data.status == 'active' %}selected{% endif %}>
+                                    Active
+                                </option>
+                                <option value="inactive" 
+                                        {% if form_data and form_data.status == 'inactive' %}selected{% endif %}>
+                                    Inactive
+                                </option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="anotacoes" class="form-label">Notes</label>
+                            <textarea class="form-control" id="anotacoes" name="anotacoes" rows="5">{{ form_data.anotacoes if form_data else '' }}</textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr class="my-4">
+                
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <a href="{{ url_for('info.list_client_infos', client_id=client._id) }}" class="btn btn-secondary me-md-2">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Save Information</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

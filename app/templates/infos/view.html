@@ -1,0 +1,223 @@
+{% extends "layout.html" %}
+
+{% block title %}Information Details - Client Manager{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow mb-4">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h2 class="mb-0">Information Details</h2>
+            <div>
+                <a href="{{ url_for('info.edit_info', info_id=info._id) }}" class="btn btn-light me-2">
+                    <i class="fas fa-edit"></i> Edit
+                </a>
+                <button type="button" class="btn btn-light me-2" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+                <a href="{{ url_for('info.list_client_infos', client_id=info.client_id) }}" class="btn btn-light">
+                    <i class="fas fa-arrow-left"></i> Back to List
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <!-- Client Information -->
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="card-title mb-0">Client Information</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if info.client %}
+                            <dl class="row">
+                                <dt class="col-sm-4">Client</dt>
+                                <dd class="col-sm-8">
+                                    <a href="{{ url_for('client.view_client', client_id=info.client._id) }}">{{ info.client.username }}</a>
+                                </dd>
+                                
+                                <dt class="col-sm-4">Status</dt>
+                                <dd class="col-sm-8">
+                                    {% if info.client.status == 'active' %}
+                                    <span class="badge bg-success">Active</span>
+                                    {% elif info.client.status == 'inactive' %}
+                                    <span class="badge bg-warning">Inactive</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">{{ info.client.status }}</span>
+                                    {% endif %}
+                                </dd>
+                            </dl>
+                            {% else %}
+                            <p class="text-muted">Client details not available</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Account Details -->
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header bg-warning">
+                            <h5 class="card-title mb-0">Account Details</h5>
+                        </div>
+                        <div class="card-body">
+                            <dl class="row">
+                                <dt class="col-sm-4">Agency</dt>
+                                <dd class="col-sm-8">{{ info.agencia }}</dd>
+                                
+                                <dt class="col-sm-4">Account</dt>
+                                <dd class="col-sm-8">{{ info.conta }}</dd>
+                                
+                                <dt class="col-sm-4">Balance</dt>
+                                <dd class="col-sm-8">R$ {{ "%.2f"|format(info.saldo) }}</dd>
+                                
+                                <dt class="col-sm-4">Status</dt>
+                                <dd class="col-sm-8">
+                                    {% if info.status == 'active' %}
+                                    <span class="badge bg-success">Active</span>
+                                    {% elif info.status == 'inactive' %}
+                                    <span class="badge bg-warning">Inactive</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">{{ info.status }}</span>
+                                    {% endif %}
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <!-- Passwords -->
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="card-title mb-0">Security Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <dl class="row">
+                                <dt class="col-sm-4">Password</dt>
+                                <dd class="col-sm-8">
+                                    <div class="input-group">
+                                        <input type="password" id="senha" class="form-control" value="{{ info.senha }}" readonly>
+                                        <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('senha')">
+                                            <i id="senha-icon" class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </dd>
+                                
+                                <dt class="col-sm-4">6-Digit Password</dt>
+                                <dd class="col-sm-8">
+                                    <div class="input-group">
+                                        <input type="password" id="senha6" class="form-control" value="{{ info.senha6 }}" readonly>
+                                        <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('senha6')">
+                                            <i id="senha6-icon" class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </dd>
+                                
+                                <dt class="col-sm-4">4-Digit Password</dt>
+                                <dd class="col-sm-8">
+                                    <div class="input-group">
+                                        <input type="password" id="senha4" class="form-control" value="{{ info.senha4 }}" readonly>
+                                        <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('senha4')">
+                                            <i id="senha4-icon" class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Additional Information -->
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="card-title mb-0">Additional Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <dl class="row">
+                                <dt class="col-sm-4">Template</dt>
+                                <dd class="col-sm-8">
+                                    {% if info.template %}
+                                    {{ info.template.name }}
+                                    {% else %}
+                                    <span class="text-muted">No template</span>
+                                    {% endif %}
+                                </dd>
+                                
+                                <dt class="col-sm-4">Domain</dt>
+                                <dd class="col-sm-8">
+                                    {% if info.domain %}
+                                    {{ info.domain.name }}
+                                    {% else %}
+                                    <span class="text-muted">No domain</span>
+                                    {% endif %}
+                                </dd>
+                                
+                                <dt class="col-sm-4">Created</dt>
+                                <dd class="col-sm-8">{{ info.createdAt.strftime('%d/%m/%Y %H:%M:%S') }}</dd>
+                                
+                                <dt class="col-sm-4">Last Updated</dt>
+                                <dd class="col-sm-8">{{ info.updatedAt.strftime('%d/%m/%Y %H:%M:%S') }}</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {% if info.anotacoes %}
+            <div class="row">
+                <div class="col-12">
+                    <div class="card mb-4">
+                        <div class="card-header bg-secondary text-white">
+                            <h5 class="card-title mb-0">Notes</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">{{ info.anotacoes|nl2br }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete this information entry?
+                This action cannot be undone.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form action="{{ url_for('info.delete_info', info_id=info._id) }}" method="POST">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function togglePassword(id) {
+        const input = document.getElementById(id);
+        const icon = document.getElementById(id + '-icon');
+        
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.replace('fa-eye', 'fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.replace('fa-eye-slash', 'fa-eye');
+        }
+    }
+</script>
+{% endblock %}

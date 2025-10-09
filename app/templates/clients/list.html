@@ -1,6 +1,19 @@
 {% extends "layout.html" %}
 
-{% block title %}Clients - Client Manager{% endblock %}
+{% block title                         <td>{{ client.status }}</td>
+                        <td>
+                            <a href="{{ url_for('info.list_client_infos', client_id=client._id) }}" class="badge bg-info">
+                                {{ client.info_count|default(0) }}
+                            </a>
+                        </td>
+                        <td>{{ client.createdAt.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            {% if client.expiredAt %}
+                            {{ client.expiredAt.strftime('%Y-%m-%d') }}
+                            {% else %}
+                            N/A
+                            {% endif %}
+                        </td> - Client Manager{% endblock %}
 
 {% block page_title %}Clients{% endblock %}
 
@@ -25,6 +38,7 @@
                         <th>Username</th>
                         <th>Plan</th>
                         <th>Status</th>
+                        <th>Infos</th>
                         <th>Created</th>
                         <th>Expires</th>
                         <th>Actions</th>
@@ -89,7 +103,7 @@
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="6" class="text-center">No clients found.</td>
+                        <td colspan="7" class="text-center">No clients found.</td>
                     </tr>
                     {% endfor %}
                 </tbody>

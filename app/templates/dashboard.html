@@ -139,6 +139,105 @@
             </div>
         </div>
     </div>
+    
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Your Bank Information</h5>
+                <a href="{{ url_for('info.list_client_infos', client_id=user._id) }}" class="btn btn-sm btn-info">
+                    <i class="fas fa-list"></i> Manage Information
+                </a>
+            </div>
+            <div class="card-body">
+                {% if client_infos|length == 0 %}
+                <div class="text-center">
+                    <p>No bank information entries found.</p>
+                    <a href="{{ url_for('info.create_info', client_id=user._id) }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add Information
+                    </a>
+                </div>
+                {% else %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Agency</th>
+                                <th>Account</th>
+                                <th>Balance</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for info in client_infos %}
+                            <tr>
+                                <td>{{ info.agencia }}</td>
+                                <td>{{ info.conta }}</td>
+                                <td>R$ {{ "%.2f"|format(info.saldo) }}</td>
+                                <td>
+                                    {% if info.status == 'active' %}
+                                    <span class="badge bg-success">Active</span>
+                                    {% elif info.status == 'inactive' %}
+                                    <span class="badge bg-warning">Inactive</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">{{ info.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{{ url_for('info.view_info', info_id=info._id) }}" class="btn btn-sm btn-info">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ url_for('info.edit_info', info_id=info._id) }}" class="btn btn-sm btn-warning">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Your Domains</h5>
+            </div>
+            <div class="card-body">
+                {% if client_domains|length == 0 %}
+                <div class="text-center">
+                    <p>No domains assigned yet. Please contact an administrator.</p>
+                </div>
+                {% else %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Subdomain</th>
+                                <th>Domain</th>
+                                <th>Full Domain</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cd in client_domains %}
+                            <tr>
+                                <td>{{ cd.subdomain }}</td>
+                                <td>{{ cd.domain.name if cd.domain else 'Unknown domain' }}</td>
+                                <td>{{ cd.full_domain }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
     {% endif %}
 </div>
 {% endblock %}

@@ -2,6 +2,7 @@ from app.views.base_view import BaseView
 from app.models.plan import Plan
 from app.models.template import Template
 from app.models.domain import Domain
+from app.models.info import Info
 
 class ClientView(BaseView):
     """
@@ -26,6 +27,9 @@ class ClientView(BaseView):
                 client['plan_name'] = plan['name'] if plan else 'No Plan'
             else:
                 client['plan_name'] = 'No Plan'
+                
+            # Add info count
+            client['info_count'] = Info.count_by_client(client['_id'])
         
         return BaseView.render('clients/list.html', clients=clients)
     
@@ -103,6 +107,11 @@ class ClientView(BaseView):
         # Get client domains
         client_domains = Domain.get_client_domains(client_data['_id'])
         client_data['domains'] = client_domains
+        
+        # Get client infos
+        client_infos = Info.get_by_client(client_data['_id'])
+        client_data['infos'] = client_infos
+        client_data['info_count'] = len(client_infos)
         
         return BaseView.render('clients/view.html', client=client_data)
         
