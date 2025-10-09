@@ -21,20 +21,43 @@ def index():
 @login_required
 def dashboard():
     """Dashboard route"""
+    from app.models.template import Template
+    
     user = User.get_by_id(current_user.id)
     user_type = user.get('user_type', 'client') if user else 'client'
     
     # Admin dashboard
     if user_type == 'admin':
-        client_count = len(Client.get_all())
-        admin_count = len(Admin.get_all())
-        plan_count = len(Plan.get_all())
+        clients = Client.get_all()
+        admins = Admin.get_all()
+        plans = Plan.get_all()
+        domains = Domain.get_all()
+        infos = Info.get_all()
+        templates = Template.get_all()
+        
+        client_count = len(clients)
+        admin_count = len(admins)
+        plan_count = len(plans)
+        domain_count = len(domains)
+        info_count = len(infos)
+        template_count = len(templates)
+        
+        # Calculate active vs inactive clients
+        active_clients = len([c for c in clients if c.get('status') == 'active'])
+        
+        # Calculate active vs inactive infos
+        active_infos = len([i for i in infos if i.get('status') == 'active'])
         
         return MainView.render_dashboard(
             user,
             client_count=client_count,
             admin_count=admin_count,
-            plan_count=plan_count
+            plan_count=plan_count,
+            domain_count=domain_count,
+            info_count=info_count,
+            template_count=template_count,
+            active_clients=active_clients,
+            active_infos=active_infos
         )
     
     # Client dashboard
