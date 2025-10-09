@@ -67,6 +67,34 @@
                 {% endif %}
             </div>
         </div>
+        
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Template Details</h5>
+            </div>
+            <div class="card-body">
+                {% if client.template %}
+                <dl class="row">
+                    <dt class="col-sm-4">Template Name</dt>
+                    <dd class="col-sm-8">{{ client.template.name }}</dd>
+                    
+                    <dt class="col-sm-4">Description</dt>
+                    <dd class="col-sm-8">{{ client.template.description or 'N/A' }}</dd>
+                    
+                    <dt class="col-sm-4">Status</dt>
+                    <dd class="col-sm-8">
+                        {% if client.template.status == 'active' %}
+                        <span class="badge bg-success">Active</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Inactive</span>
+                        {% endif %}
+                    </dd>
+                </dl>
+                {% else %}
+                <p class="text-center">No template assigned to this client.</p>
+                {% endif %}
+            </div>
+        </div>
     </div>
 </div>
 

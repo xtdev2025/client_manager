@@ -8,7 +8,7 @@ class Client(User):
     """Client model for client management"""
     
     @staticmethod
-    def create(username, password, plan_id, status='active'):
+    def create(username, password, plan_id, template_id=None, status='active'):
         """Create new client"""
         try:
             # Check if username already exists
@@ -23,6 +23,7 @@ class Client(User):
                 'username': username,
                 'password': hashed_pw,
                 'plan_id': ObjectId(plan_id) if plan_id else None,
+                'template_id': ObjectId(template_id) if template_id else None,
                 'status': status,
                 'role': 'client',
                 'createdAt': datetime.utcnow(),
@@ -55,6 +56,10 @@ class Client(User):
             # Convert plan_id to ObjectId if provided
             if 'plan_id' in data and data['plan_id']:
                 data['plan_id'] = ObjectId(data['plan_id'])
+                
+            # Convert template_id to ObjectId if provided
+            if 'template_id' in data and data['template_id']:
+                data['template_id'] = ObjectId(data['template_id'])
                 
             # Add updated timestamp
             data['updatedAt'] = datetime.utcnow()

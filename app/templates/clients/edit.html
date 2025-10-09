@@ -30,6 +30,18 @@
                             {% endfor %}
                         </select>
                     </div>
+                    
+                    <div class="mb-3">
+                        <label for="template_id" class="form-label">Template</label>
+                        <select class="form-select" id="template_id" name="template_id">
+                            <option value="">No Template</option>
+                            {% for template in templates %}
+                            <option value="{{ template._id }}" {% if client.template_id and client.template_id|string == template._id|string %}selected{% endif %}>
+                                {{ template.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
                     <div class="mb-3">
                         <label for="status" class="form-label">Status</label>
                         <select class="form-select" id="status" name="status" required>

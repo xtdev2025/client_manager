@@ -8,6 +8,7 @@ def initialize_db():
     This includes:
     1. Creating a super_admin user if no admin exists
     2. Creating 3 default plans if no plans exist
+    3. Creating default templates if no templates exist
     """
     # Check if there are any admins
     if mongo.db.admins.count_documents({}) == 0:
@@ -16,6 +17,10 @@ def initialize_db():
     # Check if there are any plans
     if mongo.db.plans.count_documents({}) == 0:
         create_default_plans()
+    
+    # Check if there are any templates
+    if mongo.db.templates.count_documents({}) == 0:
+        create_default_templates()
 
 def create_default_admin():
     """Create the default super_admin user"""
@@ -88,3 +93,45 @@ def create_default_plans():
             
     except Exception as e:
         print(f"Error creating default plans: {e}")
+
+def create_default_templates():
+    """Create default templates"""
+    try:
+        # Define the default templates
+        default_templates = [
+            {
+                'name': 'Basic Template',
+                'description': 'A simple template for basic websites',
+                'content': '{"header": true, "footer": true, "sidebar": false}',
+                'status': 'active',
+                'createdAt': datetime.utcnow(),
+                'updatedAt': datetime.utcnow()
+            },
+            {
+                'name': 'Professional Template',
+                'description': 'A professional template for business websites',
+                'content': '{"header": true, "footer": true, "sidebar": true, "gallery": true}',
+                'status': 'active',
+                'createdAt': datetime.utcnow(),
+                'updatedAt': datetime.utcnow()
+            },
+            {
+                'name': 'E-commerce Template',
+                'description': 'Template optimized for online stores',
+                'content': '{"header": true, "footer": true, "sidebar": true, "cart": true, "product_display": true}',
+                'status': 'active',
+                'createdAt': datetime.utcnow(),
+                'updatedAt': datetime.utcnow()
+            }
+        ]
+        
+        # Insert all templates
+        result = mongo.db.templates.insert_many(default_templates)
+        
+        if result.inserted_ids:
+            print(f"Created {len(result.inserted_ids)} default templates")
+        else:
+            print("Failed to create default templates")
+            
+    except Exception as e:
+        print(f"Error creating default templates: {e}")

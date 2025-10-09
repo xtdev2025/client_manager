@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from app.controllers.auth import admin_required
 from app.models.client import Client
 from app.models.plan import Plan
+from app.models.template import Template
 from app.models.user import User
 from app.views.client_view import ClientView
 from bson import ObjectId
@@ -25,22 +26,25 @@ def list_clients():
 def create_client():
     """Create a new client"""
     plans = Plan.get_all()
+    templates = Template.get_all()
     
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
         plan_id = request.form.get('plan_id') or None
+        template_id = request.form.get('template_id') or None
         status = request.form.get('status', 'active')
         
         if not username or not password:
             flash('Please provide username and password', 'danger')
             return ClientView.render_create_form(
                 plans, 
-                form_data={'username': username, 'plan_id': plan_id, 'status': status}
+                templates,
+                form_data={'username': username, 'plan_id': plan_id, 'template_id': template_id, 'status': status}
             )
         
         # Create client
-        success, message = Client.create(username, password, plan_id, status)
+        success, message = Client.create(username, password, plan_id, template_id, status)
         
         if success:
             flash('Client created successfully', 'success')
@@ -61,11 +65,13 @@ def edit_client(client_id):
         return redirect(url_for('client.list_clients'))
     
     plans = Plan.get_all()
+    templates = Template.get_all()
     
     if request.method == 'POST':
         data = {
             'username': request.form.get('username'),
             'plan_id': request.form.get('plan_id') or None,
+            'template_id': request.form.get('template_id') or None,
             'status': request.form.get('status')
         }
         
@@ -82,7 +88,7 @@ def edit_client(client_id):
         else:
             flash(f'Error updating client: {message}', 'danger')
     
-    return ClientView.render_edit_form(client_data, plans)
+    return ClientView.render_edit_form(client_data, plans, templates)
 
 @client.route('/delete/<client_id>', methods=['POST'])
 @login_required

@@ -43,6 +43,9 @@ def create_app(config_name=None):
     from app.controllers.plan import plan as plan_blueprint
     app.register_blueprint(plan_blueprint)
     
+    from app.controllers.template import template as template_blueprint
+    app.register_blueprint(template_blueprint)
+    
     from app.controllers.main import main as main_blueprint
     app.register_blueprint(main_blueprint)
     
