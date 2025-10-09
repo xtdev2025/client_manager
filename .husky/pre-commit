@@ -1,0 +1,18 @@
+#!/bin/sh
+
+# Rodar flake8 em arquivos Python
+echo "Executando flake8 para verificar o estilo de código Python..."
+flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+
+# Verificar se há arquivos Python com erros de formatação
+if [ $? -ne 0 ]; then
+  echo "Erros de estilo de código encontrados. Corrija antes de commitar."
+  exit 1
+fi
+
+# Verificar se há senhas ou chaves API expostas
+echo "Verificando por senhas ou chaves expostas..."
+! git diff --cached --name-only | xargs grep -l "API_KEY\|SECRET\|PASSWORD\|TOKEN" || 
+{ echo "Possível exposição de credenciais detectada! Revise seu código."; exit 1; }
+
+echo "Pré-commit passou com sucesso!"

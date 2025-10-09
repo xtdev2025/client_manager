@@ -1,0 +1,14 @@
+#!/bin/sh
+
+echo "Executando testes antes de enviar o código..."
+
+# Verificar se há erros de código ou testes falhando
+flask test
+
+# Verificar se há erros nos testes
+if [ $? -ne 0 ]; then
+  echo "Os testes falharam. Corrija antes de enviar o código."
+  exit 1
+fi
+
+echo "Pré-push passou com sucesso!"

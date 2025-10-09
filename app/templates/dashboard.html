@@ -1,0 +1,144 @@
+{% extends "layout.html" %}
+
+{% block title %}Dashboard - Client Manager{% endblock %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Admin Dashboard -->
+    {% if user.role in ['admin', 'super_admin'] %}
+    <div class="col-md-4 mb-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-users fa-3x me-3"></i>
+                    <div>
+                        <h5 class="card-title">Clients</h5>
+                        <h2 class="mb-0">{{ client_count }}</h2>
+                    </div>
+                </div>
+                <a href="{{ url_for('client.list_clients') }}" class="btn btn-outline-light mt-3">
+                    <i class="fas fa-eye"></i> View All
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-tags fa-3x me-3"></i>
+                    <div>
+                        <h5 class="card-title">Plans</h5>
+                        <h2 class="mb-0">{{ plan_count }}</h2>
+                    </div>
+                </div>
+                <a href="{{ url_for('plan.list_plans') }}" class="btn btn-outline-light mt-3">
+                    <i class="fas fa-eye"></i> View All
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card bg-warning text-dark">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-user-shield fa-3x me-3"></i>
+                    <div>
+                        <h5 class="card-title">Admins</h5>
+                        <h2 class="mb-0">{{ admin_count }}</h2>
+                    </div>
+                </div>
+                <a href="{{ url_for('admin.list_admins') }}" class="btn btn-outline-dark mt-3">
+                    <i class="fas fa-eye"></i> View All
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        <a href="{{ url_for('client.create_client') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-user-plus"></i> Add New Client
+                        </a>
+                        <a href="{{ url_for('plan.create_plan') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-plus-circle"></i> Create New Plan
+                        </a>
+                        {% if user.role == 'super_admin' %}
+                        <a href="{{ url_for('admin.create_admin') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-user-shield"></i> Add New Admin
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Admin Info</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Username:</strong> {{ user.username }}</p>
+                    <p><strong>Role:</strong> {{ user.role }}</p>
+                    <p><strong>Last Login:</strong> {% if user.last_login %}{{ user.last_login.strftime('%Y-%m-%d %H:%M:%S') }}{% else %}N/A{% endif %}</p>
+                    <a href="{{ url_for('admin.profile') }}" class="btn btn-primary">
+                        <i class="fas fa-user-edit"></i> Edit Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Client Dashboard -->
+    {% else %}
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Your Information</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Username:</strong> {{ user.username }}</p>
+                <p><strong>Status:</strong> 
+                    {% if user.status == 'active' %}
+                    <span class="badge bg-success">Active</span>
+                    {% else %}
+                    <span class="badge bg-danger">{{ user.status }}</span>
+                    {% endif %}
+                </p>
+                <p><strong>Created:</strong> {{ user.createdAt.strftime('%Y-%m-%d') }}</p>
+                {% if user.expiredAt %}
+                <p><strong>Expires:</strong> {{ user.expiredAt.strftime('%Y-%m-%d') }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Your Plan</h5>
+            </div>
+            <div class="card-body">
+                {% if plan %}
+                <p><strong>Plan Name:</strong> {{ plan.name }}</p>
+                <p><strong>Description:</strong> {{ plan.description }}</p>
+                <p><strong>Price:</strong> ${{ plan.price }}</p>
+                <p><strong>Duration:</strong> {{ plan.duration_days }} days</p>
+                {% else %}
+                <p class="text-center">You don't have an active plan.</p>
+                <p class="text-center">Please contact an administrator to assign a plan.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

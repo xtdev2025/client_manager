@@ -1,0 +1,106 @@
+from flask import current_app
+from bson.objectid import ObjectId
+from datetime import datetime
+from app import mongo
+
+class Plan:
+    """Plan model for subscription plans"""
+    
+    @staticmethod
+    def create(name, description, price, duration_days):
+        """Create a new plan"""
+        try:
+            # Create plan object
+            new_plan = {
+                'name': name,
+                'description': description,
+                'price': float(price),
+                'duration_days': int(duration_days),
+                'createdAt': datetime.utcnow(),
+                'updatedAt': datetime.utcnow()
+            }
+            
+            # Insert into database
+            result = mongo.db.plans.insert_one(new_plan)
+            
+            if result.inserted_id:
+                return True, str(result.inserted_id)
+            return False, "Database error"
+        
+        except Exception as e:
+            current_app.logger.error(f"Error creating plan: {e}")
+            return False, str(e)
+    
+    @staticmethod
+    def update(plan_id, data):
+        """Update plan information"""
+        try:
+            if isinstance(plan_id, str):
+                plan_id = ObjectId(plan_id)
+            
+            # Convert numeric fields
+            if 'price' in data:
+                data['price'] = float(data['price'])
+            if 'duration_days' in data:
+                data['duration_days'] = int(data['duration_days'])
+            
+            # Add updated timestamp
+            data['updatedAt'] = datetime.utcnow()
+            
+            result = mongo.db.plans.update_one(
+                {'_id': plan_id},
+                {'$set': data}
+            )
+            
+            if result.modified_count > 0:
+                return True, "Plan updated successfully"
+            return False, "No changes made or plan not found"
+            
+        except Exception as e:
+            current_app.logger.error(f"Error updating plan: {e}")
+            return False, str(e)
+    
+    @staticmethod
+    def delete(plan_id):
+        """Delete plan"""
+        try:
+            if isinstance(plan_id, str):
+                plan_id = ObjectId(plan_id)
+            
+            # Check if plan is in use by any clients
+            clients_with_plan = mongo.db.clients.count_documents({'plan_id': plan_id})
+            if clients_with_plan > 0:
+                return False, f"Cannot delete plan, it is being used by {clients_with_plan} clients"
+            
+            result = mongo.db.plans.delete_one({'_id': plan_id})
+            
+            if result.deleted_count > 0:
+                return True, "Plan deleted successfully"
+            return False, "Plan not found"
+            
+        except Exception as e:
+            current_app.logger.error(f"Error deleting plan: {e}")
+            return False, str(e)
+    
+    @staticmethod
+    def get_all():
+        """Get all plans"""
+        try:
+            plans = list(mongo.db.plans.find())
+            return plans
+        except Exception as e:
+            current_app.logger.error(f"Error getting plans: {e}")
+            return []
+    
+    @staticmethod
+    def get_by_id(plan_id):
+        """Get plan by ID"""
+        try:
+            if isinstance(plan_id, str):
+                plan_id = ObjectId(plan_id)
+                
+            plan = mongo.db.plans.find_one({'_id': plan_id})
+            return plan
+        except Exception as e:
+            current_app.logger.error(f"Error getting plan by ID: {e}")
+            return None

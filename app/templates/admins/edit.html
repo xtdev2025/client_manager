@@ -1,0 +1,43 @@
+{% extends "layout.html" %}
+
+{% block title %}Edit Admin - Client Manager{% endblock %}
+
+{% block page_title %}Edit Admin: {{ admin.username }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('admin.edit_admin', admin_id=admin._id) }}">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" value="{{ admin.username }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Leave blank to keep current password">
+                        <div class="form-text">Leave blank to keep the current password</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="role" class="form-label">Role</label>
+                        <select class="form-select" id="role" name="role" required>
+                            <option value="admin" {% if admin.role == 'admin' %}selected{% endif %}>Admin</option>
+                            <option value="super_admin" {% if admin.role == 'super_admin' %}selected{% endif %}>Super Admin</option>
+                        </select>
+                        <div class="form-text">Super Admins have additional privileges like managing other admins.</div>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Update Admin
+                        </button>
+                        <a href="{{ url_for('admin.list_admins') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Admins
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

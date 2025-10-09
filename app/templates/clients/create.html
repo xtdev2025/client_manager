@@ -1,0 +1,51 @@
+{% extends "layout.html" %}
+
+{% block title %}Create Client - Client Manager{% endblock %}
+
+{% block page_title %}Create New Client{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('client.create_client') }}">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" required autofocus>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="plan_id" class="form-label">Plan</label>
+                        <select class="form-select" id="plan_id" name="plan_id">
+                            <option value="">No Plan</option>
+                            {% for plan in plans %}
+                            <option value="{{ plan._id }}">{{ plan.name }} (${{ plan.price }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="status" class="form-label">Status</label>
+                        <select class="form-select" id="status" name="status" required>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                            <option value="suspended">Suspended</option>
+                        </select>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Create Client
+                        </button>
+                        <a href="{{ url_for('client.list_clients') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Clients
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
