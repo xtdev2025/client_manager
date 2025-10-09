@@ -262,6 +262,50 @@ p, .card-text {
     background: #0051c7;
 }
 
+/* Button outline styles for dark mode */
+.btn-outline-primary {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-outline-primary:hover {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-outline-warning,
+.btn-outline-info,
+.btn-outline-danger,
+.btn-outline-success,
+.btn-outline-secondary {
+    border-width: 1px;
+}
+
+/* Light button in dark mode */
+.btn-light {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+.btn-light:hover {
+    background-color: var(--bg-primary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+/* Secondary button */
+.btn-secondary {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
 /* Table styles */
 .table {
     vertical-align: middle;
@@ -294,14 +338,7 @@ p, .card-text {
     background-color: var(--bg-secondary);
 }
 
-/* Badge styles */
-.badge {
-    font-weight: 500;
-    padding: 0.3em 0.65em;
-    border-radius: 6px;
-    font-size: 0.6875rem;
-    letter-spacing: 0.3px;
-}
+/* Badge styles - removed, handled in Bootstrap component theming section */
 
 /* Navbar customization */
 .navbar-brand {
@@ -466,4 +503,97 @@ p, .card-text {
 
 .icon-hover:hover {
     transform: scale(1.1);
+}
+
+/* Bootstrap component theming for dark mode */
+.modal-content {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+.modal-header {
+    border-bottom-color: var(--border-color);
+    background-color: var(--card-bg);
+}
+
+.modal-footer {
+    border-top-color: var(--border-color);
+    background-color: var(--card-bg);
+}
+
+.modal-title {
+    color: var(--text-primary);
+}
+
+.modal-body {
+    color: var(--text-primary);
+}
+
+/* Button group theming */
+.btn-group .btn {
+    border-color: var(--border-color);
+}
+
+/* Dropdown menu theming */
+.dropdown-divider {
+    border-top-color: var(--border-color);
+}
+
+/* Input group theming */
+.input-group-text {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+/* Bootstrap badges with theme support */
+.badge {
+    font-weight: 500;
+    padding: 0.3em 0.65em;
+    border-radius: 6px;
+    font-size: 0.6875rem;
+    letter-spacing: 0.3px;
+}
+
+/* Page title improvements */
+.d-flex h1,
+.d-flex h2,
+.d-flex h3 {
+    color: var(--text-primary);
+}
+
+/* Link colors in dark mode */
+a {
+    color: var(--primary-color);
+}
+
+a:hover {
+    color: var(--primary-color);
+    opacity: 0.8;
+}
+
+/* Code elements in tables */
+code {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+}
+
+/* Jumbotron for index page */
+.jumbotron {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.jumbotron .lead {
+    color: var(--text-secondary);
+}
+
+/* HR element theming */
+hr {
+    border-color: var(--border-color);
+    opacity: 1;
 }
