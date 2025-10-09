@@ -78,10 +78,16 @@ def dashboard():
         client_infos = []
         if user:
             client_infos = Info.get_by_client(user['_id'])
+            
+        # Calculate counts for statistics
+        active_infos = sum(1 for info in client_infos if info.get('is_active', False))
+        info_count = len(client_infos)
 
         return MainView.render_dashboard(
             user,
             plan=plan,
             client_domains=client_domains,
-            client_infos=client_infos
+            client_infos=client_infos,
+            active_infos=active_infos,
+            info_count=info_count
         )
