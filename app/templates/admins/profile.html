@@ -1,0 +1,72 @@
+{% extends "layout.html" %}
+
+{% block title %}Perfil do Administrador - Gerenciador de Clientes{% endblock %}
+
+{% block page_title %}Meu Perfil{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-primary text-white d-flex align-items-center">
+                <i class="fas fa-user-shield me-2"></i>
+                <h5 class="mb-0">Informações da conta</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <small class="text-muted d-block">Nome de usuário</small>
+                    <span class="fs-5 fw-semibold">{{ admin.username }}</span>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted d-block">Função</small>
+                    <span class="badge {% if admin.role == 'super_admin' %}bg-danger{% else %}bg-info text-dark{% endif %}">
+                        {% if admin.role == 'super_admin' %}Super Administrador{% else %}Administrador{% endif %}
+                    </span>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted d-block">Criado em</small>
+                    <span>{{ admin.createdAt.strftime('%Y-%m-%d %H:%M:%S') if admin.createdAt else 'N/D' }}</span>
+                </div>
+                <div>
+                    <small class="text-muted d-block">Última atualização</small>
+                    <span>{{ admin.updatedAt.strftime('%Y-%m-%d %H:%M:%S') if admin.updatedAt else 'N/D' }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header d-flex align-items-center">
+                <i class="fas fa-key text-warning me-2"></i>
+                <h5 class="mb-0">Atualizar senha</h5>
+            </div>
+            <div class="card-body">
+                {% if errors %}
+                <div class="alert alert-danger" role="alert">
+                    <ul class="mb-0">
+                        {% for error in errors %}
+                        <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+                <form method="POST" action="{{ url_for('admin.profile') }}" class="needs-validation" novalidate>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Nova senha</label>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Digite a nova senha" required>
+                        <div class="form-text">Use uma senha forte com pelo menos 8 caracteres.</div>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Salvar alterações
+                        </button>
+                        <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Voltar ao painel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
