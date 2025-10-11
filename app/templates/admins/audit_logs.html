@@ -75,7 +75,14 @@
 <div class="card shadow">
     <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
         <h5 class="mb-0"><i class="fas fa-list me-2"></i>Audit Log Entries</h5>
-        <span class="badge bg-light text-dark">Total: {{ total }}</span>
+        <div>
+            <span class="badge bg-light text-dark me-2">Total: {{ total }}</span>
+            {% if total > 0 %}
+            <button type="button" class="btn btn-sm btn-danger" id="clearAllLogsBtn">
+                <i class="fas fa-trash-alt me-1"></i>Clear All Logs
+            </button>
+            {% endif %}
+        </div>
     </div>
     <div class="card-body">
         <div class="table-responsive">
@@ -265,6 +272,42 @@
     </div>
 </div>
 
+<!-- Confirmation Modal for Clearing All Logs -->
+<div class="modal fade" id="confirmClearLogsModal" tabindex="-1" aria-labelledby="confirmClearLogsLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="confirmClearLogsLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Confirm Deletion
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3"><strong>Warning:</strong> You are about to delete <span class="text-danger">ALL {{ total }} audit log entries</span>.</p>
+                <p class="mb-3">This action cannot be undone. All audit history will be permanently removed.</p>
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="confirmClearCheckbox">
+                    <label class="form-check-label" for="confirmClearCheckbox">
+                        I understand that this action is irreversible
+                    </label>
+                </div>
+                <p class="text-muted small mb-0">
+                    <i class="fas fa-info-circle me-1"></i>
+                    This will delete all audit logs from the database.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="{{ url_for('admin.clear_audit_logs') }}" style="display: inline;">
+                    <button type="submit" class="btn btn-danger" id="confirmClearBtn" disabled>
+                        <i class="fas fa-trash-alt me-1"></i>Delete All Logs
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Load Monaco Editor -->
 <script>
 (function() {
@@ -366,6 +409,34 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 500);
         });
     });
+    
+    // Clear all logs modal handlers
+    const clearAllBtn = document.getElementById('clearAllLogsBtn');
+    const confirmClearModal = document.getElementById('confirmClearLogsModal');
+    const confirmCheckbox = document.getElementById('confirmClearCheckbox');
+    const confirmBtn = document.getElementById('confirmClearBtn');
+    
+    if (clearAllBtn && confirmClearModal) {
+        clearAllBtn.addEventListener('click', function() {
+            const modalInstance = bootstrap.Modal.getOrCreateInstance(confirmClearModal);
+            modalInstance.show();
+            
+            // Reset checkbox and button state when modal opens
+            if (confirmCheckbox) {
+                confirmCheckbox.checked = false;
+            }
+            if (confirmBtn) {
+                confirmBtn.disabled = true;
+            }
+        });
+    }
+    
+    // Enable/disable confirm button based on checkbox
+    if (confirmCheckbox && confirmBtn) {
+        confirmCheckbox.addEventListener('change', function() {
+            confirmBtn.disabled = !this.checked;
+        });
+    }
 });
 </script>
 {% endblock %}

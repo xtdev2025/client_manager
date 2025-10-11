@@ -206,3 +206,34 @@ def audit_logs():
             'end_date': end_date_str
         }
     )
+
+
+@admin.route('/clear-audit-logs', methods=['POST'])
+@login_required
+@super_admin_required
+def clear_audit_logs():
+    """Clear all audit logs (only super_admin can do this)"""
+    try:
+        # Get count before deletion for confirmation message
+        from app import mongo
+        count = mongo.db.audit_logs.count_documents({})
+        
+        # Delete all audit logs
+        result = mongo.db.audit_logs.delete_many({})
+        
+        # Log this critical action (creates a new log entry after clearing)
+        AuditService.log_admin_action(
+            'delete_all', 
+            'audit_logs', 
+            {
+                'deleted_count': result.deleted_count,
+                'previous_count': count,
+                'reason': 'Manual clear all logs by super admin'
+            }
+        )
+        
+        flash(f'Successfully deleted {result.deleted_count} audit log entries', 'success')
+    except Exception as e:
+        flash(f'Error clearing audit logs: {str(e)}', 'danger')
+    
+    return redirect(url_for('admin.audit_logs'))
