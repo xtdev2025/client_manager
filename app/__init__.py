@@ -2,6 +2,8 @@ from flask import Flask
 from flask_pymongo import PyMongo
 from flask_login import LoginManager
 from flask_bcrypt import Bcrypt
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from config import config
 import os
 from datetime import datetime, timedelta
@@ -12,6 +14,13 @@ bcrypt = Bcrypt()
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
 login_manager.login_message_category = 'info'
+
+# Initialize rate limiter
+limiter = Limiter(
+    key_func=get_remote_address,
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri="memory://"
+)
 
 def create_app(config_name=None):
     app = Flask(__name__, template_folder='templates')
@@ -26,6 +35,7 @@ def create_app(config_name=None):
     mongo.init_app(app)
     bcrypt.init_app(app)
     login_manager.init_app(app)
+    limiter.init_app(app)
     
     # Initialize user loader
     from app.utils.user_loader import init_user_loader

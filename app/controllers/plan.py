@@ -2,6 +2,7 @@ from flask import Blueprint, redirect, url_for, flash, request, abort
 from flask_login import login_required, current_user
 from app.controllers.auth import admin_required
 from app.models.plan import Plan
+from app.services.audit_service import AuditService
 from app.views.plan_view import PlanView
 from bson import ObjectId
 
@@ -36,6 +37,8 @@ def create_plan():
         success, message = Plan.create(name, description, price, duration_days)
         
         if success:
+            # Log plan creation in audit trail
+            AuditService.log_plan_action('create', message, {'name': name, 'price': price})
             flash('Plan created successfully', 'success')
             return redirect(url_for('plan.list_plans'))
         else:

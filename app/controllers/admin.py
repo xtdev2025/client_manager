@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from app.controllers.auth import admin_required, super_admin_required
 from app.models.admin import Admin
 from app.models.user import User
+from app.services.audit_service import AuditService
 from app.views.admin_view import AdminView
 from bson import ObjectId
 
@@ -34,6 +35,8 @@ def create_admin():
         success, message = Admin.create(username, password, role)
         
         if success:
+            # Log admin creation in audit trail
+            AuditService.log_admin_action('create', message, {'username': username, 'role': role})
             flash('Admin created successfully', 'success')
             return redirect(url_for('admin.list_admins'))
         else:
@@ -70,6 +73,8 @@ def edit_admin(admin_id):
         success, message = Admin.update(admin_id, data)
         
         if success:
+            # Log admin update in audit trail
+            AuditService.log_admin_action('update', admin_id, {'username': data.get('username')})
             flash('Admin updated successfully', 'success')
             return redirect(url_for('admin.list_admins'))
         else:
@@ -88,9 +93,15 @@ def delete_admin(admin_id):
         return redirect(url_for('admin.list_admins'))
     
     if request.method == 'POST':
+        # Get admin data before deletion for audit log
+        admin_data = Admin.get_by_id(admin_id)
+        username = admin_data.get('username', 'unknown') if admin_data else 'unknown'
+        
         success, message = Admin.delete(admin_id)
         
         if success:
+            # Log admin deletion in audit trail
+            AuditService.log_admin_action('delete', admin_id, {'username': username})
             flash('Admin deleted successfully', 'success')
         else:
             flash(f'Error deleting admin: {message}', 'danger')
