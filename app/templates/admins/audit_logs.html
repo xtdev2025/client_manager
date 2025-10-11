@@ -1,45 +1,45 @@
 {% extends "layout.html" %}
 
-{% block title %}Audit Logs - Client Manager{% endblock %}
+{% block title %}Registros de Auditoria - Client Manager{% endblock %}
 
-{% block page_title %}Audit Logs{% endblock %}
+{% block page_title %}Registros de Auditoria{% endblock %}
 
 {% block content %}
 <div class="card shadow mb-4">
     <div class="card-header bg-primary text-white">
-        <h5 class="mb-0"><i class="fas fa-history me-2"></i>Filter Logs</h5>
+        <h5 class="mb-0"><i class="fas fa-history me-2"></i>Filtrar Registros</h5>
     </div>
     <div class="card-body">
         <form method="GET" action="{{ url_for('admin.audit_logs') }}" class="row g-3">
             <div class="col-md-3">
-                <label for="entity_type" class="form-label">Entity Type</label>
+                <label for="entity_type" class="form-label">Tipo de Entidade</label>
                 <select name="entity_type" id="entity_type" class="form-select">
-                    <option value="">All Types</option>
+                    <option value="">Todos os Tipos</option>
                     <option value="admin" {% if filters.entity_type == 'admin' %}selected{% endif %}>Admin</option>
-                    <option value="client" {% if filters.entity_type == 'client' %}selected{% endif %}>Client</option>
-                    <option value="plan" {% if filters.entity_type == 'plan' %}selected{% endif %}>Plan</option>
-                    <option value="domain" {% if filters.entity_type == 'domain' %}selected{% endif %}>Domain</option>
+                    <option value="client" {% if filters.entity_type == 'client' %}selected{% endif %}>Cliente</option>
+                    <option value="plan" {% if filters.entity_type == 'plan' %}selected{% endif %}>Plano</option>
+                    <option value="domain" {% if filters.entity_type == 'domain' %}selected{% endif %}>Domínio</option>
                     <option value="template" {% if filters.entity_type == 'template' %}selected{% endif %}>Template</option>
                     <option value="info" {% if filters.entity_type == 'info' %}selected{% endif %}>Info</option>
                 </select>
             </div>
             
             <div class="col-md-3">
-                <label for="action" class="form-label">Action</label>
+                <label for="action" class="form-label">Ação</label>
                 <select name="action" id="action" class="form-select">
-                    <option value="">All Actions</option>
-                    <option value="create" {% if filters.action == 'create' %}selected{% endif %}>Create</option>
-                    <option value="update" {% if filters.action == 'update' %}selected{% endif %}>Update</option>
-                    <option value="delete" {% if filters.action == 'delete' %}selected{% endif %}>Delete</option>
+                    <option value="">Todas as Ações</option>
+                    <option value="create" {% if filters.action == 'create' %}selected{% endif %}>Criar</option>
+                    <option value="update" {% if filters.action == 'update' %}selected{% endif %}>Atualizar</option>
+                    <option value="delete" {% if filters.action == 'delete' %}selected{% endif %}>Deletar</option>
                     <option value="login" {% if filters.action == 'login' %}selected{% endif %}>Login</option>
                     <option value="logout" {% if filters.action == 'logout' %}selected{% endif %}>Logout</option>
                 </select>
             </div>
             
             <div class="col-md-3">
-                <label for="user_id" class="form-label">User</label>
+                <label for="user_id" class="form-label">Usuário</label>
                 <select name="user_id" id="user_id" class="form-select">
-                    <option value="">All Users</option>
+                    <option value="">Todos os Usuários</option>
                     {% for admin in admins %}
                     <option value="{{ admin._id }}" {% if filters.user_id == admin._id|string %}selected{% endif %}>
                         {{ admin.username }}
@@ -157,7 +157,7 @@
                                     data-entity-id="{{ log.entity_id if log.entity_id else 'N/A' }}"
                                     data-ip-address="{{ log.ip_address if log.ip_address else 'N/A' }}"
                                     data-user-agent="{{ log.user_agent if log.user_agent else 'N/A' }}"
-                                    data-details="{{ log.details|tojson }}">
+                                    data-details='{{ log.details|tojson }}'>
                                 <i class="fas fa-info-circle"></i> View
                             </button>
                             {% else %}
@@ -394,16 +394,31 @@ document.addEventListener('DOMContentLoaded', function() {
             // Wait a bit for Monaco to initialize, then set the value
             setTimeout(function() {
                 try {
-                    const details = JSON.parse(button.dataset.details);
+                    let detailsData = button.dataset.details;
+                    
+                    // Verificar se os dados existem e não estão vazios
+                    if (!detailsData || detailsData.trim() === '') {
+                        throw new Error('Dados de detalhes vazios');
+                    }
+                    
+                    // Parse JSON
+                    const details = JSON.parse(detailsData);
                     const formattedJson = JSON.stringify(details, null, 2);
                     
                     if (monacoEditor && monacoInitialized) {
                         monacoEditor.setValue(formattedJson);
                     }
                 } catch (e) {
-                    console.error('Error parsing details:', e);
+                    console.error('Erro ao processar detalhes:', e);
+                    // Fallback: mostrar dados brutos ou mensagem de erro
+                    const errorMessage = {
+                        "erro": "Não foi possível processar os detalhes",
+                        "mensagem": e.message,
+                        "dados_brutos": button.dataset.details || 'Nenhum dado disponível'
+                    };
+                    
                     if (monacoEditor && monacoInitialized) {
-                        monacoEditor.setValue(button.dataset.details || '{}');
+                        monacoEditor.setValue(JSON.stringify(errorMessage, null, 2));
                     }
                 }
             }, 500);
