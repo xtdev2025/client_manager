@@ -1,65 +1,64 @@
-{% extends 'layout.html' %}
+{% extends "layout.html" %}
+
+{% block title %}Detalhes do Plano - Gerenciador de Clientes{% endblock %}
+
+{% block page_title %}Detalhes do plano{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="card">
-        <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
-            <h2>Detalhes do Plano</h2>
-            <div>
-                <a href="{{ url_for('plan.edit_plan', plan_id=plan._id) }}" class="btn btn-warning">
-                    <i class="fas fa-edit"></i> Editar
-                </a>
-                <a href="{{ url_for('plan.list_plans') }}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Voltar
-                </a>
+<div class="card shadow">
+    <div class="card-header bg-info text-white d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <h5 class="mb-0"><i class="fas fa-layer-group me-2"></i>{{ plan.name }}</h5>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('plan.edit_plan', plan_id=plan._id) }}" class="btn btn-warning">
+                <i class="fas fa-edit me-2"></i>Editar
+            </a>
+            <a href="{{ url_for('plan.list_plans') }}" class="btn btn-outline-light">
+                <i class="fas fa-arrow-left me-2"></i>Voltar
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row g-4">
+            <div class="col-md-6">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 text-muted">Nome</dt>
+                    <dd class="col-sm-8 fw-semibold">{{ plan.name }}</dd>
+
+                    <dt class="col-sm-4 text-muted">Preço</dt>
+                    <dd class="col-sm-8">R$ {{ "%.2f"|format(plan.price) }}</dd>
+
+                    <dt class="col-sm-4 text-muted">Duração</dt>
+                    <dd class="col-sm-8">{{ plan.duration_days }} dias</dd>
+                </dl>
+            </div>
+            <div class="col-md-6">
+                <dl class="row mb-0">
+                    <dt class="col-sm-5 text-muted">Criado em</dt>
+                    <dd class="col-sm-7">{{ plan.createdAt.strftime('%d/%m/%Y %H:%M') if plan.createdAt else 'N/D' }}</dd>
+
+                    <dt class="col-sm-5 text-muted">Atualizado em</dt>
+                    <dd class="col-sm-7">{{ plan.updatedAt.strftime('%d/%m/%Y %H:%M') if plan.updatedAt else 'N/D' }}</dd>
+
+                    <dt class="col-sm-5 text-muted">ID</dt>
+                    <dd class="col-sm-7"><code>{{ plan._id }}</code></dd>
+                </dl>
             </div>
         </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-6">
-                    <dl class="row">
-                        <dt class="col-sm-4">Nome do Plano:</dt>
-                        <dd class="col-sm-8">{{ plan.name }}</dd>
-                        
-                        <dt class="col-sm-4">Preço:</dt>
-                        <dd class="col-sm-8">R$ {{ "%.2f"|format(plan.price) }}</dd>
-                        
-                        <dt class="col-sm-4">Duração:</dt>
-                        <dd class="col-sm-8">{{ plan.duration_days }} dias</dd>
-                    </dl>
-                </div>
-                <div class="col-md-6">
-                    <dl class="row">
-                        <dt class="col-sm-4">Criado em:</dt>
-                        <dd class="col-sm-8">{{ plan.createdAt.strftime('%d/%m/%Y %H:%M') if plan.createdAt else 'N/A' }}</dd>
-                        
-                        <dt class="col-sm-4">Atualizado em:</dt>
-                        <dd class="col-sm-8">{{ plan.updatedAt.strftime('%d/%m/%Y %H:%M') if plan.updatedAt else 'N/A' }}</dd>
-                        
-                        <dt class="col-sm-4">ID do Plano:</dt>
-                        <dd class="col-sm-8">{{ plan._id }}</dd>
-                    </dl>
-                </div>
+
+        <div class="mt-4">
+            <h6 class="text-uppercase text-muted">Descrição</h6>
+            <div class="border rounded p-3 bg-light">
+                {{ plan.description if plan.description else 'Nenhuma descrição disponível.' }}
             </div>
-            
-            <div class="mt-4">
-                <h5>Descrição:</h5>
-                <div class="border p-3 bg-light">
-                    {{ plan.description if plan.description else 'Nenhuma descrição disponível.' }}
-                </div>
-            </div>
-            
-            <hr>
-            
-            <h5>Ações:</h5>
-            <div class="d-flex">
-                <form method="POST" action="{{ url_for('plan.delete_plan', plan_id=plan._id) }}" 
-                      onsubmit="return confirm('Tem certeza que deseja excluir este plano? Esta ação não pode ser desfeita.');">
-                    <button type="submit" class="btn btn-danger me-2">
-                        <i class="fas fa-trash"></i> Excluir Plano
-                    </button>
-                </form>
-            </div>
+        </div>
+
+        <div class="mt-4 d-flex justify-content-end">
+            <form method="POST" action="{{ url_for('plan.delete_plan', plan_id=plan._id) }}" 
+                  onsubmit="return confirm('Tem certeza que deseja excluir este plano? Esta ação não pode ser desfeita.');">
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash me-2"></i>Excluir plano
+                </button>
+            </form>
         </div>
     </div>
 </div>

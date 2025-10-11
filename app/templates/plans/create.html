@@ -1,41 +1,52 @@
-{% extends 'layout.html' %}
+{% extends "layout.html" %}
+
+{% block title %}Novo Plano - Gerenciador de Clientes{% endblock %}
+
+{% block page_title %}Criar plano{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="card">
-        <div class="card-header bg-primary text-white">
-            <h2>Criar Novo Plano</h2>
-        </div>
-        <div class="card-body">
-            <form method="POST" action="{{ url_for('plan.create_plan') }}">
-                <div class="form-group mb-3">
-                    <label for="name">Nome do Plano*</label>
-                    <input type="text" class="form-control" id="name" name="name" 
-                           value="{{ form_data.name if form_data else '' }}" required>
-                </div>
-                
-                <div class="form-group mb-3">
-                    <label for="description">Descrição</label>
-                    <textarea class="form-control" id="description" name="description" rows="3">{{ form_data.description if form_data else '' }}</textarea>
-                </div>
-                
-                <div class="form-group mb-3">
-                    <label for="price">Preço (R$)*</label>
-                    <input type="number" step="0.01" min="0" class="form-control" id="price" name="price" 
-                           value="{{ form_data.price if form_data else '' }}" required>
-                </div>
-                
-                <div class="form-group mb-3">
-                    <label for="duration_days">Duração (dias)*</label>
-                    <input type="number" min="1" class="form-control" id="duration_days" name="duration_days" 
-                           value="{{ form_data.duration_days if form_data else '30' }}" required>
-                </div>
-                
-                <div class="d-flex justify-content-between">
-                    <a href="{{ url_for('plan.list_plans') }}" class="btn btn-secondary">Cancelar</a>
-                    <button type="submit" class="btn btn-success">Salvar Plano</button>
-                </div>
-            </form>
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-layer-group me-2"></i>Novo plano</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('plan.create_plan') }}">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Nome do plano<span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="name" name="name" 
+                               value="{{ form_data.name if form_data else '' }}" required autofocus>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Descrição</label>
+                        <textarea class="form-control" id="description" name="description" rows="3">{{ form_data.description if form_data else '' }}</textarea>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="price" class="form-label">Preço (R$)<span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" min="0" class="form-control" id="price" name="price" 
+                                   value="{{ form_data.price if form_data else '' }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="duration_days" class="form-label">Duração (dias)<span class="text-danger">*</span></label>
+                            <input type="number" min="1" class="form-control" id="duration_days" name="duration_days" 
+                                   value="{{ form_data.duration_days if form_data else '30' }}" required>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-column flex-sm-row gap-2 justify-content-end mt-4">
+                        <a href="{{ url_for('plan.list_plans') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save me-2"></i>Salvar plano
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </div>

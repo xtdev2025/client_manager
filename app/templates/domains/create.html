@@ -1,93 +1,94 @@
-{% extends 'layout.html' %}
+{% extends "layout.html" %}
+
+{% block title %}Novo Domínio - Gerenciador de Clientes{% endblock %}
+
+{% block page_title %}Criar domínio{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="card">
-        <div class="card-header bg-primary text-white">
-            <h2>Criar Novo Domínio</h2>
-        </div>
-        <div class="card-body">
-            <form method="POST" action="{{ url_for('domain.create_domain') }}">
-                <div class="form-group mb-3">
-                    <label for="name">Nome do Domínio*</label>
-                    <input type="text" class="form-control" id="name" name="name" 
-                           value="{{ form_data.name if form_data else '' }}" 
-                           placeholder="example.com" required>
-                    <small class="form-text text-muted">Digite o nome do domínio sem www ou http://</small>
-                </div>
-                
-                <div class="form-group mb-3">
-                    <div class="form-check form-switch">
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-globe me-2"></i>Novo domínio</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('domain.create_domain') }}">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Nome do domínio<span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="name" name="name" 
+                               value="{{ form_data.name if form_data else '' }}" placeholder="example.com" required autofocus>
+                        <div class="form-text">Informe o domínio sem www ou http://.</div>
+                    </div>
+
+                    <div class="form-check form-switch mb-4">
                         <input class="form-check-input" type="checkbox" id="cloudflare_status" name="cloudflare_status"
                                {% if form_data and form_data.cloudflare_status %}checked{% endif %}>
-                        <label class="form-check-label" for="cloudflare_status">Usar Cloudflare API</label>
+                        <label class="form-check-label" for="cloudflare_status">Usar integração com Cloudflare</label>
                     </div>
-                </div>
-                
-                <div class="cloudflare-settings" id="cloudflareSettings">
-                    <div class="form-group mb-3">
-                        <label for="cloudflare_email">E-mail Cloudflare</label>
-                        <input type="email" class="form-control" id="cloudflare_email" name="cloudflare_email" 
-                               value="{{ form_data.cloudflare_email if form_data else '' }}">
+
+                    <div class="border rounded p-3 mb-4 bg-light {% if not form_data or not form_data.cloudflare_status %}d-none{% endif %}" id="cloudflareSettings">
+                        <h6 class="text-muted text-uppercase small">Credenciais Cloudflare</h6>
+                        <div class="mb-3">
+                            <label for="cloudflare_email" class="form-label">E-mail</label>
+                            <input type="email" class="form-control" id="cloudflare_email" name="cloudflare_email" 
+                                   value="{{ form_data.cloudflare_email if form_data else '' }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="cloudflare_api" class="form-label">API Key</label>
+                            <input type="password" class="form-control" id="cloudflare_api" name="cloudflare_api" 
+                                   value="{{ form_data.cloudflare_api if form_data else '' }}">
+                        </div>
+                        <div class="mb-0">
+                            <label for="cloudflare_password" class="form-label">Senha</label>
+                            <input type="password" class="form-control" id="cloudflare_password" name="cloudflare_password">
+                            <div class="form-text">Opcional — utilizada para operações específicas na conta Cloudflare.</div>
+                        </div>
                     </div>
-                    
-                    <div class="form-group mb-3">
-                        <label for="cloudflare_api">API Key Cloudflare</label>
-                        <input type="password" class="form-control" id="cloudflare_api" name="cloudflare_api" 
-                               value="{{ form_data.cloudflare_api if form_data else '' }}">
-                    </div>
-                    
-                    <div class="form-group mb-3">
-                        <label for="cloudflare_password">Senha Cloudflare</label>
-                        <input type="password" class="form-control" id="cloudflare_password" name="cloudflare_password">
-                        <small class="form-text text-muted">Senha da conta Cloudflare (opcional)</small>
-                    </div>
-                </div>
-                
-                <div class="form-group mb-3">
-                    <div class="form-check form-switch">
+
+                    <div class="form-check form-switch mb-4">
                         <input class="form-check-input" type="checkbox" id="ssl" name="ssl"
                                {% if form_data and form_data.ssl %}checked{% endif %}>
                         <label class="form-check-label" for="ssl">Ativar SSL</label>
                     </div>
-                </div>
-                
-                <div class="form-group mb-3">
-                    <label for="domain_limit">Limite de Domínios por Cliente</label>
-                    <input type="number" class="form-control" id="domain_limit" name="domain_limit" 
-                           value="{{ form_data.domain_limit if form_data else '5' }}" min="1" max="100">
-                    <small class="form-text text-muted">Número máximo de domínios que podem ser atribuídos a um cliente</small>
-                </div>
-                
-                <div class="d-flex justify-content-between">
-                    <a href="{{ url_for('domain.list_domains') }}" class="btn btn-secondary">Cancelar</a>
-                    <button type="submit" class="btn btn-success">Salvar Domínio</button>
-                </div>
-            </form>
+
+                    <div class="mb-4">
+                        <label for="domain_limit" class="form-label">Limite de domínios por cliente</label>
+                        <input type="number" class="form-control" id="domain_limit" name="domain_limit" 
+                               value="{{ form_data.domain_limit if form_data else '5' }}" min="1" max="100">
+                        <div class="form-text">Quantidade máxima de domínios vinculados a um único cliente.</div>
+                    </div>
+
+                    <div class="d-flex flex-column flex-sm-row gap-2 justify-content-end">
+                        <a href="{{ url_for('domain.list_domains') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save me-2"></i>Salvar domínio
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </div>
+{% endblock %}
 
 {% block scripts %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const cloudflareSwitch = document.getElementById('cloudflare_status');
         const cloudflareSettings = document.getElementById('cloudflareSettings');
-        
+
         function toggleCloudflareSettings() {
             if (cloudflareSwitch.checked) {
-                cloudflareSettings.style.display = 'block';
+                cloudflareSettings.classList.remove('d-none');
             } else {
-                cloudflareSettings.style.display = 'none';
+                cloudflareSettings.classList.add('d-none');
             }
         }
-        
-        // Initial state
+
         toggleCloudflareSettings();
-        
-        // Event listener
         cloudflareSwitch.addEventListener('change', toggleCloudflareSettings);
     });
 </script>
-{% endblock %}
 {% endblock %}
