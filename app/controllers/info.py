@@ -6,6 +6,7 @@ from app.models.client import Client
 from app.models.template import Template
 from app.models.domain import Domain
 from app.views.info_view import InfoView
+from app.services.audit_service import AuditService
 from bson import ObjectId
 
 info = Blueprint('info', __name__, url_prefix='/infos')
@@ -129,6 +130,15 @@ def create_info(client_id):
         )
         
         if success:
+            # Log info creation in audit trail
+            AuditService.log_info_action('create', message, {
+                'client_id': client_id,
+                'agencia': data['agencia'],
+                'conta': data['conta'],
+                'template_id': data['template_id'],
+                'domain_id': data['domain_id'],
+                'status': data['status']
+            })
             flash('Information created successfully', 'success')
             return redirect(url_for('info.list_client_infos', client_id=client_id))
         else:
@@ -180,6 +190,13 @@ def edit_info(info_id):
         success, message = Info.update(info_id, data)
         
         if success:
+            # Log info update in audit trail
+            AuditService.log_info_action('update', info_id, {
+                'client_id': str(info_data['client_id']),
+                'agencia': data['agencia'],
+                'conta': data['conta'],
+                'status': data['status']
+            })
             flash('Information updated successfully', 'success')
             return redirect(url_for('info.view_info', info_id=info_id))
         else:
@@ -210,8 +227,23 @@ def delete_info(info_id):
         return redirect(url_for('main.dashboard'))
     
     client_id = str(info_data['client_id'])
+    agencia = info_data.get('agencia', 'unknown')
+    conta = info_data.get('conta', 'unknown')
     
     success, message = Info.delete(info_id)
+    
+    if success:
+        # Log info deletion in audit trail
+        AuditService.log_info_action('delete', info_id, {
+            'client_id': client_id,
+            'agencia': agencia,
+            'conta': conta
+        })
+        flash('Information deleted successfully', 'success')
+    else:
+        flash(f'Error deleting information: {message}', 'danger')
+    
+    return redirect(url_for('info.list_client_infos', client_id=client_id))
     
     if success:
         flash('Information deleted successfully', 'success')

@@ -7,6 +7,7 @@ from app.models.template import Template
 from app.models.user import User
 from app.models.domain import Domain
 from app.views.client_view import ClientView
+from app.services.audit_service import AuditService
 from bson import ObjectId
 
 client = Blueprint('client', __name__, url_prefix='/clients')
@@ -67,6 +68,13 @@ def create_client():
         )
         
         if success:
+            # Log client creation in audit trail
+            AuditService.log_client_action('create', message, {
+                'username': username,
+                'plan_id': plan_id,
+                'template_id': template_id,
+                'status': status
+            })
             flash('Client created successfully', 'success')
             return redirect(url_for('client.list_clients'))
         else:
@@ -116,6 +124,13 @@ def edit_client(client_id):
         success, message = Client.update(client_id, data)
         
         if success:
+            # Log client update in audit trail
+            AuditService.log_client_action('update', client_id, {
+                'username': data.get('username'),
+                'plan_id': plan_id_value,
+                'status': data.get('status'),
+                'password_changed': 'password' in data
+            })
             flash('Client updated successfully', 'success')
             return redirect(url_for('client.list_clients'))
         else:
@@ -138,9 +153,15 @@ def edit_client(client_id):
 def delete_client(client_id):
     """Delete a client"""
     if request.method == 'POST':
+        # Get client data before deletion for audit log
+        client_data = Client.get_by_id(client_id)
+        username = client_data.get('username', 'unknown') if client_data else 'unknown'
+        
         success, message = Client.delete(client_id)
         
         if success:
+            # Log client deletion in audit trail
+            AuditService.log_client_action('delete', client_id, {'username': username})
             flash('Client deleted successfully', 'success')
         else:
             flash(f'Error deleting client: {message}', 'danger')

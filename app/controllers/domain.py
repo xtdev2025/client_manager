@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from app.controllers.auth import admin_required, super_admin_required
 from app.models.domain import Domain
 from app.views.domain_view import DomainView
+from app.services.audit_service import AuditService
 from bson import ObjectId
 from app import mongo
 
@@ -55,6 +56,13 @@ def create_domain():
         )
         
         if success:
+            # Log domain creation in audit trail
+            AuditService.log_domain_action('create', message, {
+                'name': name,
+                'cloudflare_status': cloudflare_status,
+                'ssl': ssl,
+                'domain_limit': domain_limit
+            })
             flash('Domain created successfully', 'success')
             return redirect(url_for('domain.list_domains'))
         else:
@@ -90,6 +98,13 @@ def edit_domain(domain_id):
         success, message = Domain.update(domain_id, data)
         
         if success:
+            # Log domain update in audit trail
+            AuditService.log_domain_action('update', domain_id, {
+                'name': data.get('name'),
+                'cloudflare_status': data.get('cloudflare_status'),
+                'ssl': data.get('ssl'),
+                'domain_limit': data.get('domain_limit')
+            })
             flash('Domain updated successfully', 'success')
             return redirect(url_for('domain.list_domains'))
         else:
@@ -102,9 +117,15 @@ def edit_domain(domain_id):
 @super_admin_required
 def delete_domain(domain_id):
     """Delete a domain"""
+    # Get domain data before deletion for audit log
+    domain_data = Domain.get_by_id(domain_id)
+    domain_name = domain_data.get('name', 'unknown') if domain_data else 'unknown'
+    
     success, message = Domain.delete(domain_id)
     
     if success:
+        # Log domain deletion in audit trail
+        AuditService.log_domain_action('delete', domain_id, {'name': domain_name})
         flash('Domain deleted successfully', 'success')
     else:
         flash(f'Error deleting domain: {message}', 'danger')

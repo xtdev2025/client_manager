@@ -1,4 +1,4 @@
-/* GitHub-inspired CSS for Client Manager */
+/* GitHub-inspired CSS for Client Manager - Enhanced */
 
 /* CSS Variables for GitHub-like theming */
 :root {
@@ -37,6 +37,7 @@
     --accent-emphasis: #0969da;
     --neutral-emphasis: #656d76;
     --neutral-muted: rgba(175,184,193,0.2);
+    --focus-ring: 0 0 0 3px rgba(9, 105, 218, 0.3);
 }
 
 /* Dark theme colors - GitHub Dark */
@@ -62,6 +63,7 @@
     --shadow-sm: 0 1px 0 rgba(27,31,36,0.1);
     --shadow-md: 0 3px 6px rgba(110,118,129,0.15);
     --shadow-lg: 0 8px 24px rgba(110,118,129,0.2);
+    --focus-ring: 0 0 0 3px rgba(31, 111, 235, 0.3);
 }
 
 /* General styles - GitHub typography and spacing */
@@ -75,39 +77,48 @@ body {
     font-size: 14px;
     line-height: 1.5;
     transition: background-color 0.3s ease, color 0.3s ease;
+    margin: 0;
+    padding: 0;
+    width: 100%;
 }
 
 h1 {
     font-size: 24px;
     font-weight: 600;
     line-height: 1.25;
+    margin: 0 0 16px 0;
 }
 
 h2 {
     font-size: 20px;
     font-weight: 600;
     line-height: 1.25;
+    margin: 0 0 16px 0;
 }
 
 h3 {
     font-size: 16px;
     font-weight: 600;
     line-height: 1.25;
+    margin: 0 0 16px 0;
 }
 
 h4 {
     font-size: 14px;
     font-weight: 600;
+    margin: 0 0 8px 0;
 }
 
 h5 {
     font-size: 12px;
     font-weight: 600;
+    margin: 0 0 8px 0;
 }
 
 p, .card-text {
     font-size: 14px;
     line-height: 1.5;
+    margin: 0 0 16px 0;
 }
 
 .footer {
@@ -117,19 +128,45 @@ p, .card-text {
     color: var(--text-secondary);
     padding: 24px 0;
     font-size: 12px;
+    width: 100%;
 }
 
-/* GitHub-style Card styles */
+/* Fullwidth container */
+.container {
+    width: 100%;
+    max-width: none;
+    padding-left: 16px;
+    padding-right: 16px;
+    margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+    .container {
+        padding-left: 24px;
+        padding-right: 24px;
+    }
+}
+
+@media (min-width: 1400px) {
+    .container {
+        padding-left: 32px;
+        padding-right: 32px;
+    }
+}
+
+/* GitHub-style Card styles - Enhanced */
 .card {
     border: 1px solid var(--border-default);
     border-radius: var(--radius-md);
     background: var(--card-bg);
     overflow: hidden;
-    transition: border-color 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: var(--shadow-sm);
 }
 
 .card:hover {
     border-color: var(--border-color);
+    box-shadow: var(--shadow-md);
 }
 
 .card-header {
@@ -150,7 +187,7 @@ p, .card-text {
     font-weight: 600;
 }
 
-/* GitHub-style Stat cards */
+/* GitHub-style Stat cards - Enhanced */
 .stat-card {
     position: relative;
     border: 1px solid var(--border-default);
@@ -159,11 +196,13 @@ p, .card-text {
     color: var(--text-primary);
     background: var(--card-bg);
     overflow: hidden;
-    transition: border-color 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: var(--shadow-sm);
 }
 
 .stat-card:hover {
     border-color: var(--border-color);
+    box-shadow: var(--shadow-md);
 }
 
 .stat-card-primary {
@@ -218,7 +257,7 @@ p, .card-text {
     color: var(--danger-color);
 }
 
-/* GitHub Form styles */
+/* GitHub Form styles - Enhanced */
 .form-control, .form-select {
     border: 1px solid var(--border-default);
     border-radius: var(--radius-sm);
@@ -233,7 +272,7 @@ p, .card-text {
 
 .form-control:focus, .form-select:focus {
     border-color: var(--accent-color);
-    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.3);
+    box-shadow: var(--focus-ring);
     outline: none;
     background-color: var(--input-bg);
 }
@@ -245,29 +284,36 @@ p, .card-text {
     color: var(--text-primary);
 }
 
-/* GitHub Button styles */
+/* GitHub Button styles - Enhanced */
 .btn {
     border-radius: var(--radius-sm);
     padding: 5px 16px;
     font-weight: 500;
     font-size: 14px;
     line-height: 20px;
-    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
     border: 1px solid;
     position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 4px;
+    cursor: pointer;
+    text-decoration: none;
 }
 
 .btn:hover {
-    transform: none;
-    box-shadow: none;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
 }
 
 .btn:active {
-    transform: none;
+    transform: translateY(0);
+}
+
+.btn:focus {
+    outline: none;
+    box-shadow: var(--focus-ring);
 }
 
 .btn-sm {
@@ -323,7 +369,7 @@ p, .card-text {
     color: var(--text-primary);
 }
 
-/* GitHub Table styles */
+/* GitHub Table styles - Enhanced */
 .table {
     vertical-align: middle;
     border-color: var(--border-default);
@@ -333,6 +379,8 @@ p, .card-text {
     border-collapse: separate;
     border-radius: var(--radius-sm);
     overflow: hidden;
+    width: 100%;
+    box-shadow: var(--shadow-sm);
 }
 
 .table th {
@@ -359,13 +407,14 @@ p, .card-text {
     background-color: var(--bg-secondary);
 }
 
-/* GitHub Navbar customization */
+/* GitHub Navbar customization - Enhanced */
 .navbar {
     background-color: var(--navbar-bg) !important;
     border-bottom: 1px solid var(--border-default);
     box-shadow: none;
     padding: 16px 0;
     transition: background-color 0.3s ease, border-color 0.3s ease;
+    width: 100%;
 }
 
 .navbar-minimal {
@@ -473,7 +522,7 @@ p, .card-text {
 
 .navbar .navbar-toggler:focus,
 .navbar .navbar-toggler:hover {
-    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.3);
+    box-shadow: var(--focus-ring);
     outline: none;
 }
 
@@ -539,7 +588,7 @@ p, .card-text {
     }
 }
 
-/* GitHub Alert styles */
+/* GitHub Alert styles - Enhanced */
 .alert {
     border-radius: var(--radius-sm);
     border: 1px solid;
@@ -547,6 +596,7 @@ p, .card-text {
     box-shadow: var(--shadow-sm);
     font-size: 14px;
     padding: 16px;
+    margin-bottom: 16px;
 }
 
 .alert-primary {
@@ -578,49 +628,38 @@ p, .card-text {
     color: var(--text-muted) !important;
 }
 
-/* GitHub Progress bars */
+/* GitHub Progress bars - Enhanced */
 .progress {
     border-radius: var(--radius-sm);
     height: 8px;
     background-color: var(--bg-secondary);
     overflow: hidden;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
 }
 
 .progress-bar {
     border-radius: var(--radius-sm);
 }
 
-/* GitHub Quick action list */
+/* GitHub Quick action list - Enhanced */
 .list-group-item {
     border: 1px solid var(--border-default);
     border-radius: var(--radius-sm);
     margin-bottom: 8px;
     transition: all 0.2s ease;
     padding: 16px;
+    background: var(--card-bg);
+    box-shadow: var(--shadow-sm);
 }
 
 .list-group-item:hover {
     background-color: var(--bg-secondary);
-    transform: none;
-    box-shadow: none;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
 }
 
 .list-group-item:last-child {
     margin-bottom: 0;
-}
-
-/* Container improvements */
-.container {
-    max-width: 100%;
-    padding-left: 16px;
-    padding-right: 16px;
-}
-
-@media (min-width: 1400px) {
-    .container {
-        padding-left: 32px;
-        padding-right: 32px;
-    }
 }
 
 /* Responsive improvements */
@@ -675,12 +714,13 @@ p, .card-text {
     transform: scale(1.1);
 }
 
-/* Bootstrap component theming for GitHub style */
+/* Bootstrap component theming for GitHub style - Enhanced */
 .modal-content {
     background-color: var(--card-bg);
     border-color: var(--border-default);
     color: var(--text-primary);
     border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
 }
 
 .modal-header {
@@ -723,7 +763,7 @@ p, .card-text {
     font-size: 14px;
 }
 
-/* GitHub-style badges */
+/* GitHub-style badges - Enhanced */
 .badge {
     font-weight: 500;
     padding: 2px 7px;
@@ -731,6 +771,7 @@ p, .card-text {
     font-size: 12px;
     line-height: 18px;
     display: inline-block;
+    transition: background-color 0.2s ease;
 }
 
 .badge-primary {
@@ -770,6 +811,7 @@ p, .card-text {
 a {
     color: var(--accent-fg);
     text-decoration: none;
+    transition: color 0.2s ease;
 }
 
 a:hover {
@@ -787,13 +829,14 @@ code {
     font-size: 12px;
 }
 
-/* GitHub-style Jumbotron for index page */
+/* GitHub-style Jumbotron for index page - Enhanced */
 .jumbotron {
     background-color: var(--card-bg);
     border: 1px solid var(--border-default);
     color: var(--text-primary);
     border-radius: var(--radius-md);
     padding: 32px;
+    box-shadow: var(--shadow-sm);
 }
 
 .jumbotron .lead {
@@ -808,7 +851,7 @@ hr {
     margin: 24px 0;
 }
 
-/* GitHub-style avatars */
+/* GitHub-style avatars - Enhanced */
 .avatar {
     border-radius: 50%;
     display: inline-block;
@@ -817,6 +860,11 @@ hr {
     vertical-align: middle;
     flex-shrink: 0;
     box-shadow: 0 0 0 1px var(--border-default);
+    transition: box-shadow 0.2s ease;
+}
+
+.avatar:hover {
+    box-shadow: 0 0 0 2px var(--accent-color);
 }
 
 .avatar-sm {
@@ -834,7 +882,7 @@ hr {
     height: 48px;
 }
 
-/* GitHub-style labels */
+/* GitHub-style labels - Enhanced */
 .label {
     display: inline-block;
     padding: 0 7px;
@@ -843,6 +891,7 @@ hr {
     line-height: 18px;
     border-radius: 2em;
     border: 1px solid transparent;
+    transition: background-color 0.2s ease;
 }
 
 .label-primary {
@@ -869,7 +918,7 @@ hr {
     background-color: rgba(207, 34, 46, 0.1);
 }
 
-/* GitHub-style state indicators */
+/* GitHub-style state indicators - Enhanced */
 .State {
     display: inline-block;
     padding: 4px 8px;
@@ -880,6 +929,7 @@ hr {
     border: 1px solid;
     text-align: center;
     white-space: nowrap;
+    transition: background-color 0.2s ease;
 }
 
 .State--open {

@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from app.controllers.auth import admin_required
 from app.models.template import Template
 from app.views.template_view import TemplateView
+from app.services.audit_service import AuditService
 from bson import ObjectId
 
 template = Blueprint('template', __name__, url_prefix='/templates')
@@ -36,6 +37,12 @@ def create_template():
         success, message = Template.create(name, description, content, status)
         
         if success:
+            # Log template creation in audit trail
+            AuditService.log_template_action('create', message, {
+                'name': name,
+                'description': description,
+                'status': status
+            })
             flash('Template created successfully', 'success')
             return redirect(url_for('template.list_templates'))
         else:
@@ -65,6 +72,12 @@ def edit_template(template_id):
         success, message = Template.update(template_id, data)
         
         if success:
+            # Log template update in audit trail
+            AuditService.log_template_action('update', template_id, {
+                'name': data.get('name'),
+                'description': data.get('description'),
+                'status': data.get('status')
+            })
             flash('Template updated successfully', 'success')
             return redirect(url_for('template.list_templates'))
         else:
@@ -78,9 +91,15 @@ def edit_template(template_id):
 def delete_template(template_id):
     """Delete a template"""
     if request.method == 'POST':
+        # Get template data before deletion for audit log
+        template_data = Template.get_by_id(template_id)
+        template_name = template_data.get('name', 'unknown') if template_data else 'unknown'
+        
         success, message = Template.delete(template_id)
         
         if success:
+            # Log template deletion in audit trail
+            AuditService.log_template_action('delete', template_id, {'name': template_name})
             flash('Template deleted successfully', 'success')
         else:
             flash(f'Error deleting template: {message}', 'danger')

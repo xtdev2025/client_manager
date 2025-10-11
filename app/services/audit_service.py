@@ -155,6 +155,52 @@ class AuditService:
         )
 
     @staticmethod
+    def log_template_action(
+        action: str, template_id: Optional[str] = None,
+        details: Optional[Dict[str, Any]] = None
+    ) -> bool:
+        """
+        Log a template-related action.
+
+        Args:
+            action: The action performed
+            template_id: The template ID affected
+            details: Optional additional details
+
+        Returns:
+            bool indicating if logging succeeded
+        """
+        return AuditService.log_action(
+            action=action,
+            entity_type='template',
+            entity_id=template_id,
+            details=details
+        )
+
+    @staticmethod
+    def log_info_action(
+        action: str, info_id: Optional[str] = None,
+        details: Optional[Dict[str, Any]] = None
+    ) -> bool:
+        """
+        Log an info-related action.
+
+        Args:
+            action: The action performed
+            info_id: The info ID affected
+            details: Optional additional details
+
+        Returns:
+            bool indicating if logging succeeded
+        """
+        return AuditService.log_action(
+            action=action,
+            entity_type='info',
+            entity_id=info_id,
+            details=details
+        )
+
+    @staticmethod
     def get_recent_logs(
         limit: int = 100, entity_type: Optional[str] = None,
         user_id: Optional[str] = None, action: Optional[str] = None,
