@@ -1,0 +1,293 @@
+{% extends "client_layout.html" %}
+
+{% block title %}Contador de Cliques - Client Manager{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="mb-1">
+                    <i class="fas fa-chart-line text-primary me-2"></i>Contador de Cliques
+                </h2>
+                <p class="text-muted mb-0">Análise de cliques nos seus domínios</p>
+            </div>
+            <div>
+                <!-- Period Filter -->
+                <div class="btn-group" role="group">
+                    <a href="{{ url_for('client_domain.click_stats', days=7) }}" 
+                       class="btn btn-sm btn-{{ 'primary' if days == 7 else 'outline-primary' }}">
+                        7 dias
+                    </a>
+                    <a href="{{ url_for('client_domain.click_stats', days=30) }}" 
+                       class="btn btn-sm btn-{{ 'primary' if days == 30 else 'outline-primary' }}">
+                        30 dias
+                    </a>
+                    <a href="{{ url_for('client_domain.click_stats', days=90) }}" 
+                       class="btn btn-sm btn-{{ 'primary' if days == 90 else 'outline-primary' }}">
+                        90 dias
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Total Statistics -->
+<div class="row mb-4">
+    <div class="col-lg-4 col-md-6 mb-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1 opacity-75">Total de Cliques</h6>
+                        <h2 class="mb-0">{{ total_clicks }}</h2>
+                    </div>
+                    <div>
+                        <i class="fas fa-mouse-pointer fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4 col-md-6 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1 opacity-75">Domínios Ativos</h6>
+                        <h2 class="mb-0">{{ client_domains|length }}</h2>
+                    </div>
+                    <div>
+                        <i class="fas fa-globe fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4 col-md-6 mb-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1 opacity-75">Período</h6>
+                        <h2 class="mb-0">{{ days }} dias</h2>
+                    </div>
+                    <div>
+                        <i class="fas fa-calendar fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Click Statistics by Domain -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>Estatísticas por Domínio
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if click_stats|length == 0 %}
+                <div class="text-center py-5">
+                    <i class="fas fa-chart-line fa-4x text-muted mb-3"></i>
+                    <h5 class="text-muted mb-2">Nenhum clique registrado</h5>
+                    <p class="text-muted">Ainda não há cliques registrados nos seus domínios neste período.</p>
+                </div>
+                {% else %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-sitemap me-2"></i>Subdomínio</th>
+                                <th><i class="fas fa-server me-2"></i>Domínio</th>
+                                <th class="text-center"><i class="fas fa-mouse-pointer me-2"></i>Total Cliques</th>
+                                <th class="text-center"><i class="fas fa-users me-2"></i>Visitantes Únicos</th>
+                                <th><i class="fas fa-clock me-2"></i>Último Clique</th>
+                                <th class="text-end">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for stat in click_stats %}
+                            <tr>
+                                <td>
+                                    <code class="text-primary">{{ stat.subdomain }}</code>
+                                </td>
+                                <td>{{ stat.domain_name }}</td>
+                                <td class="text-center">
+                                    <span class="badge bg-primary px-3 py-2">
+                                        {{ stat.total_clicks }}
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-success px-3 py-2">
+                                        {{ stat.unique_visitors }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        {{ stat.last_click.strftime('%d/%m/%Y %H:%M') if stat.last_click else 'N/D' }}
+                                    </small>
+                                </td>
+                                <td class="text-end">
+                                    <a href="{{ url_for('client_domain.click_stats', domain_id=stat.domain_id, days=days) }}" 
+                                       class="btn btn-sm btn-outline-info">
+                                        <i class="fas fa-eye me-1"></i>Detalhes
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Click Chart -->
+{% if clicks_by_date|length > 0 %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-area me-2"></i>Gráfico de Cliques por Data
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="clicksChart" height="80"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Detailed Clicks (if domain selected) -->
+{% if detailed_clicks|length > 0 %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2"></i>Detalhes de Cliques
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-calendar me-1"></i>Data/Hora</th>
+                                <th><i class="fas fa-globe me-1"></i>IP</th>
+                                <th><i class="fas fa-desktop me-1"></i>User Agent</th>
+                                <th><i class="fas fa-link me-1"></i>Referrer</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for click in detailed_clicks[:100] %}
+                            <tr>
+                                <td>
+                                    <small>{{ click.timestamp.strftime('%d/%m/%Y %H:%M:%S') }}</small>
+                                </td>
+                                <td>
+                                    <code>{{ click.ip_address if click.ip_address else 'N/D' }}</code>
+                                </td>
+                                <td>
+                                    <small class="text-muted text-truncate" style="max-width: 300px; display: inline-block;" title="{{ click.user_agent }}">
+                                        {{ click.user_agent[:50] if click.user_agent else 'N/D' }}{{ '...' if click.user_agent and click.user_agent|length > 50 else '' }}
+                                    </small>
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ click.referer if click.referer else 'Direto' }}</small>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% if detailed_clicks|length > 100 %}
+                <div class="text-center mt-3">
+                    <small class="text-muted">Mostrando os 100 cliques mais recentes de {{ detailed_clicks|length }} total</small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+{% if clicks_by_date|length > 0 %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('clicksChart').getContext('2d');
+    
+    const data = {
+        labels: [
+            {% for item in clicks_by_date %}
+            '{{ item._id }}',
+            {% endfor %}
+        ],
+        datasets: [{
+            label: 'Cliques',
+            data: [
+                {% for item in clicks_by_date %}
+                {{ item.clicks }},
+                {% endfor %}
+            ],
+            backgroundColor: 'rgba(9, 105, 218, 0.2)',
+            borderColor: 'rgba(9, 105, 218, 1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4
+        }]
+    };
+    
+    const config = {
+        type: 'line',
+        data: data,
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            },
+            interaction: {
+                mode: 'nearest',
+                axis: 'x',
+                intersect: false
+            }
+        }
+    };
+    
+    new Chart(ctx, config);
+});
+</script>
+{% endif %}
+{% endblock %}

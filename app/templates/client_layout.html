@@ -99,7 +99,7 @@
                 <i class="fas fa-globe me-2"></i>Meus Domínios
             </div>
             
-            <a href="#domains-section" class="sidebar-menu-item smooth-scroll">
+            <a href="{{ url_for('client_domain.my_domains') }}" class="sidebar-menu-item">
                 <i class="fas fa-list"></i>
                 <span>Ver Domínios</span>
                 <span class="badge bg-primary ms-auto">{{ client_domains|length if client_domains is defined else 0 }}</span>
@@ -110,7 +110,7 @@
                 <i class="fas fa-chart-bar me-2"></i>Estatísticas
             </div>
             
-            <a href="#" class="sidebar-menu-item">
+            <a href="{{ url_for('client_domain.click_stats') }}" class="sidebar-menu-item">
                 <i class="fas fa-mouse-pointer"></i>
                 <span>Contador de Cliques</span>
                 <span class="badge bg-info ms-auto">0</span>
