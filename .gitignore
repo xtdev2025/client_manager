@@ -72,3 +72,5 @@ data/
 
 # Other
 .DS_Store
+.gemini/
+gha-creds-*.json
