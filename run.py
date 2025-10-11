@@ -9,7 +9,7 @@ def print_startup_info():
     print("🚀 CLIENT MANAGER - Sistema de Gerenciamento de Clientes")
     print("="*80)
     print("\n📍 Servidor rodando em: http://localhost:5000")
-    print("\n📚 DOCUMENTAÇÃO DA API:")
+    print("\n📚 DOCUMENTAÇÃO DA API (63 Endpoints Documentados):")
     print("   • Swagger UI (Interativo): http://localhost:5000/api/docs")
     print("   • OpenAPI JSON Spec:       http://localhost:5000/api/swagger.json")
     print("   • Documentação Completa:   docs/API_DOCUMENTATION.md")
