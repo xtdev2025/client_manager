@@ -1,290 +1,308 @@
-/* Main custom styles for Client Manager - Vercel/GitHub inspired */
+/* GitHub-inspired CSS for Client Manager */
 
-/* CSS Variables for theming */
+/* CSS Variables for GitHub-like theming */
 :root {
-    --primary-color: #0070f3;
-    --secondary-color: #7928ca;
-    --success-color: #0070f3;
-    --danger-color: #e00;
-    --warning-color: #f5a623;
-    --info-color: #00a8cc;
-    --dark-color: #111;
-    --light-color: #fafafa;
-    --border-color: #eaeaea;
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
-    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
-    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
-    --radius-sm: 8px;
+    /* GitHub Light Theme Colors */
+    --primary-color: #0969da;
+    --secondary-color: #656d76;
+    --success-color: #1a7f37;
+    --danger-color: #cf222e;
+    --warning-color: #9a6700;
+    --info-color: #0969da;
+    --dark-color: #0d1117;
+    --light-color: #f6f8fa;
+    --border-color: #d0d7de;
+    --shadow-sm: 0 1px 0 rgba(27,31,36,0.04);
+    --shadow-md: 0 3px 6px rgba(140,149,159,0.15);
+    --shadow-lg: 0 8px 24px rgba(140,149,159,0.2);
+    --radius-sm: 6px;
     --radius-md: 12px;
     --radius-lg: 16px;
     
     /* Light theme colors */
     --bg-primary: #ffffff;
-    --bg-secondary: #fafafa;
-    --text-primary: #111827;
-    --text-secondary: #6b7280;
-    --text-muted: #9ca3af;
-    --navbar-bg: #ffffff;
-    --navbar-text: #111827;
+    --bg-secondary: #f6f8fa;
+    --text-primary: #1f2328;
+    --text-secondary: #656d76;
+    --text-muted: #656d76;
+    --navbar-bg: #f6f8fa;
+    --navbar-text: #1f2328;
     --card-bg: #ffffff;
-    --footer-bg: #f9fafb;
+    --footer-bg: #f6f8fa;
+    --input-bg: #ffffff;
+    --border-default: #d0d7de;
+    --border-muted: #d8dee4;
+    --accent-color: #0969da;
+    --accent-fg: #0969da;
+    --accent-emphasis: #0969da;
+    --neutral-emphasis: #656d76;
+    --neutral-muted: rgba(175,184,193,0.2);
 }
 
-/* Dark theme colors */
+/* Dark theme colors - GitHub Dark */
 [data-theme="dark"] {
     --bg-primary: #0d1117;
-    --bg-secondary: #161b22;
+    --bg-secondary: #010409;
     --text-primary: #e6edf3;
-    --text-secondary: #8b949e;
-    --text-muted: #6e7681;
+    --text-secondary: #7d8590;
+    --text-muted: #7d8590;
     --border-color: #30363d;
     --navbar-bg: #161b22;
-    --navbar-text: #e6edf3;
+    --navbar-text: #f0f6fc;
     --card-bg: #0d1117;
     --footer-bg: #0d1117;
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
-    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
-    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+    --input-bg: #0d1117;
+    --border-default: #30363d;
+    --border-muted: #21262d;
+    --accent-color: #1f6feb;
+    --accent-fg: #4493f8;
+    --accent-emphasis: #1f6feb;
+    --neutral-emphasis: #7d8590;
+    --neutral-muted: rgba(110,118,129,0.4);
+    --shadow-sm: 0 1px 0 rgba(27,31,36,0.1);
+    --shadow-md: 0 3px 6px rgba(110,118,129,0.15);
+    --shadow-lg: 0 8px 24px rgba(110,118,129,0.2);
 }
 
-/* General styles */
+/* General styles - GitHub typography and spacing */
 body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    background: var(--bg-secondary);
+    background: var(--bg-primary);
     color: var(--text-primary);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-    font-size: 0.875rem;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+    font-size: 14px;
+    line-height: 1.5;
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 h1 {
-    font-size: 1.75rem;
+    font-size: 24px;
     font-weight: 600;
+    line-height: 1.25;
 }
 
 h2 {
-    font-size: 1.5rem;
+    font-size: 20px;
     font-weight: 600;
+    line-height: 1.25;
 }
 
 h3 {
-    font-size: 1.25rem;
+    font-size: 16px;
     font-weight: 600;
+    line-height: 1.25;
 }
 
 h4 {
-    font-size: 1.125rem;
+    font-size: 14px;
     font-weight: 600;
 }
 
 h5 {
-    font-size: 1rem;
+    font-size: 12px;
     font-weight: 600;
 }
 
 p, .card-text {
-    font-size: 0.875rem;
+    font-size: 14px;
+    line-height: 1.5;
 }
 
 .footer {
     margin-top: auto;
-    border-top: 1px solid var(--border-color);
+    border-top: 1px solid var(--border-default);
     background: var(--footer-bg);
     color: var(--text-secondary);
+    padding: 24px 0;
+    font-size: 12px;
 }
 
-/* Modern Card styles */
+/* GitHub-style Card styles */
 .card {
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--border-default);
     border-radius: var(--radius-md);
-    box-shadow: var(--shadow-sm);
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     background: var(--card-bg);
     overflow: hidden;
+    transition: border-color 0.2s ease;
 }
 
 .card:hover {
-    box-shadow: var(--shadow-md);
-    transform: translateY(-2px);
+    border-color: var(--border-color);
 }
 
 .card-header {
     background: var(--card-bg);
-    border-bottom: 1px solid var(--border-color);
-    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border-default);
+    padding: 16px;
     font-weight: 600;
-    font-size: 0.9375rem;
+    font-size: 14px;
 }
 
 .card-body {
-    padding: 1.25rem;
+    padding: 16px;
 }
 
 .card-title {
-    font-size: 0.9375rem;
-    margin-bottom: 0.5rem;
+    font-size: 14px;
+    margin-bottom: 8px;
+    font-weight: 600;
 }
 
-/* Stat cards with gradient backgrounds */
+/* GitHub-style Stat cards */
 .stat-card {
     position: relative;
-    border: none;
-    border-radius: var(--radius-lg);
-    padding: 1.5rem;
-    color: white;
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    color: var(--text-primary);
+    background: var(--card-bg);
     overflow: hidden;
-    transition: all 0.3s ease;
-}
-
-.stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
-    pointer-events: none;
+    transition: border-color 0.2s ease;
 }
 
 .stat-card:hover {
-    transform: translateY(-4px) scale(1.02);
-    box-shadow: var(--shadow-lg);
+    border-color: var(--border-color);
 }
 
 .stat-card-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-top: 3px solid var(--primary-color);
 }
 
 .stat-card-success {
-    background: linear-gradient(135deg, #0ba360 0%, #3cba92 100%);
+    border-top: 3px solid var(--success-color);
 }
 
 .stat-card-warning {
-    background: linear-gradient(135deg, #f2994a 0%, #f2c94c 100%);
+    border-top: 3px solid var(--warning-color);
 }
 
 .stat-card-info {
-    background: linear-gradient(135deg, #00b4db 0%, #0083b0 100%);
+    border-top: 3px solid var(--info-color);
 }
 
 .stat-card-danger {
-    background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+    border-top: 3px solid var(--danger-color);
 }
 
 .stat-number {
-    font-size: 2rem;
+    font-size: 32px;
     font-weight: 700;
     line-height: 1;
-    margin: 0.5rem 0;
+    margin: 8px 0;
+    color: var(--text-primary);
 }
 
 .stat-label {
-    font-size: 0.75rem;
-    opacity: 0.9;
+    font-size: 12px;
+    color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     font-weight: 500;
 }
 
 .stat-change {
-    font-size: 0.75rem;
-    margin-top: 0.5rem;
+    font-size: 12px;
+    margin-top: 8px;
     display: inline-flex;
     align-items: center;
-    gap: 0.25rem;
+    gap: 4px;
 }
 
 .stat-change.positive {
-    color: #10b981;
+    color: var(--success-color);
 }
 
 .stat-change.negative {
-    color: #ef4444;
+    color: var(--danger-color);
 }
 
-/* Form styles */
+/* GitHub Form styles */
 .form-control, .form-select {
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--border-default);
     border-radius: var(--radius-sm);
-    padding: 0.5rem 0.75rem;
-    font-size: 0.875rem;
-    transition: all 0.2s ease;
-    background-color: var(--bg-primary);
+    padding: 5px 12px;
+    font-size: 14px;
+    line-height: 20px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    background-color: var(--input-bg);
     color: var(--text-primary);
-}
-
-.form-control:focus, .form-select:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.1);
-    outline: none;
-    background-color: var(--bg-primary);
-}
-
-.form-label {
-    font-size: 0.8125rem;
-    font-weight: 500;
-    margin-bottom: 0.375rem;
-    color: var(--text-primary);
-}
-
-/* Modern Button styles */
-.btn {
-    border-radius: var(--radius-sm);
-    padding: 0.5rem 1rem;
-    font-weight: 500;
-    font-size: 0.875rem;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    border: none;
-}
-
-.btn:hover {
-    transform: translateY(-1px);
     box-shadow: var(--shadow-sm);
 }
 
+.form-control:focus, .form-select:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.3);
+    outline: none;
+    background-color: var(--input-bg);
+}
+
+.form-label {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+}
+
+/* GitHub Button styles */
+.btn {
+    border-radius: var(--radius-sm);
+    padding: 5px 16px;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 20px;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    border: 1px solid;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.btn:hover {
+    transform: none;
+    box-shadow: none;
+}
+
 .btn:active {
-    transform: translateY(0);
+    transform: none;
 }
 
 .btn-sm {
-    padding: 0.375rem 0.75rem;
-    font-size: 0.8125rem;
+    padding: 3px 12px;
+    font-size: 12px;
+    line-height: 20px;
 }
 
 .btn-primary {
-    background: var(--primary-color);
+    background-color: var(--success-color);
+    border-color: rgba(27,31,36,0.15);
+    color: #ffffff;
 }
 
 .btn-primary:hover {
-    background: #0051c7;
+    background-color: #1a7f37;
+    border-color: rgba(27,31,36,0.15);
 }
 
-/* Button outline styles for dark mode */
+/* Button outline styles */
 .btn-outline-primary {
     color: var(--primary-color);
-    border-color: var(--primary-color);
+    border-color: var(--border-default);
+    background-color: var(--card-bg);
 }
 
 .btn-outline-primary:hover {
-    background: var(--primary-color);
-    border-color: var(--primary-color);
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+    color: #ffffff;
 }
 
-.btn-outline-warning,
-.btn-outline-info,
-.btn-outline-danger,
-.btn-outline-success,
-.btn-outline-secondary {
-    border-width: 1px;
-}
-
-/* Light button in dark mode */
 .btn-light {
     background-color: var(--bg-secondary);
-    border-color: var(--border-color);
+    border-color: var(--border-default);
     color: var(--text-primary);
 }
 
@@ -294,10 +312,9 @@ p, .card-text {
     color: var(--text-primary);
 }
 
-/* Secondary button */
 .btn-secondary {
     background-color: var(--bg-secondary);
-    border-color: var(--border-color);
+    border-color: var(--border-default);
     color: var(--text-primary);
 }
 
@@ -306,28 +323,32 @@ p, .card-text {
     color: var(--text-primary);
 }
 
-/* Table styles */
+/* GitHub Table styles */
 .table {
     vertical-align: middle;
-    border-color: var(--border-color);
-    font-size: 0.8125rem;
+    border-color: var(--border-default);
+    font-size: 12px;
     color: var(--text-primary);
+    border-spacing: 0;
+    border-collapse: separate;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
 }
 
 .table th {
     font-weight: 600;
     background-color: var(--bg-secondary);
-    border-color: var(--border-color);
-    text-transform: uppercase;
-    font-size: 0.6875rem;
-    letter-spacing: 0.5px;
+    border-color: var(--border-default);
+    font-size: 12px;
     color: var(--text-secondary);
-    padding: 0.625rem 0.75rem;
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--border-default);
 }
 
 .table td {
-    border-color: var(--border-color);
-    padding: 0.625rem 0.75rem;
+    border-color: var(--border-default);
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--border-default);
 }
 
 .table-striped tbody tr:nth-of-type(odd) {
@@ -338,19 +359,13 @@ p, .card-text {
     background-color: var(--bg-secondary);
 }
 
-/* Badge styles - removed, handled in Bootstrap component theming section */
-
-/* Navbar customization */
+/* GitHub Navbar customization */
 .navbar {
     background-color: var(--navbar-bg) !important;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-default);
     box-shadow: none;
-    padding: 0.75rem 0;
+    padding: 16px 0;
     transition: background-color 0.3s ease, border-color 0.3s ease;
-}
-
-[data-theme="dark"] .navbar {
-    border-color: rgba(48, 54, 61, 0.9);
 }
 
 .navbar-minimal {
@@ -364,14 +379,13 @@ p, .card-text {
 
 .navbar-brand {
     font-weight: 600;
-    font-size: 1.05rem;
-    letter-spacing: 0.01em;
+    font-size: 16px;
     color: var(--navbar-text);
 }
 
 .nav-links {
     display: flex;
-    gap: 0.25rem;
+    gap: 8px;
 }
 
 .navbar .nav-link {
@@ -379,50 +393,51 @@ p, .card-text {
     border-radius: var(--radius-sm);
     color: var(--navbar-text);
     display: inline-flex;
-    font-size: 0.875rem;
-    gap: 0.5rem;
-    padding: 0.5rem 0.85rem;
+    font-size: 14px;
+    gap: 8px;
+    padding: 8px 12px;
     transition: color 0.2s ease, background-color 0.2s ease;
+    text-decoration: none;
 }
 
 .navbar .nav-link:hover,
 .navbar .nav-link:focus {
-    color: var(--primary-color);
-    background-color: rgba(0, 112, 243, 0.08);
+    color: var(--text-primary);
+    background-color: var(--neutral-muted);
     text-decoration: none;
 }
 
 .navbar .nav-link.active {
-    color: var(--primary-color);
-    background-color: rgba(0, 112, 243, 0.12);
+    color: var(--text-primary);
+    background-color: var(--neutral-muted);
     font-weight: 600;
 }
 
 .navbar-actions {
-    gap: 0.75rem;
+    gap: 16px;
 }
 
 .nav-expiry-pill {
     align-items: center;
     background-color: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 999px;
+    border: 1px solid var(--border-default);
+    border-radius: 2em;
     color: var(--navbar-text);
     display: inline-flex;
-    font-size: 0.75rem;
+    font-size: 12px;
     font-weight: 500;
-    gap: 0.4rem;
-    padding: 0.35rem 0.8rem;
+    gap: 4px;
+    padding: 2px 8px;
     white-space: nowrap;
 }
 
 .nav-expiry-pill.expiring-soon {
-    border-color: rgba(245, 166, 35, 0.45);
+    border-color: rgba(154, 103, 0, 0.4);
     color: var(--warning-color);
 }
 
 .nav-expiry-pill.expired {
-    border-color: rgba(224, 0, 0, 0.45);
+    border-color: rgba(207, 34, 46, 0.4);
     color: var(--danger-color);
 }
 
@@ -430,49 +445,35 @@ p, .card-text {
     color: var(--text-secondary);
 }
 
-[data-theme="dark"] .nav-expiry-pill {
-    background-color: rgba(255, 255, 255, 0.04);
-    border-color: rgba(255, 255, 255, 0.12);
-}
-
 .theme-toggle {
     background: transparent;
-    border: none;
+    border: 1px solid var(--border-default);
     border-radius: var(--radius-sm);
     color: var(--navbar-text);
     cursor: pointer;
     display: inline-flex;
-    font-size: 1rem;
-    padding: 0.35rem;
-    transition: color 0.2s ease, background-color 0.2s ease;
+    font-size: 14px;
+    padding: 8px;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .theme-toggle:hover,
 .theme-toggle:focus-visible {
-    background-color: rgba(0, 0, 0, 0.06);
-    color: var(--primary-color);
-}
-
-[data-theme="dark"] .theme-toggle:hover,
-[data-theme="dark"] .theme-toggle:focus-visible {
-    background-color: rgba(255, 255, 255, 0.08);
+    background-color: var(--neutral-muted);
+    color: var(--text-primary);
 }
 
 .navbar .navbar-toggler {
     border-radius: var(--radius-sm);
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-default);
     color: var(--navbar-text);
-    padding: 0.4rem 0.6rem;
+    padding: 8px;
     transition: border-color 0.2s ease;
-}
-
-[data-theme="dark"] .navbar .navbar-toggler {
-    border-color: rgba(255, 255, 255, 0.2);
 }
 
 .navbar .navbar-toggler:focus,
 .navbar .navbar-toggler:hover {
-    box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.15);
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.3);
     outline: none;
 }
 
@@ -486,44 +487,44 @@ p, .card-text {
 }
 
 .user-menu .nav-user-icon {
-    font-size: 1.35rem;
+    font-size: 20px;
     color: var(--primary-color);
 }
 
 .user-menu .dropdown-menu {
     background: var(--card-bg);
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--border-default);
     border-radius: var(--radius-md);
-    box-shadow: var(--shadow-sm);
-    min-width: 200px;
-    padding: 0.5rem 0;
+    box-shadow: var(--shadow-lg);
+    min-width: 180px;
+    padding: 8px 0;
 }
 
 .navbar .dropdown-item {
     align-items: center;
     color: var(--text-primary);
     display: flex;
-    font-size: 0.85rem;
-    gap: 0.5rem;
-    padding: 0.45rem 1rem;
+    font-size: 14px;
+    gap: 8px;
+    padding: 4px 8px 4px 16px;
     transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .navbar .dropdown-item:hover {
-    background-color: rgba(0, 112, 243, 0.1);
-    color: var(--primary-color);
+    background-color: var(--accent-color);
+    color: #ffffff;
 }
 
 .navbar .dropdown-divider {
-    margin: 0.4rem 0.75rem;
-    border-color: var(--border-color);
+    margin: 8px 0;
+    border-color: var(--border-default);
 }
 
 @media (max-width: 991.98px) {
     .nav-links {
         flex-direction: column;
-        gap: 0.25rem;
-        padding-top: 1rem;
+        gap: 4px;
+        padding-top: 16px;
     }
 
     .navbar .nav-link {
@@ -534,92 +535,120 @@ p, .card-text {
     .navbar-actions {
         width: 100%;
         justify-content: flex-start;
-        margin-top: 1rem;
+        margin-top: 16px;
     }
 }
 
-/* Alert styles */
+/* GitHub Alert styles */
 .alert {
     border-radius: var(--radius-sm);
+    border: 1px solid;
     border-left-width: 4px;
     box-shadow: var(--shadow-sm);
-    font-size: 0.875rem;
+    font-size: 14px;
+    padding: 16px;
 }
 
-/* Text color utilities for dark mode */
+.alert-primary {
+    border-color: var(--primary-color);
+    background-color: rgba(9, 105, 218, 0.1);
+    color: var(--text-primary);
+}
+
+.alert-success {
+    border-color: var(--success-color);
+    background-color: rgba(26, 127, 55, 0.1);
+    color: var(--text-primary);
+}
+
+.alert-warning {
+    border-color: var(--warning-color);
+    background-color: rgba(154, 103, 0, 0.1);
+    color: var(--text-primary);
+}
+
+.alert-danger {
+    border-color: var(--danger-color);
+    background-color: rgba(207, 34, 46, 0.1);
+    color: var(--text-primary);
+}
+
+/* Text color utilities */
 .text-muted {
     color: var(--text-muted) !important;
 }
 
-/* Progress bars */
+/* GitHub Progress bars */
 .progress {
     border-radius: var(--radius-sm);
     height: 8px;
-    background-color: #e5e7eb;
+    background-color: var(--bg-secondary);
+    overflow: hidden;
 }
 
 .progress-bar {
     border-radius: var(--radius-sm);
 }
 
-/* Quick action list */
+/* GitHub Quick action list */
 .list-group-item {
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--border-default);
     border-radius: var(--radius-sm);
-    margin-bottom: 0.5rem;
+    margin-bottom: 8px;
     transition: all 0.2s ease;
+    padding: 16px;
 }
 
 .list-group-item:hover {
-    background-color: #f9fafb;
-    transform: translateX(4px);
-    box-shadow: var(--shadow-sm);
+    background-color: var(--bg-secondary);
+    transform: none;
+    box-shadow: none;
 }
 
 .list-group-item:last-child {
     margin-bottom: 0;
 }
 
-/* Container improvements - Full width with padding */
+/* Container improvements */
 .container {
     max-width: 100%;
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
+    padding-left: 16px;
+    padding-right: 16px;
 }
 
 @media (min-width: 1400px) {
     .container {
-        padding-left: 3rem;
-        padding-right: 3rem;
+        padding-left: 32px;
+        padding-right: 32px;
     }
 }
 
 /* Responsive improvements */
 @media (max-width: 768px) {
     .stat-number {
-        font-size: 1.5rem;
+        font-size: 24px;
     }
     
     .card-body {
-        padding: 1rem;
+        padding: 16px;
     }
     
     h1 {
-        font-size: 1.5rem;
+        font-size: 20px;
     }
     
     h2 {
-        font-size: 1.25rem;
+        font-size: 18px;
     }
     
     .container {
-        padding-left: 1rem;
-        padding-right: 1rem;
+        padding-left: 16px;
+        padding-right: 16px;
     }
     
     .navbar .nav-link {
-        font-size: 0.8125rem;
-        padding: 0.375rem 0.75rem;
+        font-size: 14px;
+        padding: 8px 12px;
     }
 }
 
@@ -646,55 +675,88 @@ p, .card-text {
     transform: scale(1.1);
 }
 
-/* Bootstrap component theming for dark mode */
+/* Bootstrap component theming for GitHub style */
 .modal-content {
     background-color: var(--card-bg);
-    border-color: var(--border-color);
+    border-color: var(--border-default);
     color: var(--text-primary);
+    border-radius: var(--radius-md);
 }
 
 .modal-header {
-    border-bottom-color: var(--border-color);
+    border-bottom-color: var(--border-default);
     background-color: var(--card-bg);
+    padding: 16px;
 }
 
 .modal-footer {
-    border-top-color: var(--border-color);
+    border-top-color: var(--border-default);
     background-color: var(--card-bg);
+    padding: 16px;
 }
 
 .modal-title {
     color: var(--text-primary);
+    font-weight: 600;
 }
 
 .modal-body {
     color: var(--text-primary);
+    padding: 16px;
 }
 
 /* Button group theming */
 .btn-group .btn {
-    border-color: var(--border-color);
+    border-color: var(--border-default);
 }
 
 /* Dropdown menu theming */
 .dropdown-divider {
-    border-top-color: var(--border-color);
+    border-top-color: var(--border-default);
 }
 
 /* Input group theming */
 .input-group-text {
     background-color: var(--bg-secondary);
-    border-color: var(--border-color);
+    border-color: var(--border-default);
     color: var(--text-primary);
+    font-size: 14px;
 }
 
-/* Bootstrap badges with theme support */
+/* GitHub-style badges */
 .badge {
     font-weight: 500;
-    padding: 0.3em 0.65em;
-    border-radius: 6px;
-    font-size: 0.6875rem;
-    letter-spacing: 0.3px;
+    padding: 2px 7px;
+    border-radius: 2em;
+    font-size: 12px;
+    line-height: 18px;
+    display: inline-block;
+}
+
+.badge-primary {
+    background-color: var(--primary-color);
+    color: #ffffff;
+}
+
+.badge-success {
+    background-color: var(--success-color);
+    color: #ffffff;
+}
+
+.badge-warning {
+    background-color: var(--warning-color);
+    color: #ffffff;
+}
+
+.badge-danger {
+    background-color: var(--danger-color);
+    color: #ffffff;
+}
+
+.badge-secondary {
+    background-color: var(--bg-secondary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-default);
 }
 
 /* Page title improvements */
@@ -704,37 +766,136 @@ p, .card-text {
     color: var(--text-primary);
 }
 
-/* Link colors in dark mode */
+/* Link colors */
 a {
-    color: var(--primary-color);
+    color: var(--accent-fg);
+    text-decoration: none;
 }
 
 a:hover {
-    color: var(--primary-color);
-    opacity: 0.8;
+    color: var(--accent-fg);
+    text-decoration: underline;
 }
 
 /* Code elements in tables */
 code {
-    background-color: var(--bg-secondary);
+    background-color: var(--neutral-muted);
     color: var(--text-primary);
-    padding: 0.2em 0.4em;
-    border-radius: 3px;
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+    font-size: 12px;
 }
 
-/* Jumbotron for index page */
+/* GitHub-style Jumbotron for index page */
 .jumbotron {
     background-color: var(--card-bg);
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--border-default);
     color: var(--text-primary);
+    border-radius: var(--radius-md);
+    padding: 32px;
 }
 
 .jumbotron .lead {
     color: var(--text-secondary);
+    font-size: 20px;
 }
 
 /* HR element theming */
 hr {
-    border-color: var(--border-color);
+    border-color: var(--border-default);
     opacity: 1;
+    margin: 24px 0;
+}
+
+/* GitHub-style avatars */
+.avatar {
+    border-radius: 50%;
+    display: inline-block;
+    overflow: hidden;
+    line-height: 1;
+    vertical-align: middle;
+    flex-shrink: 0;
+    box-shadow: 0 0 0 1px var(--border-default);
+}
+
+.avatar-sm {
+    width: 20px;
+    height: 20px;
+}
+
+.avatar-md {
+    width: 32px;
+    height: 32px;
+}
+
+.avatar-lg {
+    width: 48px;
+    height: 48px;
+}
+
+/* GitHub-style labels */
+.label {
+    display: inline-block;
+    padding: 0 7px;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 18px;
+    border-radius: 2em;
+    border: 1px solid transparent;
+}
+
+.label-primary {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+    background-color: rgba(9, 105, 218, 0.1);
+}
+
+.label-success {
+    color: var(--success-color);
+    border-color: var(--success-color);
+    background-color: rgba(26, 127, 55, 0.1);
+}
+
+.label-warning {
+    color: var(--warning-color);
+    border-color: var(--warning-color);
+    background-color: rgba(154, 103, 0, 0.1);
+}
+
+.label-danger {
+    color: var(--danger-color);
+    border-color: var(--danger-color);
+    background-color: rgba(207, 34, 46, 0.1);
+}
+
+/* GitHub-style state indicators */
+.State {
+    display: inline-block;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+    border-radius: 2em;
+    border: 1px solid;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.State--open {
+    color: var(--success-color);
+    border-color: rgba(26, 127, 55, 0.4);
+    background-color: rgba(26, 127, 55, 0.1);
+}
+
+.State--closed {
+    color: var(--danger-color);
+    border-color: rgba(207, 34, 46, 0.4);
+    background-color: rgba(207, 34, 46, 0.1);
+}
+
+.State--pending {
+    color: var(--warning-color);
+    border-color: rgba(154, 103, 0, 0.4);
+    background-color: rgba(154, 103, 0, 0.1);
 }

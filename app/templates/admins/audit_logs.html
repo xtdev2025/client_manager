@@ -219,40 +219,44 @@
 
 <!-- Single Reusable Details Modal -->
 <div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="detailsModalLabel">Log Details</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <dl class="row">
-                    <dt class="col-sm-3">Timestamp:</dt>
-                    <dd class="col-sm-9" id="modal-timestamp"></dd>
-                    
-                    <dt class="col-sm-3">User ID:</dt>
-                    <dd class="col-sm-9"><code id="modal-user-id"></code></dd>
-                    
-                    <dt class="col-sm-3">Entity Type:</dt>
-                    <dd class="col-sm-9" id="modal-entity-type"></dd>
-                    
-                    <dt class="col-sm-3">Action:</dt>
-                    <dd class="col-sm-9" id="modal-action"></dd>
-                    
-                    <dt class="col-sm-3">Entity ID:</dt>
-                    <dd class="col-sm-9"><code id="modal-entity-id"></code></dd>
-                    
-                    <dt class="col-sm-3">IP Address:</dt>
-                    <dd class="col-sm-9" id="modal-ip-address"></dd>
-                    
-                    <dt class="col-sm-3">User Agent:</dt>
-                    <dd class="col-sm-9"><small id="modal-user-agent"></small></dd>
-                    
-                    <dt class="col-sm-3">Details:</dt>
-                    <dd class="col-sm-9">
-                        <pre class="bg-light p-2 rounded" id="modal-details"></pre>
-                    </dd>
-                </dl>
+                <div class="row">
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">Timestamp:</dt>
+                            <dd class="col-sm-8" id="modal-timestamp"></dd>
+                            
+                            <dt class="col-sm-4">User ID:</dt>
+                            <dd class="col-sm-8"><code id="modal-user-id" class="text-break"></code></dd>
+                            
+                            <dt class="col-sm-4">Entity Type:</dt>
+                            <dd class="col-sm-8" id="modal-entity-type"></dd>
+                            
+                            <dt class="col-sm-4">Action:</dt>
+                            <dd class="col-sm-8" id="modal-action"></dd>
+                            
+                            <dt class="col-sm-4">Entity ID:</dt>
+                            <dd class="col-sm-8"><code id="modal-entity-id" class="text-break"></code></dd>
+                            
+                            <dt class="col-sm-4">IP Address:</dt>
+                            <dd class="col-sm-8" id="modal-ip-address"></dd>
+                            
+                            <dt class="col-sm-4">User Agent:</dt>
+                            <dd class="col-sm-8"><small id="modal-user-agent" class="text-break"></small></dd>
+                        </dl>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="mb-2">Details:</h6>
+                        <!-- Monaco Editor Container -->
+                        <div id="monaco-editor" style="height: 300px; border: 1px solid #ddd; border-radius: 4px;"></div>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -261,10 +265,73 @@
     </div>
 </div>
 
+<!-- Load Monaco Editor -->
 <script>
+(function() {
+    // Load Monaco Editor loader
+    const loaderScript = document.createElement('script');
+    loaderScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js';
+    loaderScript.onload = function() {
+        // Configure Monaco after loader is ready
+        require.config({ 
+            paths: { 
+                vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' 
+            }
+        });
+    };
+    document.head.appendChild(loaderScript);
+})();
+</script>
+
+<script>
+// Monaco Editor instance
+let monacoEditor = null;
+let monacoInitialized = false;
+
 // Handle view details button clicks
 document.addEventListener('DOMContentLoaded', function() {
-    const detailsModal = new bootstrap.Modal(document.getElementById('detailsModal'));
+    const modalElement = document.getElementById('detailsModal');
+    
+    // Initialize Monaco Editor when modal is first shown
+    modalElement.addEventListener('shown.bs.modal', function() {
+        if (!monacoEditor && typeof require !== 'undefined') {
+            require(['vs/editor/editor.main'], function() {
+                if (!monacoEditor) {
+                    try {
+                        monacoEditor = monaco.editor.create(document.getElementById('monaco-editor'), {
+                            value: '{\n  "loading": "...",\n  "status": "Initializing editor..."\n}',
+                            language: 'json',
+                            theme: 'vs',
+                            readOnly: true,
+                            minimap: { enabled: false },
+                            scrollBeyondLastLine: false,
+                            fontSize: 13,
+                            lineNumbers: 'on',
+                            folding: true,
+                            automaticLayout: true,
+                            wordWrap: 'on'
+                        });
+                        monacoInitialized = true;
+                    } catch (e) {
+                        console.error('Error creating Monaco editor:', e);
+                    }
+                }
+            });
+        }
+    });
+    
+    // Cleanup Monaco Editor when modal is hidden
+    modalElement.addEventListener('hidden.bs.modal', function() {
+        if (monacoEditor) {
+            try {
+                monacoEditor.dispose();
+            } catch (e) {
+                console.error('Error disposing Monaco editor:', e);
+            }
+            monacoEditor = null;
+            monacoInitialized = false;
+        }
+    });
     
     document.querySelectorAll('.view-details-btn').forEach(button => {
         button.addEventListener('click', function() {
@@ -277,16 +344,26 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('modal-ip-address').textContent = this.dataset.ipAddress;
             document.getElementById('modal-user-agent').textContent = this.dataset.userAgent;
             
-            // Format and display details JSON
-            try {
-                const details = JSON.parse(this.dataset.details);
-                document.getElementById('modal-details').textContent = JSON.stringify(details, null, 2);
-            } catch (e) {
-                document.getElementById('modal-details').textContent = this.dataset.details;
-            }
+            // Show the modal first
+            const modalInstance = bootstrap.Modal.getOrCreateInstance(modalElement);
+            modalInstance.show();
             
-            // Show the modal
-            detailsModal.show();
+            // Wait a bit for Monaco to initialize, then set the value
+            setTimeout(function() {
+                try {
+                    const details = JSON.parse(button.dataset.details);
+                    const formattedJson = JSON.stringify(details, null, 2);
+                    
+                    if (monacoEditor && monacoInitialized) {
+                        monacoEditor.setValue(formattedJson);
+                    }
+                } catch (e) {
+                    console.error('Error parsing details:', e);
+                    if (monacoEditor && monacoInitialized) {
+                        monacoEditor.setValue(button.dataset.details || '{}');
+                    }
+                }
+            }, 500);
         });
     });
 });
