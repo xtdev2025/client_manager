@@ -1,0 +1,320 @@
+{% extends "client_layout.html" %}
+
+{% block title %}Minhas Infos - Client Manager{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="mb-1">
+                    <i class="fas fa-university text-primary me-2"></i>Minhas Informações
+                </h2>
+                <p class="text-muted mb-0">Gerencie suas informações bancárias e credenciais</p>
+            </div>
+            <div>
+                <span class="badge bg-primary fs-5 px-3 py-2">
+                    <i class="fas fa-list me-2"></i>
+                    Total: {{ counts.total }}
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Infos Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                {% if infos|length == 0 %}
+                <!-- Empty State -->
+                <div class="text-center py-5">
+                    <i class="fas fa-folder-open fa-4x text-muted mb-4 opacity-50"></i>
+                    <h4 class="text-muted mb-3">Nenhuma informação encontrada</h4>
+                    <p class="text-muted mb-4">
+                        {% if current_category != 'all' %}
+                        Não há informações na categoria "{{ current_category|replace('_', ' ')|title }}".
+                        {% else %}
+                        Você ainda não possui informações cadastradas.
+                        {% endif %}
+                    </p>
+                    <a href="{{ url_for('client_domain.my_infos', category='all') }}" class="btn btn-primary">
+                        <i class="fas fa-list me-2"></i>Ver Todas
+                    </a>
+                </div>
+                {% else %}
+                <!-- Infos Table -->
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-building me-2"></i>Agência</th>
+                                <th><i class="fas fa-credit-card me-2"></i>Conta</th>
+                                <th><i class="fas fa-dollar-sign me-2"></i>Saldo</th>
+                                <th><i class="fas fa-file-alt me-2"></i>Template</th>
+                                <th><i class="fas fa-globe me-2"></i>Domínio</th>
+                                <th class="text-center"><i class="fas fa-info-circle me-2"></i>Status</th>
+                                <th class="text-center"><i class="fas fa-tag me-2"></i>Label</th>
+                                <th><i class="fas fa-calendar me-2"></i>Criado</th>
+                                <th class="text-end">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for info in infos %}
+                            <tr>
+                                <!-- Agencia -->
+                                <td>
+                                    <strong>{{ info.agencia }}</strong>
+                                </td>
+                                
+                                <!-- Conta -->
+                                <td>
+                                    <code class="text-primary">{{ info.conta }}</code>
+                                </td>
+                                
+                                <!-- Saldo -->
+                                <td>
+                                    <span class="text-success fw-bold">
+                                        R$ {{ "%.2f"|format(info.saldo) }}
+                                    </span>
+                                </td>
+                                
+                                <!-- Template -->
+                                <td>
+                                    {% if info.template %}
+                                    <small>{{ info.template.name }}</small>
+                                    {% else %}
+                                    <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                
+                                <!-- Domain -->
+                                <td>
+                                    {% if info.domain %}
+                                    <small>{{ info.domain.name }}</small>
+                                    {% else %}
+                                    <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                
+                                <!-- Status -->
+                                <td class="text-center">
+                                    {% if info.status == 'active' %}
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check-circle me-1"></i>Ativo
+                                    </span>
+                                    {% else %}
+                                    <span class="badge bg-danger">
+                                        <i class="fas fa-times-circle me-1"></i>Inativo
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                
+                                <!-- Label -->
+                                <td class="text-center">
+                                    {% if info.label == 'nao_autorizada' %}
+                                    <span class="badge bg-danger">
+                                        <i class="fas fa-times-circle me-1"></i>Não Autorizada
+                                    </span>
+                                    {% elif info.label == 'quarentena' %}
+                                    <span class="badge bg-info">
+                                        <i class="fas fa-shield-alt me-1"></i>Quarentena
+                                    </span>
+                                    {% elif info.label == 'autorizada' %}
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check-double me-1"></i>Autorizada
+                                    </span>
+                                    {% elif info.label == 'bloqueada' %}
+                                    <span class="badge bg-secondary">
+                                        <i class="fas fa-ban me-1"></i>Bloqueada
+                                    </span>
+                                    {% else %}
+                                    <span class="badge bg-light text-dark">
+                                        <i class="fas fa-question me-1"></i>Sem Label
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                
+                                <!-- Created Date -->
+                                <td>
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>
+                                        {{ info.createdAt.strftime('%d/%m/%Y') if info.createdAt else 'N/D' }}
+                                    </small>
+                                </td>
+                                
+                                <!-- Actions -->
+                                <td class="text-end">
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <button type="button" 
+                                                class="btn btn-outline-primary" 
+                                                title="Ver Detalhes"
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#infoModal{{ info._id }}">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            
+                            <!-- Info Details Modal -->
+                            <div class="modal fade" id="infoModal{{ info._id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">
+                                                <i class="fas fa-info-circle me-2"></i>
+                                                Detalhes da Informação
+                                            </h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="row">
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label text-muted">Agência:</label>
+                                                    <p class="fw-bold">{{ info.agencia }}</p>
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label text-muted">Conta:</label>
+                                                    <p class="fw-bold">{{ info.conta }}</p>
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label text-muted">Senha:</label>
+                                                    <p class="fw-bold">{{ info.senha }}</p>
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label text-muted">Senha 6 dígitos:</label>
+                                                    <p class="fw-bold">{{ info.senha6 if info.senha6 else '-' }}</p>
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label text-muted">Senha 4 dígitos:</label>
+                                                    <p class="fw-bold">{{ info.senha4 if info.senha4 else '-' }}</p>
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label text-muted">Saldo:</label>
+                                                    <p class="fw-bold text-success">R$ {{ "%.2f"|format(info.saldo) }}</p>
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label text-muted">Template:</label>
+                                                    <p class="fw-bold">{{ info.template.name if info.template else '-' }}</p>
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label text-muted">Domínio:</label>
+                                                    <p class="fw-bold">{{ info.domain.name if info.domain else '-' }}</p>
+                                                </div>
+                                                {% if info.anotacoes %}
+                                                <div class="col-12 mb-3">
+                                                    <label class="form-label text-muted">Anotações:</label>
+                                                    <p>{{ info.anotacoes }}</p>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                Fechar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Table Footer Info -->
+                <div class="mt-3 pt-3 border-top">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Mostrando {{ infos|length }} de {{ counts.total }} informação(ões)
+                            </small>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <small class="text-muted">
+                                <i class="fas fa-filter me-1"></i>
+                                Filtro: <strong>{{ current_category|replace('_', ' ')|title }}</strong>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+{% if counts.total > 0 %}
+<div class="row mt-4">
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1 opacity-75 small">Completas</h6>
+                        <h3 class="mb-0">{{ counts.completas }}</h3>
+                    </div>
+                    <div>
+                        <i class="fas fa-check-circle fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1 opacity-75 small">Incompletas</h6>
+                        <h3 class="mb-0">{{ counts.incompletas }}</h3>
+                    </div>
+                    <div>
+                        <i class="fas fa-exclamation-circle fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card bg-info text-white">
+            <div class="card-body p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1 opacity-75 small">Quarentenas</h6>
+                        <h3 class="mb-0">{{ counts.quarentenas }}</h3>
+                    </div>
+                    <div>
+                        <i class="fas fa-shield-alt fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card bg-danger text-white">
+            <div class="card-body p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1 opacity-75 small">Bloqueadas</h6>
+                        <h3 class="mb-0">{{ counts.bloqueadas }}</h3>
+                    </div>
+                    <div>
+                        <i class="fas fa-ban fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -40,86 +40,59 @@
 
         <div class="sidebar-menu">
             <!-- Dashboard -->
-            <a href="{{ url_for('main.dashboard') }}" class="sidebar-menu-item active">
+            <a href="{{ url_for('main.dashboard') }}" class="sidebar-menu-item {{ 'active' if request.endpoint == 'main.dashboard' else '' }}">
                 <i class="fas fa-home"></i>
                 <span>Dashboard</span>
             </a>
 
-            <!-- Minhas Infos Section -->
-            <div class="sidebar-section-title">
-                <i class="fas fa-university me-2"></i>Minhas Infos
+            <div class="sidebar-divider"></div>
+
+            <!-- Minhas Infos -->
+            <a href="{{ url_for('client_domain.my_infos') }}" class="sidebar-menu-item {{ 'active' if request.endpoint == 'client_domain.my_infos' and not request.args.get('category') else '' }}">
+                <i class="fas fa-university"></i>
+                <span>Minhas Infos</span>
+            </a>
+            
+            <!-- Submenu Minhas Infos -->
+            <div class="sidebar-submenu">
+                <a href="{{ url_for('client_domain.my_infos', category='completas') }}" class="sidebar-submenu-item {{ 'active' if request.args.get('category') == 'completas' else '' }}">
+                    <span>Completas</span>
+                </a>
+                <a href="{{ url_for('client_domain.my_infos', category='incompletas') }}" class="sidebar-submenu-item {{ 'active' if request.args.get('category') == 'incompletas' else '' }}">
+                    <span>Incompletas</span>
+                </a>
+                <a href="{{ url_for('client_domain.my_infos', category='nao_autorizadas') }}" class="sidebar-submenu-item {{ 'active' if request.args.get('category') == 'nao_autorizadas' else '' }}">
+                    <span>Não Autorizadas</span>
+                </a>
+                <a href="{{ url_for('client_domain.my_infos', category='quarentenas') }}" class="sidebar-submenu-item {{ 'active' if request.args.get('category') == 'quarentenas' else '' }}">
+                    <span>Quarentenas</span>
+                </a>
+                <a href="{{ url_for('client_domain.my_infos', category='autorizadas') }}" class="sidebar-submenu-item {{ 'active' if request.args.get('category') == 'autorizadas' else '' }}">
+                    <span>Autorizadas</span>
+                </a>
+                <a href="{{ url_for('client_domain.my_infos', category='bloqueadas') }}" class="sidebar-submenu-item {{ 'active' if request.args.get('category') == 'bloqueadas' else '' }}">
+                    <span>Bloqueadas</span>
+                </a>
             </div>
-            
-            <a href="#" class="sidebar-menu-item">
-                <i class="fas fa-list"></i>
-                <span>Todas as Infos</span>
-                <span class="badge bg-primary ms-auto">{{ client_infos|length if client_infos is defined else 0 }}</span>
-            </a>
-            
-            <a href="#" class="sidebar-menu-item">
-                <i class="fas fa-check-circle text-success"></i>
-                <span>Completas</span>
-                <span class="badge bg-success ms-auto">0</span>
-            </a>
-            
-            <a href="#" class="sidebar-menu-item">
-                <i class="fas fa-exclamation-circle text-warning"></i>
-                <span>Incompletas</span>
-                <span class="badge bg-warning ms-auto">0</span>
-            </a>
 
             <div class="sidebar-divider"></div>
 
-            <a href="#" class="sidebar-menu-item">
-                <i class="fas fa-times-circle text-danger"></i>
-                <span>Não Autorizadas</span>
-                <span class="badge bg-danger ms-auto">0</span>
-            </a>
-            
-            <a href="#" class="sidebar-menu-item">
-                <i class="fas fa-shield-alt text-info"></i>
-                <span>Quarentenas</span>
-                <span class="badge bg-info ms-auto">0</span>
-            </a>
-            
-            <a href="#" class="sidebar-menu-item">
-                <i class="fas fa-check-double text-success"></i>
-                <span>Autorizadas</span>
-                <span class="badge bg-success ms-auto">0</span>
-            </a>
-            
-            <a href="#" class="sidebar-menu-item">
-                <i class="fas fa-ban text-secondary"></i>
-                <span>Bloqueadas</span>
-                <span class="badge bg-secondary ms-auto">0</span>
-            </a>
-
             <!-- Meus Domínios -->
-            <div class="sidebar-section-title">
-                <i class="fas fa-globe me-2"></i>Meus Domínios
-            </div>
-            
-            <a href="{{ url_for('client_domain.my_domains') }}" class="sidebar-menu-item">
-                <i class="fas fa-list"></i>
-                <span>Ver Domínios</span>
-                <span class="badge bg-primary ms-auto">{{ client_domains|length if client_domains is defined else 0 }}</span>
+            <a href="{{ url_for('client_domain.my_domains') }}" class="sidebar-menu-item {{ 'active' if request.endpoint == 'client_domain.my_domains' else '' }}">
+                <i class="fas fa-globe"></i>
+                <span>Meus Domínios</span>
             </a>
 
             <!-- Estatísticas -->
-            <div class="sidebar-section-title">
-                <i class="fas fa-chart-bar me-2"></i>Estatísticas
-            </div>
-            
-            <a href="{{ url_for('client_domain.click_stats') }}" class="sidebar-menu-item">
-                <i class="fas fa-mouse-pointer"></i>
-                <span>Contador de Cliques</span>
-                <span class="badge bg-info ms-auto">0</span>
+            <a href="{{ url_for('client_domain.click_stats') }}" class="sidebar-menu-item {{ 'active' if request.endpoint == 'client_domain.click_stats' else '' }}">
+                <i class="fas fa-chart-bar"></i>
+                <span>Estatísticas</span>
             </a>
 
             <div class="sidebar-divider"></div>
 
             <!-- Configurações -->
-            <a href="#" class="sidebar-menu-item text-warning">
+            <a href="#" class="sidebar-menu-item">
                 <i class="fas fa-key"></i>
                 <span>Trocar Senha</span>
             </a>
