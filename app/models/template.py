@@ -7,16 +7,6 @@ from app import mongo
 class Template:
     """Template model for client templates"""
     
-    # Available field types for pages
-    FIELD_TYPES = [
-        'login_password',           # Login + Senha
-        'agency_account_password',  # Agência + Conta + Senha
-        'phone',                    # Celular
-        'cpf',                      # CPF
-        'selfie',                   # Selfie
-        'document'                  # Documento
-    ]
-    
     @staticmethod
     def generate_slug(name):
         """Generate URL-friendly slug from template name"""
@@ -48,51 +38,19 @@ class Template:
                     counter += 1
                 slug = test_slug
             
-            # Create template object with enhanced structure
+            # Create template object with simplified structure
             new_template = {
                 'name': name,
                 'slug': slug,
                 'description': description,
-                'content': content or {},
                 'status': status,
-                'header': {
-                    'enabled': False,
-                    'content': '',
-                    'logo': '',
-                    'backgroundColor': '#ffffff'
-                },
-                'footer': {
-                    'enabled': False,
-                    'content': '',
-                    'backgroundColor': '#f8f9fa'
-                },
-                'versions': {
-                    'mobile': {
-                        'enabled': True,
-                        'customCss': '',
-                        'customJs': ''
-                    },
-                    'desktop': {
-                        'enabled': True,
-                        'customCss': '',
-                        'customJs': ''
-                    }
-                },
                 'pages': [
                     {
                         'id': 'home',
                         'name': 'Home',
                         'type': 'home',
-                        'required': True,
-                        'fields': []  # List of field objects with order
-                    },
-                    {
-                        'id': 'splashscreen',
-                        'name': 'Splashscreen',
-                        'type': 'splashscreen',
-                        'required': True,
-                        'duration': 3000,
-                        'fields': []  # Splashscreen may not need fields
+                        'content': '<h1>Bem-vindo</h1>',  # HTML personalizado
+                        'order': 1
                     }
                 ],
                 'createdAt': datetime.utcnow(),

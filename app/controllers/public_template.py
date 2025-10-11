@@ -25,9 +25,6 @@ def render_page(slug, page_id):
             logging.warning(f"Page not found: {page_id} in template {slug}")
             abort(404, description="Page not found")
         
-        # Sort fields by order
-        fields = sorted(page.get('fields', []), key=lambda f: f.get('order', 0))
-        
         # Get client IP for logging
         client_ip = request.remote_addr
         
@@ -42,19 +39,17 @@ def render_page(slug, page_id):
                     'page_id': page_id,
                     'template_name': template.get('name'),
                     'page_name': page.get('name'),
-                    'fields_count': len(fields),
                     'client_ip': client_ip
                 }
             )
         except Exception as log_error:
             logging.error(f"Failed to log page view: {log_error}")
         
-        # Render the public template page
+        # Render the public template page (simplified - just HTML content)
         return render_template(
-            'public/template_page.html',
+            'public/template_page_simple.html',
             template=template,
             page=page,
-            fields=fields,
             slug=slug,
             page_id=page_id
         )

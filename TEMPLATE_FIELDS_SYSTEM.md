@@ -1,160 +1,275 @@
-# Sistema de Templates com Campos Estruturados
+# Sistema de Templates
 
-## Resumo das Melhorias Implementadas
+## Visão Geral
+
+O sistema de templates do Client Manager permite criar e gerenciar páginas personalizadas para clientes. Cada template possui páginas com conteúdo HTML personalizado que pode ser acessado publicamente via URLs amigáveis.
+
+## Funcionalidades Implementadas
 
 ### 1. **Campo Slug** ✅
-- Cada template agora possui um `slug` único gerado automaticamente a partir do nome
+
+- Cada template possui um `slug` único gerado automaticamente a partir do nome
 - Exemplo: "Basic Template" → "basic_template"
 - O slug é usado nas URLs públicas para acessar as páginas
+- Se o slug já existir, um sufixo numérico é adicionado automaticamente
 
-### 2. **Campos Estruturados** ✅
-Em vez de HTML livre, cada página agora utiliza campos estruturados e predefinidos:
+### 2. **Páginas Personalizadas** ✅
 
-**Tipos de campos disponíveis:**
-- `login_password` - Login + Senha
-- `agency_account_password` - Agência + Conta + Senha
-- `phone` - Celular
-- `cpf` - CPF
-- `selfie` - Upload de Selfie
-- `document` - Upload de Documento
+Cada template contém uma ou mais páginas com:
 
-### 3. **Interface de Gerenciamento de Campos** ✅
-- **Seleção de Campos**: Checkboxes para selecionar quais campos exibir
-- **Reordenação Drag-and-Drop**: Arraste campos para definir a ordem de exibição
-- **Preview Visual**: Lista mostra os campos selecionados em ordem
+- **ID único**: identificador da página (ex: 'home', 'login', 'contact')
+- **Nome**: nome descritivo da página
+- **Tipo**: categoria da página (home, login, form, etc)
+- **Conteúdo HTML**: HTML personalizado para renderização
+- **Ordem**: ordem de exibição das páginas
 
-### 4. **Rotas Públicas** ✅
-Novas rotas para renderizar templates:
+### 3. **Rotas Públicas** ✅
+
+O sistema expõe rotas públicas para acesso aos templates:
 
 ```
-GET  /template/<slug>/<page_id>
-POST /template/<slug>/<page_id>/submit
+GET  /template/<slug>/<page_id>        # Visualizar página
+POST /template/<slug>/<page_id>/submit # Submeter formulário
 ```
 
 **Exemplos:**
+
 ```
 http://127.0.0.1:5000/template/basic_template/home
 http://127.0.0.1:5000/template/professional_template/login
-http://127.0.0.1:5000/template/e-commerce_template/splashscreen
+http://127.0.0.1:5000/template/ecommerce/contact
 ```
 
-### 5. **Template Público Responsivo** ✅
-- Design moderno com gradiente
-- Formulário estilizado com Bootstrap 5
-- Máscaras automáticas para CPF e telefone
-- Upload de arquivos (selfie e documento)
-- Suporte a header e footer personalizados
-- CSS/JS customizado por dispositivo (mobile/desktop)
+### 4. **Templates Públicos Responsivos** ✅
+
+- Página simplificada para renderização pública
+- Suporte a HTML customizado
+- Design responsivo
+- Página de sucesso após submissão de formulários
+
+### 5. **Auditoria de Acessos** ✅
+
+- Registro de todas as visualizações de páginas
+- Captura de IP do visitante
+- Logs detalhados com timestamp
+- Rastreamento de slug e page_id acessados
 
 ## Estrutura de Dados
 
 ### Template
-```python
+
+```json
 {
-    "name": "Basic Template",
-    "slug": "basic_template",  # NOVO!
-    "description": "...",
-    "status": "active",
-    "header": {...},
-    "footer": {...},
-    "versions": {
-        "mobile": {...},
-        "desktop": {...}
+  "_id": ObjectId("..."),
+  "name": "Basic Template",
+  "slug": "basic_template",
+  "description": "Template básico para websites",
+  "status": "active",
+  "pages": [
+    {
+      "id": "home",
+      "name": "Home",
+      "type": "home",
+      "content": "<h1>Bem-vindo</h1><p>Conteúdo da página inicial</p>",
+      "order": 1
     },
-    "pages": [...]
+    {
+      "id": "login",
+      "name": "Login",
+      "type": "login",
+      "content": "<form>...</form>",
+      "order": 2
+    }
+  ],
+  "createdAt": ISODate("..."),
+  "updatedAt": ISODate("...")
 }
 ```
 
 ### Página (Page)
-```python
+
+```json
 {
-    "id": "login",
-    "name": "Login",
-    "type": "login",
-    "required": false,
-    "fields": [  # NOVO! Substituiu "content"
-        {
-            "type": "login_password",
-            "label": "Login + Senha",
-            "order": 0
-        },
-        {
-            "type": "phone",
-            "label": "Celular",
-            "order": 1
-        }
-    ]
+  "id": "login",
+  "name": "Login",
+  "type": "login",
+  "content": "<div class='login-form'>...</div>",
+  "order": 1
 }
 ```
 
 ## Como Usar
 
-### 1. Editar Template (Admin)
-1. Acesse `/templates/edit/<id>`
-2. Vá para a aba "Páginas"
-3. Selecione os campos desejados usando os checkboxes
-4. Arraste os campos para reordenar
-5. Salve o template
+### 1. Criar um Template (Admin)
 
-### 2. Acessar Página Pública
+1. Acesse `/templates/create`
+2. Preencha nome e descrição
+3. Salve o template
+4. Um slug será gerado automaticamente
+
+### 2. Editar Páginas do Template
+
+1. Acesse `/templates/edit/<id>`
+2. Vá para a seção de páginas
+3. Adicione novas páginas ou edite existentes
+4. Personalize o conteúdo HTML de cada página
+5. Defina a ordem das páginas
+6. Salve as alterações
+
+### 3. Acessar Página Pública
+
+Copie a URL pública da página:
+
 ```
 http://127.0.0.1:5000/template/<slug>/<page_id>
 ```
 
-### 3. Submeter Formulário
-O formulário envia automaticamente via POST para:
+Substitua:
+- `<slug>` pelo slug do template
+- `<page_id>` pelo ID da página
+
+### 4. Submeter Formulário
+
+Se a página contiver um formulário, ele pode ser submetido via POST para:
+
 ```
 /template/<slug>/<page_id>/submit
 ```
 
-## Arquivos Modificados/Criados
+Após submissão, o usuário é redirecionado para uma página de sucesso.
+
+## Arquivos do Sistema
 
 ### Modelos
-- ✅ `app/models/template.py` - Adicionado campo slug e métodos auxiliares
+
+- ✅ `app/models/template.py` - Modelo de templates com slugs e operações CRUD
 
 ### Controllers
-- ✅ `app/controllers/template.py` - Atualizado para processar campos
-- ✅ `app/controllers/public_template.py` - **NOVO** controller público
 
-### Templates
-- ✅ `app/templates/templates/edit.html` - Interface de campos drag-and-drop
-- ✅ `app/templates/public/template_page.html` - **NOVO** renderização pública
-- ✅ `app/templates/public/submit_success.html` - **NOVO** página de sucesso
+- ✅ `app/controllers/template.py` - Gerenciamento de templates (admin)
+- ✅ `app/controllers/public_template.py` - Rotas públicas para visualização
 
-### Scripts
-- ✅ `migrate_templates_fields.py` - Migration para adicionar slugs e converter estrutura
+### Views
 
-### Configuração
-- ✅ `app/__init__.py` - Registrado novo blueprint público
+- ✅ `app/views/template_view.py` - Views administrativas de templates
 
-## Próximos Passos (Opcional)
+### Templates HTML
 
-1. **Validação de Dados**: Adicionar validação server-side dos campos
-2. **Armazenamento**: Implementar salvamento dos dados submetidos
-3. **Notificações**: Enviar emails/SMS ao receber submissão
-4. **Analytics**: Rastrear visualizações e submissões
-5. **Temas**: Permitir personalização completa de cores/fontes
-6. **Preview**: Botão para pré-visualizar páginas antes de salvar
+- ✅ `app/templates/templates/` - Interface administrativa
+  - `list.html` - Listagem de templates
+  - `create.html` - Criação de templates
+  - `edit.html` - Edição de templates
+  - `view.html` - Visualização de templates
+- ✅ `app/templates/public/` - Templates públicos
+  - `template_page.html` - Renderização de página (completa)
+  - `template_page_simple.html` - Renderização de página (simplificada)
+  - `submit_success.html` - Página de sucesso
+
+### Services
+
+- ✅ `app/services/audit_service.py` - Serviço de auditoria para logs
+
+## Recursos de Segurança
+
+- ✅ **Validação de Slug**: Slugs únicos gerados automaticamente
+- ✅ **Escape de HTML**: Proteção contra XSS (quando necessário)
+- ✅ **Auditoria**: Logs de todos os acessos públicos
+- ✅ **Status Control**: Templates podem ser ativados/desativados
+
+## Próximos Passos (Roadmap)
+
+### Melhorias Planejadas
+
+1. **Sistema de Campos Estruturados**
+   - Campos predefinidos (login, password, CPF, phone, etc)
+   - Drag-and-drop para reordenação
+   - Validação automática de campos
+
+2. **Armazenamento de Submissões**
+   - Salvar dados submetidos no banco de dados
+   - Painel de visualização de submissões
+   - Exportação de dados (CSV, JSON)
+
+3. **Notificações**
+   - Email ao receber nova submissão
+   - SMS para notificações urgentes
+   - Webhooks para integrações
+
+4. **Temas e Personalização**
+   - Editor visual de templates
+   - Biblioteca de temas predefinidos
+   - Customização de cores e fontes
+   - Upload de logo e imagens
+
+5. **Analytics**
+   - Dashboard de visualizações
+   - Taxa de conversão de formulários
+   - Tempo médio na página
+   - Origem dos visitantes
+
+6. **Preview e Versionamento**
+   - Preview de páginas antes de publicar
+   - Histórico de versões
+   - Rollback de alterações
+
+7. **Suporte a Header e Footer**
+   - Header customizado por template
+   - Footer customizado por template
+   - CSS/JS customizado por dispositivo (mobile/desktop)
+
+8. **Multi-idioma**
+   - Suporte a múltiplos idiomas
+   - Tradução de páginas
+   - Detecção automática de idioma
 
 ## Testes
 
-Para testar o sistema completo:
+### Testar o Sistema Completo
+
+1. **Criar template:**
+   ```
+   http://127.0.0.1:5000/templates/create
+   ```
+
+2. **Editar páginas:**
+   ```
+   http://127.0.0.1:5000/templates/edit/<id>
+   ```
+
+3. **Acessar página pública:**
+   ```
+   http://127.0.0.1:5000/template/<slug>/<page_id>
+   ```
+
+4. **Verificar logs de auditoria:**
+   - Verifique o banco de dados na collection `audit_logs`
+
+### Exemplos de URLs Públicas
 
 ```bash
-# 1. Acessar formulário de edição
-http://127.0.0.1:5000/templates/edit/68e9d555cec0582633858d8e
-
-# 2. Adicionar campos a uma página
-
-# 3. Acessar página pública
+# Template básico - página home
 http://127.0.0.1:5000/template/basic_template/home
 
-# 4. Preencher e submeter formulário
+# Template profissional - página login
+http://127.0.0.1:5000/template/professional_template/login
+
+# Template e-commerce - página de contato
+http://127.0.0.1:5000/template/ecommerce_template/contact
 ```
 
 ## Compatibilidade
 
-- ✅ Templates existentes migrados automaticamente
-- ✅ Slugs gerados para todos os templates
-- ✅ Estrutura de campos substituiu content HTML
-- ✅ Backward compatible com versões/header/footer
+- ✅ Totalmente compatível com estrutura atual
+- ✅ Slugs gerados automaticamente para templates novos
+- ✅ Sistema de páginas com conteúdo HTML personalizado
+- ✅ Suporte a múltiplas páginas por template
+- ✅ Páginas públicas acessíveis via URLs amigáveis
+
+## Suporte
+
+Para questões ou problemas:
+
+1. Verifique os logs da aplicação
+2. Consulte o `README.md` principal
+3. Verifique a documentação de arquitetura em `ARCHITECTURE.md`
+

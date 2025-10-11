@@ -68,79 +68,32 @@ def edit_template(template_id):
             'status': request.form.get('status', 'active')
         }
         
-        # Header configuration
-        data['header'] = {
-            'enabled': request.form.get('header[enabled]') == 'on',
-            'content': request.form.get('header[content]', ''),
-            'logo': request.form.get('header[logo]', ''),
-            'backgroundColor': request.form.get('header[backgroundColor]', '#ffffff')
-        }
-        
-        # Footer configuration
-        data['footer'] = {
-            'enabled': request.form.get('footer[enabled]') == 'on',
-            'content': request.form.get('footer[content]', ''),
-            'backgroundColor': request.form.get('footer[backgroundColor]', '#f8f9fa')
-        }
-        
-        # Versions configuration
-        data['versions'] = {
-            'mobile': {
-                'enabled': request.form.get('versions[mobile][enabled]') == 'on',
-                'customCss': request.form.get('versions[mobile][customCss]', ''),
-                'customJs': request.form.get('versions[mobile][customJs]', '')
-            },
-            'desktop': {
-                'enabled': request.form.get('versions[desktop][enabled]') == 'on',
-                'customCss': request.form.get('versions[desktop][customCss]', ''),
-                'customJs': request.form.get('versions[desktop][customJs]', '')
-            }
-        }
-        
-        # Pages configuration
+        # Pages configuration (simplified)
         pages = []
         page_index = 0
+        has_home = False
+        
         while True:
             page_id = request.form.get(f'pages[{page_index}][id]')
             if page_id is None:
                 break
             
-            page_type = request.form.get(f'pages[{page_index}][type]')
+            page_type = request.form.get(f'pages[{page_index}][type]', 'custom')
+            
+            # Validate only one home page
+            if page_type == 'home':
+                if has_home:
+                    page_type = 'custom'  # Force to custom if there's already a home
+                else:
+                    has_home = True
+            
             page_data = {
                 'id': page_id,
                 'name': request.form.get(f'pages[{page_index}][name]', ''),
                 'type': page_type,
-                'fields': []  # Initialize fields array
+                'content': request.form.get(f'pages[{page_index}][content]', ''),
+                'order': int(request.form.get(f'pages[{page_index}][order]', page_index + 1))
             }
-            
-            # Check if this is a required page
-            if page_type in ['home', 'splashscreen']:
-                page_data['required'] = True
-            
-            # Add login types for login pages
-            if page_type == 'login':
-                login_types = request.form.getlist(f'pages[{page_index}][loginTypes][]')
-                page_data['loginTypes'] = login_types
-            
-            # Add duration for splashscreen
-            if page_type == 'splashscreen':
-                duration = request.form.get(f'pages[{page_index}][duration]')
-                page_data['duration'] = int(duration) if duration else 3000
-            
-            # Process fields for this page
-            field_index = 0
-            while True:
-                field_type = request.form.get(f'pages[{page_index}][fields][{field_index}][type]')
-                if field_type is None:
-                    break
-                
-                field_data = {
-                    'type': field_type,
-                    'label': request.form.get(f'pages[{page_index}][fields][{field_index}][label]', ''),
-                    'order': int(request.form.get(f'pages[{page_index}][fields][{field_index}][order]', field_index))
-                }
-                page_data['fields'].append(field_data)
-                field_index += 1
             
             pages.append(page_data)
             page_index += 1
@@ -158,10 +111,11 @@ def edit_template(template_id):
                 'status': data.get('status'),
                 'pages_count': len(pages)
             })
-            flash('Template updated successfully', 'success')
-            return redirect(url_for('template.list_templates'))
+            flash('Template atualizado com sucesso!', 'success')
+            # Permanece na mesma página de edição
+            return redirect(url_for('template.edit_template', template_id=template_id))
         else:
-            flash(f'Error updating template: {message}', 'danger')
+            flash(f'Erro ao atualizar template: {message}', 'danger')
     
     return TemplateView.render_edit_form(template_data)
 

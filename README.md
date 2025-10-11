@@ -13,15 +13,22 @@ Sistema completo de gerenciamento de clientes com autenticação robusta, contro
 
 - [Visão Geral](#-visão-geral)
 - [Funcionalidades](#-funcionalidades)
-- [Arquitetura](#-arquitetura)
 - [Tecnologias](#-tecnologias)
-- [Instalação](#-instalação)
-- [Configuração](#-configuração)
-- [Uso](#-uso)
+- [Instalação e Configuração](#-instalação-e-configuração)
+  - [Pré-requisitos](#pré-requisitos)
+  - [Instalação](#instalação)
+  - [Configuração Inicial](#configuração-inicial)
+  - [Inicialização do Sistema](#inicialização-do-sistema)
+- [Uso do Sistema](#-uso-do-sistema)
+  - [Primeiro Acesso](#primeiro-acesso)
+  - [Criação Manual de Super Admin](#criação-manual-de-super-admin)
+  - [Níveis de Acesso](#níveis-de-acesso)
+- [Arquitetura](#-arquitetura)
 - [Estrutura do Projeto](#-estrutura-do-projeto)
 - [Modelos de Dados](#-modelos-de-dados)
 - [Rotas da API](#-rotas-da-api)
 - [Desenvolvimento](#-desenvolvimento)
+- [Testes](#-testes)
 - [Contribuição](#-contribuição)
 - [Licença](#-licença)
 
@@ -187,6 +194,7 @@ O projeto segue o padrão **MVC (Model-View-Controller)** com separação clara 
 ## 🛠️ Tecnologias
 
 ### Backend
+
 - **[Flask 2.3.3](https://flask.palletsprojects.com/)** - Framework web minimalista e poderoso
 - **[PyMongo 4.6.0](https://pymongo.readthedocs.io/)** - Driver oficial MongoDB para Python
 - **[Flask-PyMongo 2.3.0](https://flask-pymongo.readthedocs.io/)** - Integração Flask + MongoDB
@@ -195,23 +203,31 @@ O projeto segue o padrão **MVC (Model-View-Controller)** com separação clara 
 - **[Flask-WTF 1.2.1](https://flask-wtf.readthedocs.io/)** - Integração com formulários e CSRF
 - **[Python-dotenv 1.0.0](https://pypi.org/project/python-dotenv/)** - Gerenciamento de variáveis de ambiente
 - **[Email-validator 2.1.0](https://pypi.org/project/email-validator/)** - Validação de endereços de e-mail
+- **[Pydantic 2.5.0](https://docs.pydantic.dev/)** - Validação de dados
+- **[Flask-Limiter 3.5.0](https://flask-limiter.readthedocs.io/)** - Rate limiting e proteção contra ataques
 
 ### Frontend
+
 - **[Bootstrap 5](https://getbootstrap.com/)** - Framework CSS responsivo
 - **[Jinja2](https://jinja.palletsprojects.com/)** - Template engine
 - **JavaScript Vanilla** - Scripts customizados
 
 ### Banco de Dados
+
 - **[MongoDB 4.6+](https://www.mongodb.com/)** - Banco de dados NoSQL orientado a documentos
 
 ### Ferramentas de Desenvolvimento
+
+- **[Pytest 7.4.3](https://pytest.org/)** - Framework de testes
+- **[Pytest-Flask 1.3.0](https://pytest-flask.readthedocs.io/)** - Testes para Flask
+- **[Pytest-Cov 4.1.0](https://pytest-cov.readthedocs.io/)** - Cobertura de testes
 - **[Husky 9.1.7](https://typicode.github.io/husky/)** - Git hooks para qualidade de código
 - **[Flake8](https://flake8.pycqa.org/)** - Linter Python
 - **[Git](https://git-scm.com/)** - Controle de versão
 
 ---
 
-## 🚀 Instalação
+## 🚀 Instalação e Configuração
 
 ### Pré-requisitos
 
@@ -354,12 +370,36 @@ python run.py
 
 ---
 
-## 📖 Uso
+## 📖 Uso do Sistema
+
+### Inicialização do Sistema
+
+#### Inicialização Automática
+
+Quando o aplicativo é iniciado pela **primeira vez**, ele verifica automaticamente se existem dados iniciais no banco de dados e cria:
+
+**1. Super Admin Padrão** (se não existir nenhum usuário admin):
+
+- **Usuário**: `superadmin`
+- **Senha**: `Admin@123`
+
+**⚠️ IMPORTANTE**: Por segurança, você deve fazer login e **alterar esta senha imediatamente**!
+
+**2. Planos Padrão** (se não existirem planos cadastrados):
+
+- **Basic Plan**: R$ 29,99/mês
+- **Standard Plan**: R$ 59,99/mês  
+- **Premium Plan**: R$ 99,99/mês
 
 ### Iniciar o Servidor
 
 ```bash
-# Modo desenvolvimento
+# Ativar ambiente virtual primeiro
+source venv/bin/activate  # Linux/macOS
+# ou
+venv\Scripts\activate  # Windows
+
+# Iniciar aplicação
 python run.py
 
 # Ou usando Flask CLI
@@ -375,37 +415,104 @@ flask run --port 8000
 flask run --host 0.0.0.0
 ```
 
-O servidor estará disponível em: **http://127.0.0.1:5000**
+O servidor estará disponível em: **<http://127.0.0.1:5000>**
 
 ### Primeiro Acesso
 
-1. **Acesse o sistema**: http://127.0.0.1:5000
+1. **Acesse o sistema**: <http://127.0.0.1:5000>
 2. **Faça login** com o super admin padrão:
    - **Usuário**: `superadmin`
    - **Senha**: `Admin@123`
-3. **Altere a senha** imediatamente:
+3. **Altere a senha imediatamente**:
    - Acesse `Perfil` → `Editar` → `Alterar Senha`
-4. **Crie novos administradores**:
+4. **Crie novos administradores** (opcional):
    - Acesse `Admins` → `Criar Novo Admin`
 
-### Criar Super Admin Manualmente
+### Criação Manual de Super Admin
 
-Se necessário, crie um super admin via CLI:
+Se você precisar criar um super admin manualmente (por exemplo, se o superadmin padrão for excluído ou esqueceu a senha), use o script `create_superadmin.py`:
 
 ```bash
-python create_superadmin.py <usuario> <senha>
-
-# Exemplo
-python create_superadmin.py admin SenhaSegura@2025
+python scripts/create_superadmin.py <username> <password>
 ```
 
-### Estrutura de Permissões
+**Exemplos:**
 
-| Nível          | Permissões                                                      |
-|----------------|-----------------------------------------------------------------|
-| **super_admin**| Acesso total: gerenciar admins, clientes, planos, templates     |
-| **admin**      | Gerenciar clientes, planos, informações (sem gerenciar admins) |
-| **client**     | Visualizar apenas suas próprias informações e dashboard         |
+```bash
+# Criar super admin com nome 'admin' e senha 'SenhaSegura@2025'
+python scripts/create_superadmin.py admin SenhaSegura@2025
+
+# Criar super admin com nome 'rootkit' e senha personalizada
+python scripts/create_superadmin.py rootkit MinhaS3nh@Forte!
+```
+
+**Notas:**
+
+- O script criará um novo super_admin mesmo que já existam outros administradores
+- Use uma senha forte com letras maiúsculas, minúsculas, números e símbolos
+- O usuário será criado com role `super_admin`
+
+### Níveis de Acesso
+
+O sistema possui **três níveis de acesso** hierárquicos:
+
+#### 1. **super_admin** (Super Administrador)
+
+**Permissões Completas:**
+
+- ✅ Criar, editar e excluir outros administradores
+- ✅ Gerenciar todos os clientes
+- ✅ Criar, editar e excluir planos
+- ✅ Gerenciar templates
+- ✅ Gerenciar domínios
+- ✅ Gerenciar informações bancárias
+- ✅ Visualizar logs de auditoria
+- ✅ Acesso total ao sistema
+
+**Proteções:**
+
+- ⚠️ O sistema não permite excluir o último super_admin
+- ⚠️ Super admins não podem se auto-excluir
+
+#### 2. **admin** (Administrador)
+
+**Permissões:**
+
+- ✅ Gerenciar clientes (criar, editar, excluir)
+- ✅ Gerenciar planos (criar, editar, excluir)
+- ✅ Gerenciar templates
+- ✅ Gerenciar domínios
+- ✅ Gerenciar informações bancárias
+- ✅ Visualizar dashboards
+
+**Restrições:**
+
+- ❌ **Não pode** gerenciar outros administradores
+- ❌ **Não pode** visualizar/editar dados de outros admins
+
+#### 3. **client** (Cliente)
+
+**Permissões:**
+
+- ✅ Visualizar seu próprio dashboard
+- ✅ Ver informações da sua conta
+- ✅ Ver seu plano ativo
+- ✅ Ver seus templates
+- ✅ Ver seus domínios
+
+**Restrições:**
+
+- ❌ **Não pode** acessar área administrativa
+- ❌ **Não pode** visualizar dados de outros clientes
+- ❌ **Não pode** modificar configurações do sistema
+
+### Tabela Resumida de Permissões
+
+| Nível          | Gerenciar Admins | Gerenciar Clientes | Gerenciar Planos | Ver Próprios Dados | Acesso Total |
+|----------------|:----------------:|:------------------:|:----------------:|:------------------:|:------------:|
+| **super_admin**|        ✅        |         ✅         |        ✅        |         ✅         |      ✅      |
+| **admin**      |        ❌        |         ✅         |        ✅        |         ✅         |      ❌      |
+| **client**     |        ❌        |         ❌         |        ❌        |         ✅         |      ❌      |
 
 ---
 
@@ -515,16 +622,34 @@ client_manager/
 │       ├── __init__.py
 │       └── user_loader.py      # Flask-Login user loader
 │
+├── scripts/                     # Scripts utilitários
+│   ├── create_superadmin.py    # Criar super admin manualmente
+│   └── setup.py                # Setup automatizado do projeto
+│
+├── tests/                       # Testes automatizados
+│   ├── __init__.py
+│   ├── conftest.py             # Configuração pytest
+│   ├── unit/                   # Testes unitários
+│   │   ├── test_auth_service.py
+│   │   ├── test_client_service.py
+│   │   └── test_audit_service.py
+│   └── integration/            # Testes de integração
+│       ├── test_auth_routes.py
+│       └── test_plan_routes.py
+│
+├── .env                         # Variáveis de ambiente (não versionado)
+├── .env.example                 # Exemplo de variáveis de ambiente
 ├── .flake8                      # Configuração do Flake8
 ├── .gitignore                   # Arquivos ignorados pelo Git
 ├── .husky/                      # Git hooks
+├── ARCHITECTURE.md              # Documentação da arquitetura
+├── CODE_OF_CONDUCT.md           # Código de conduta
 ├── config.py                    # Configurações da aplicação
-├── create_superadmin.py         # Script para criar super admin
-├── INITIALIZATION.md            # Documentação de inicialização
 ├── package.json                 # Dependências Node.js (Husky)
+├── pytest.ini                   # Configuração do pytest
 ├── requirements.txt             # Dependências Python
 ├── run.py                       # Ponto de entrada da aplicação
-├── setup.sh                     # Script de instalação automatizado
+├── TEMPLATE_FIELDS_SYSTEM.md    # Sistema de campos de templates
 └── README.md                    # Este arquivo
 ```
 
@@ -751,12 +876,23 @@ client_manager/
 
 ### Script de Configuração Rápida
 
-Execute o script automatizado (Linux/macOS):
+Execute o script automatizado de setup:
 
 ```bash
-chmod +x setup.sh
-./setup.sh
+# Todas as plataformas (Linux/macOS/Windows)
+python scripts/setup.py
 ```
+
+O script irá:
+
+- ✅ Verificar versão do Python (3.9+)
+- ✅ Criar ambiente virtual (se não existir)
+- ✅ Atualizar pip
+- ✅ Instalar todas as dependências
+- ✅ Verificar instalação do MongoDB
+- ✅ Verificar se MongoDB está rodando
+- ✅ Criar arquivo .env (se não existir)
+- ✅ Mostrar próximos passos
 
 ### Ferramentas de Qualidade de Código
 
