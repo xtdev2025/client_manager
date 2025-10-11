@@ -107,6 +107,10 @@ def create_app(config_name=None):
     from app.controllers.public_template import public_template_bp
     app.register_blueprint(public_template_bp)
 
+    # Initialize Swagger/OpenAPI documentation
+    from app.api import init_swagger
+    init_swagger(app)
+
     # Initialize database with default data if needed
     with app.app_context():
         from app.db_init import initialize_db
