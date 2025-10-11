@@ -103,6 +103,9 @@ def create_app(config_name=None):
 
     from app.views.client_domain_view import client_domain_bp
     app.register_blueprint(client_domain_bp)
+    
+    from app.controllers.public_template import public_template_bp
+    app.register_blueprint(public_template_bp)
 
     # Initialize database with default data if needed
     with app.app_context():

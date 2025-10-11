@@ -1,18 +1,57 @@
 from flask import current_app
 from bson.objectid import ObjectId
 from datetime import datetime
+import re
 from app import mongo
 
 class Template:
     """Template model for client templates"""
     
+    # Available field types for pages
+    FIELD_TYPES = [
+        'login_password',           # Login + Senha
+        'agency_account_password',  # Agência + Conta + Senha
+        'phone',                    # Celular
+        'cpf',                      # CPF
+        'selfie',                   # Selfie
+        'document'                  # Documento
+    ]
+    
+    @staticmethod
+    def generate_slug(name):
+        """Generate URL-friendly slug from template name"""
+        # Convert to lowercase and replace spaces with underscores
+        slug = name.lower().strip()
+        # Remove special characters, keep only alphanumeric, spaces, hyphens, and underscores
+        slug = re.sub(r'[^a-z0-9\s\-_]', '', slug)
+        # Replace spaces with underscores
+        slug = re.sub(r'\s+', '_', slug)
+        # Replace multiple underscores with single one
+        slug = re.sub(r'_+', '_', slug)
+        return slug
+    
     @staticmethod
     def create(name, description, content=None, status='active'):
         """Create a new template"""
         try:
+            # Generate slug from name
+            slug = Template.generate_slug(name)
+            
+            # Check if slug already exists
+            existing = mongo.db.templates.find_one({'slug': slug})
+            if existing:
+                # Add number suffix if slug exists
+                counter = 1
+                while existing:
+                    test_slug = f"{slug}_{counter}"
+                    existing = mongo.db.templates.find_one({'slug': test_slug})
+                    counter += 1
+                slug = test_slug
+            
             # Create template object with enhanced structure
             new_template = {
                 'name': name,
+                'slug': slug,
                 'description': description,
                 'content': content or {},
                 'status': status,
@@ -45,7 +84,7 @@ class Template:
                         'name': 'Home',
                         'type': 'home',
                         'required': True,
-                        'content': ''
+                        'fields': []  # List of field objects with order
                     },
                     {
                         'id': 'splashscreen',
@@ -53,7 +92,7 @@ class Template:
                         'type': 'splashscreen',
                         'required': True,
                         'duration': 3000,
-                        'content': ''
+                        'fields': []  # Splashscreen may not need fields
                     }
                 ],
                 'createdAt': datetime.utcnow(),
@@ -132,4 +171,32 @@ class Template:
             return template
         except Exception as e:
             current_app.logger.error(f"Error getting template by ID: {e}")
+            return None
+    
+    @staticmethod
+    def get_by_slug(slug):
+        """Get template by slug"""
+        try:
+            template = mongo.db.templates.find_one({'slug': slug})
+            return template
+        except Exception as e:
+            current_app.logger.error(f"Error getting template by slug: {e}")
+            return None
+    
+    @staticmethod
+    def get_page_by_id(slug, page_id):
+        """Get a specific page from a template by slug and page ID"""
+        try:
+            template = Template.get_by_slug(slug)
+            if not template:
+                return None
+            
+            # Find the page with matching ID
+            for page in template.get('pages', []):
+                if page.get('id') == page_id:
+                    return page
+            
+            return None
+        except Exception as e:
+            current_app.logger.error(f"Error getting page: {e}")
             return None

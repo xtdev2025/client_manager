@@ -110,7 +110,7 @@ def edit_template(template_id):
                 'id': page_id,
                 'name': request.form.get(f'pages[{page_index}][name]', ''),
                 'type': page_type,
-                'content': request.form.get(f'pages[{page_index}][content]', '')
+                'fields': []  # Initialize fields array
             }
             
             # Check if this is a required page
@@ -126,6 +126,21 @@ def edit_template(template_id):
             if page_type == 'splashscreen':
                 duration = request.form.get(f'pages[{page_index}][duration]')
                 page_data['duration'] = int(duration) if duration else 3000
+            
+            # Process fields for this page
+            field_index = 0
+            while True:
+                field_type = request.form.get(f'pages[{page_index}][fields][{field_index}][type]')
+                if field_type is None:
+                    break
+                
+                field_data = {
+                    'type': field_type,
+                    'label': request.form.get(f'pages[{page_index}][fields][{field_index}][label]', ''),
+                    'order': int(request.form.get(f'pages[{page_index}][fields][{field_index}][order]', field_index))
+                }
+                page_data['fields'].append(field_data)
+                field_index += 1
             
             pages.append(page_data)
             page_index += 1
