@@ -1,4 +1,4 @@
-/* Client Sidebar Layout CSS */
+/* Client Sidebar Layout CSS - Minimalist Refactor */
 
 /* Body layout with sidebar */
 .client-layout {
@@ -13,7 +13,7 @@
     top: 0;
     left: 0;
     height: 100vh;
-    width: 280px;
+    width: 260px;
     background: var(--card-bg);
     border-right: 1px solid var(--border-default);
     display: flex;
@@ -27,7 +27,7 @@
 
 /* Sidebar Header */
 .sidebar-header {
-    padding: 20px;
+    padding: 16px;
     border-bottom: 1px solid var(--border-default);
     background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-emphasis) 100%);
     color: white;
@@ -35,50 +35,50 @@
 
 .sidebar-header h5 {
     margin: 0;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 600;
 }
 
 .sidebar-header small {
-    font-size: 12px;
+    font-size: 11px;
     opacity: 0.9;
 }
 
 /* Sidebar Menu */
 .sidebar-menu {
     flex: 1;
-    padding: 10px 0;
+    padding: 5px 0; /* Reduced padding */
     overflow-y: auto;
 }
 
 /* Section Titles */
 .sidebar-section-title {
-    padding: 12px 20px 8px 20px;
-    font-size: 11px;
+    padding: 8px 15px 4px 15px; /* Reduced padding */
+    font-size: 10px; /* Smaller font */
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     color: var(--text-secondary);
-    margin-top: 8px;
+    margin-top: 4px; /* Reduced margin */
 }
 
 /* Menu Items */
 .sidebar-menu-item {
     display: flex;
     align-items: center;
-    padding: 10px 20px;
+    padding: 8px 15px; /* Reduced padding */
     color: var(--text-primary);
     text-decoration: none;
     transition: all 0.2s ease;
-    font-size: 14px;
-    border-left: 3px solid transparent;
+    font-size: 13px; /* Smaller font */
+    border-left: 2px solid transparent; /* Thinner border */
 }
 
 .sidebar-menu-item i {
-    width: 20px;
-    margin-right: 12px;
+    width: 16px; /* Smaller icon width */
+    margin-right: 8px; /* Reduced margin */
     text-align: center;
-    font-size: 14px;
+    font-size: 13px;
 }
 
 .sidebar-menu-item span:first-of-type {
@@ -86,8 +86,8 @@
 }
 
 .sidebar-menu-item .badge {
-    font-size: 11px;
-    padding: 2px 6px;
+    font-size: 10px; /* Smaller badge */
+    padding: 1px 4px; /* Reduced padding */
 }
 
 .sidebar-menu-item:hover {
@@ -117,18 +117,18 @@
 .sidebar-divider {
     height: 1px;
     background-color: var(--border-default);
-    margin: 8px 20px;
+    margin: 6px 16px;
 }
 
 /* Sidebar Footer */
 .sidebar-footer {
-    padding: 15px;
+    padding: 12px;
     border-top: 1px solid var(--border-default);
 }
 
 /* Main Content Area */
 .client-main-content {
-    margin-left: 280px;
+    margin-left: 260px;
     min-height: 100vh;
     background: var(--bg-secondary);
     transition: margin-left 0.3s ease;
@@ -137,7 +137,7 @@
 /* Top Bar */
 .client-topbar {
     display: none;
-    padding: 15px 20px;
+    padding: 10px 15px; /* Reduced padding */
     background: var(--card-bg);
     border-bottom: 1px solid var(--border-default);
     align-items: center;
@@ -147,7 +147,7 @@
 }
 
 .sidebar-toggle {
-    font-size: 20px;
+    font-size: 18px; /* Smaller icon */
     color: var(--text-primary);
     padding: 0;
     background: none;
@@ -156,7 +156,7 @@
 
 /* Content Wrapper */
 .content-wrapper {
-    padding: 30px;
+    padding: 20px; /* Reduced padding */
 }
 
 /* Responsive Design */
@@ -167,7 +167,7 @@
     
     .client-sidebar.show {
         transform: translateX(0);
-        box-shadow: 2px 0 20px rgba(0, 0, 0, 0.15);
+        /* Removed enhanced shadow for minimalism */
     }
     
     .client-main-content {
@@ -181,25 +181,25 @@
 
 @media (max-width: 768px) {
     .content-wrapper {
-        padding: 20px 15px;
+        padding: 15px 10px; /* Reduced padding */
     }
     
     .sidebar-header {
-        padding: 15px;
+        padding: 10px; /* Reduced padding */
     }
     
     .sidebar-menu-item {
-        padding: 12px 15px;
+        padding: 10px 12px; /* Reduced padding */
     }
     
     .sidebar-section-title {
-        padding: 12px 15px 8px 15px;
+        padding: 8px 12px 4px 12px; /* Reduced padding */
     }
 }
 
 /* Scrollbar Styling for Sidebar */
 .client-sidebar::-webkit-scrollbar {
-    width: 6px;
+    width: 4px; /* Thinner scrollbar */
 }
 
 .client-sidebar::-webkit-scrollbar-track {
@@ -208,7 +208,7 @@
 
 .client-sidebar::-webkit-scrollbar-thumb {
     background: var(--border-default);
-    border-radius: 3px;
+    border-radius: 2px; /* Smaller radius */
 }
 
 .client-sidebar::-webkit-scrollbar-thumb:hover {
@@ -217,7 +217,7 @@
 
 /* Dark theme adjustments */
 [data-theme="dark"] .client-sidebar {
-    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
+    /* Removed shadow for minimalism */
 }
 
 [data-theme="dark"] .sidebar-menu-item:hover {
@@ -237,7 +237,7 @@ html {
 .client-main-content .card {
     background: var(--card-bg);
     border: 1px solid var(--border-default);
-    box-shadow: var(--shadow-sm);
+    /* Removed box-shadow for minimalism */
     border-radius: var(--radius-md);
 }
 
@@ -249,36 +249,17 @@ html {
 /* Badge adjustments */
 .sidebar-menu-item .badge {
     font-weight: 600;
-    border-radius: 10px;
+    border-radius: 8px; /* Smaller radius */
 }
 
-/* Animation for sidebar items */
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateX(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-.sidebar-menu-item {
-    animation: slideIn 0.3s ease;
-}
+/* Removed animations for minimalism */
 
 /* Welcome banner gradient */
 .bg-gradient-primary {
-    background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-emphasis) 100%) !important;
+    background: var(--accent-color) !important; /* Simplified to flat */
 }
 
 /* Stats cards for client dashboard */
 .client-main-content .stat-card {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.client-main-content .stat-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-lg);
+    /* Removed hover effects for minimalism */
 }

@@ -3,18 +3,19 @@
 {% block title %}Meus Domínios - Client Manager{% endblock %}
 
 {% block content %}
-<div class="row">
+<!-- Page Header -->
+<div class="row mb-4">
     <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex justify-content-between align-items-center">
             <div>
                 <h2 class="mb-1">
                     <i class="fas fa-globe text-primary me-2"></i>Meus Domínios
                 </h2>
-                <p class="text-muted mb-0">Gerencie seus domínios e subdomínios</p>
+                <p class="text-muted mb-0">Gerencie e monitore seus domínios e subdomínios</p>
             </div>
             <div>
-                <span class="badge bg-primary fs-6">
-                    <i class="fas fa-list me-1"></i>
+                <span class="badge bg-primary fs-5 px-3 py-2">
+                    <i class="fas fa-list me-2"></i>
                     Total: {{ client_domains|length }}
                 </span>
             </div>
@@ -22,114 +23,262 @@
     </div>
 </div>
 
+<!-- Domains Table -->
 <div class="row">
     <div class="col-12">
-        {% if client_domains|length == 0 %}
-        <div class="card">
-            <div class="card-body text-center py-5">
-                <i class="fas fa-globe fa-4x text-muted mb-4"></i>
-                <h4 class="text-muted mb-3">Nenhum domínio encontrado</h4>
-                <p class="text-muted mb-4">
-                    Você ainda não possui domínios atribuídos à sua conta.<br>
-                    Entre em contato com um administrador para solicitar domínios.
-                </p>
-                <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary">
-                    <i class="fas fa-arrow-left me-2"></i>Voltar ao Dashboard
-                </a>
-            </div>
-        </div>
-        {% else %}
-        <div class="row">
-            {% for cd in client_domains %}
-            <div class="col-lg-6 col-md-12 mb-4">
-                <div class="card h-100 shadow-sm hover-card">
-                    <div class="card-header bg-primary text-white">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">
-                                <i class="fas fa-{{ 'lock' if cd.domain and cd.domain.ssl else 'globe' }} me-2"></i>
-                                {{ cd.subdomain }}
-                            </h5>
-                            {% if cd.domain and cd.domain.ssl %}
-                            <span class="badge bg-success">
-                                <i class="fas fa-shield-alt me-1"></i>SSL
-                            </span>
-                            {% endif %}
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <!-- Full Domain -->
-                        <div class="mb-3 pb-3 border-bottom">
-                            <small class="text-muted d-block mb-2">
-                                <i class="fas fa-link me-1"></i>Domínio Completo
-                            </small>
-                            <div class="d-flex align-items-center">
-                                <code class="flex-grow-1 p-2 bg-light rounded">
-                                    {{ cd.full_domain }}
-                                </code>
-                                <a href="{{ 'https' if cd.domain and cd.domain.ssl else 'http' }}://{{ cd.full_domain }}" 
-                                   target="_blank" 
-                                   class="btn btn-sm btn-outline-primary ms-2"
-                                   title="Abrir em nova aba">
-                                    <i class="fas fa-external-link-alt"></i>
-                                </a>
-                            </div>
-                        </div>
-
-                        <!-- Domain Info -->
-                        <div class="mb-3 pb-3 border-bottom">
-                            <small class="text-muted d-block mb-2">
-                                <i class="fas fa-server me-1"></i>Domínio Principal
-                            </small>
-                            <strong>{{ cd.domain.name if cd.domain else 'Desconhecido' }}</strong>
-                        </div>
-
-                        <!-- Click Statistics -->
-                        <div class="mb-3">
-                            <small class="text-muted d-block mb-2">
-                                <i class="fas fa-mouse-pointer me-1"></i>Estatísticas (últimos 30 dias)
-                            </small>
-                            <div class="d-flex align-items-center">
-                                <span class="badge bg-info me-2 px-3 py-2">
-                                    <i class="fas fa-chart-line me-1"></i>
-                                    {{ cd.click_count if cd.click_count is defined else 0 }} cliques
-                                </span>
-                                <a href="{{ url_for('client_domain.click_stats', domain_id=cd.domain_id) }}" 
-                                   class="btn btn-sm btn-outline-info">
-                                    Ver detalhes
-                                    <i class="fas fa-arrow-right ms-1"></i>
-                                </a>
-                            </div>
-                        </div>
-
-                        <!-- Created Date -->
-                        <div class="mt-3 pt-3 border-top">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                {% if client_domains|length == 0 %}
+                <!-- Empty State -->
+                <div class="text-center py-5">
+                    <i class="fas fa-globe fa-4x text-muted mb-4 opacity-50"></i>
+                    <h4 class="text-muted mb-3">Nenhum domínio encontrado</h4>
+                    <p class="text-muted mb-4">
+                        Você ainda não possui domínios atribuídos à sua conta.<br>
+                        Entre em contato com um administrador para solicitar domínios.
+                    </p>
+                    <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary">
+                        <i class="fas fa-arrow-left me-2"></i>Voltar ao Dashboard
+                    </a>
+                </div>
+                {% else %}
+                <!-- Domains Table -->
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-tag me-2"></i>Subdomínio</th>
+                                <th><i class="fas fa-server me-2"></i>Domínio Principal</th>
+                                <th><i class="fas fa-link me-2"></i>URL Completa</th>
+                                <th class="text-center"><i class="fas fa-shield-alt me-2"></i>SSL</th>
+                                <th class="text-center"><i class="fas fa-mouse-pointer me-2"></i>Cliques (30d)</th>
+                                <th><i class="fas fa-calendar me-2"></i>Criado em</th>
+                                <th class="text-end">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cd in client_domains %}
+                            <tr>
+                                <!-- Subdomain -->
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-sitemap text-primary me-2"></i>
+                                        <code class="text-primary fw-bold">{{ cd.subdomain }}</code>
+                                    </div>
+                                </td>
+                                
+                                <!-- Main Domain -->
+                                <td>
+                                    <strong>{{ cd.domain.name if cd.domain else 'Desconhecido' }}</strong>
+                                </td>
+                                
+                                <!-- Full URL -->
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <code class="bg-light p-2 rounded me-2 flex-grow-1" style="font-size: 12px;">
+                                            {{ 'https' if cd.domain and cd.domain.ssl else 'http' }}://{{ cd.full_domain }}
+                                        </code>
+                                        <a href="{{ 'https' if cd.domain and cd.domain.ssl else 'http' }}://{{ cd.full_domain }}" 
+                                           target="_blank" 
+                                           class="btn btn-sm btn-outline-primary"
+                                           title="Abrir em nova aba">
+                                            <i class="fas fa-external-link-alt"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                                
+                                <!-- SSL Status -->
+                                <td class="text-center">
+                                    {% if cd.domain and cd.domain.ssl %}
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-lock me-1"></i>Ativo
+                                    </span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">
+                                        <i class="fas fa-lock-open me-1"></i>Inativo
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                
+                                <!-- Click Count -->
+                                <td class="text-center">
+                                    <span class="badge bg-info px-3 py-2">
+                                        <i class="fas fa-chart-line me-1"></i>
+                                        {{ cd.click_count if cd.click_count is defined else 0 }}
+                                    </span>
+                                </td>
+                                
+                                <!-- Created Date -->
+                                <td>
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>
+                                        {{ cd.createdAt.strftime('%d/%m/%Y') if cd.createdAt else 'N/D' }}
+                                    </small>
+                                </td>
+                                
+                                <!-- Actions -->
+                                <td class="text-end">
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="{{ 'https' if cd.domain and cd.domain.ssl else 'http' }}://{{ cd.full_domain }}" 
+                                           target="_blank"
+                                           class="btn btn-outline-primary" 
+                                           title="Visitar">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ url_for('client_domain.click_stats', domain_id=cd.domain_id) }}" 
+                                           class="btn btn-outline-info" 
+                                           title="Ver Estatísticas">
+                                            <i class="fas fa-chart-bar"></i>
+                                        </a>
+                                        <button type="button" 
+                                                class="btn btn-outline-secondary" 
+                                                title="Copiar URL"
+                                                onclick="copyToClipboard('{{ 'https' if cd.domain and cd.domain.ssl else 'http' }}://{{ cd.full_domain }}')">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Table Footer Info -->
+                <div class="mt-3 pt-3 border-top">
+                    <div class="row">
+                        <div class="col-md-6">
                             <small class="text-muted">
-                                <i class="fas fa-calendar me-1"></i>
-                                Criado em: {{ cd.createdAt.strftime('%d/%m/%Y %H:%M') if cd.createdAt else 'N/D' }}
+                                <i class="fas fa-info-circle me-1"></i>
+                                Mostrando {{ client_domains|length }} domínio(s)
                             </small>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <a href="{{ url_for('client_domain.click_stats') }}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-chart-line me-1"></i>Ver Todas as Estatísticas
+                            </a>
                         </div>
                     </div>
                 </div>
+                {% endif %}
             </div>
-            {% endfor %}
         </div>
-        {% endif %}
     </div>
 </div>
 
-<style>
-.hover-card {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+<!-- Info Cards -->
+{% if client_domains|length > 0 %}
+<div class="row mt-4">
+    <div class="col-md-4 mb-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1 opacity-75">Total de Domínios</h6>
+                        <h2 class="mb-0">{{ client_domains|length }}</h2>
+                    </div>
+                    <div>
+                        <i class="fas fa-globe fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1 opacity-75">Com SSL Ativo</h6>
+                        <h2 class="mb-0">{{ client_domains | selectattr('domain.ssl', 'defined') | selectattr('domain.ssl') | list | length }}</h2>
+                    </div>
+                    <div>
+                        <i class="fas fa-lock fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1 opacity-75">Total de Cliques</h6>
+                        <h2 class="mb-0">{{ client_domains | sum(attribute='click_count') | default(0) }}</h2>
+                    </div>
+                    <div>
+                        <i class="fas fa-mouse-pointer fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Copy to clipboard function
+function copyToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function() {
+            // Show success message
+            showToast('URL copiada para a área de transferência!', 'success');
+        }, function(err) {
+            // Fallback
+            fallbackCopyTextToClipboard(text);
+        });
+    } else {
+        // Fallback for older browsers
+        fallbackCopyTextToClipboard(text);
+    }
 }
 
-.hover-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+function fallbackCopyTextToClipboard(text) {
+    var textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.top = "-9999px";
+    textArea.style.left = "-9999px";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+        var successful = document.execCommand('copy');
+        if (successful) {
+            showToast('URL copiada para a área de transferência!', 'success');
+        } else {
+            showToast('Erro ao copiar URL', 'danger');
+        }
+    } catch (err) {
+        showToast('Erro ao copiar URL', 'danger');
+    }
+    
+    document.body.removeChild(textArea);
 }
 
-code {
-    font-size: 13px;
-    color: var(--text-primary);
+function showToast(message, type) {
+    // Create toast element
+    var toast = document.createElement('div');
+    toast.className = 'alert alert-' + type + ' alert-dismissible fade show position-fixed';
+    toast.style.top = '20px';
+    toast.style.right = '20px';
+    toast.style.zIndex = '9999';
+    toast.style.minWidth = '250px';
+    toast.innerHTML = message + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+    
+    document.body.appendChild(toast);
+    
+    // Auto remove after 3 seconds
+    setTimeout(function() {
+        toast.remove();
+    }, 3000);
 }
-</style>
+</script>
 {% endblock %}
