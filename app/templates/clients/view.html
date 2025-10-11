@@ -33,6 +33,11 @@
                     <dt class="col-sm-4">Last Updated</dt>
                     <dd class="col-sm-8">{{ client.updatedAt.strftime('%Y-%m-%d %H:%M:%S') }}</dd>
                     
+                    {% if client.planActivatedAt %}
+                    <dt class="col-sm-4">Plan Activated</dt>
+                    <dd class="col-sm-8">{{ client.planActivatedAt.strftime('%Y-%m-%d %H:%M:%S') }}</dd>
+                    {% endif %}
+
                     {% if client.expiredAt %}
                     <dt class="col-sm-4">Expires At</dt>
                     <dd class="col-sm-8">{{ client.expiredAt.strftime('%Y-%m-%d %H:%M:%S') }}</dd>

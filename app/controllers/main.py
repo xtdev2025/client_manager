@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from flask import Blueprint, redirect, url_for
 from flask_login import login_required, current_user
 from app.models.user import User
@@ -86,6 +88,14 @@ def dashboard():
         plan = None
         if user and user.get('plan_id'):
             plan = Plan.get_by_id(user.get('plan_id'))
+
+        if user and user.get('plan_id') and plan and plan.get('duration_days'):
+            activation_candidate = user.get('planActivatedAt') or user.get('updatedAt') or user.get('createdAt')
+            if isinstance(activation_candidate, datetime):
+                if not user.get('planActivatedAt'):
+                    user['planActivatedAt'] = activation_candidate
+                if not user.get('expiredAt'):
+                    user['expiredAt'] = activation_candidate + timedelta(days=plan.get('duration_days'))
 
         # Get client domains
         client_domains = []

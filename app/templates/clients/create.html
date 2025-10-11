@@ -12,7 +12,8 @@
                 <form method="POST" action="{{ url_for('client.create_client') }}">
                     <div class="mb-3">
                         <label for="username" class="form-label">Username</label>
-                        <input type="text" class="form-control" id="username" name="username" required autofocus>
+                        <input type="text" class="form-control" id="username" name="username"
+                               value="{{ form_data.get('username') if form_data else '' }}" required autofocus>
                     </div>
                     <div class="mb-3">
                         <label for="password" class="form-label">Password</label>
@@ -23,9 +24,24 @@
                         <select class="form-select" id="plan_id" name="plan_id">
                             <option value="">No Plan</option>
                             {% for plan in plans %}
-                            <option value="{{ plan._id }}">{{ plan.name }} (${{ plan.price }})</option>
+                            {% set selected_plan = form_data.get('plan_id') if form_data else '' %}
+                            <option value="{{ plan._id }}" {% if selected_plan and selected_plan|string == plan._id|string %}selected{% endif %}>
+                                {{ plan.name }} (${{ plan.price }})
+                            </option>
                             {% endfor %}
                         </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="plan_activation_date" class="form-label">Plan Activation Date</label>
+                        <input type="date" class="form-control" id="plan_activation_date" name="plan_activation_date"
+                               value="{{ form_data.get('plan_activation_date') if form_data and form_data.get('plan_activation_date') else '' }}">
+                        <div class="form-text">Leave blank to activate the plan today.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="plan_expiration_date" class="form-label">Plan Expiration Date</label>
+                        <input type="date" class="form-control" id="plan_expiration_date" name="plan_expiration_date"
+                               value="{{ form_data.get('plan_expiration_date') if form_data and form_data.get('plan_expiration_date') else '' }}">
+                        <div class="form-text">Leave blank to calculate automatically based on the selected plan.</div>
                     </div>
                     
                     <div class="mb-3">
@@ -33,16 +49,20 @@
                         <select class="form-select" id="template_id" name="template_id">
                             <option value="">No Template</option>
                             {% for template in templates %}
-                            <option value="{{ template._id }}">{{ template.name }}</option>
+                            {% set selected_template = form_data.get('template_id') if form_data else '' %}
+                            <option value="{{ template._id }}" {% if selected_template and selected_template|string == template._id|string %}selected{% endif %}>
+                                {{ template.name }}
+                            </option>
                             {% endfor %}
                         </select>
                     </div>
                     <div class="mb-3">
                         <label for="status" class="form-label">Status</label>
                         <select class="form-select" id="status" name="status" required>
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
-                            <option value="suspended">Suspended</option>
+                            {% set selected_status = form_data.get('status') if form_data else 'active' %}
+                            <option value="active" {% if selected_status == 'active' %}selected{% endif %}>Active</option>
+                            <option value="inactive" {% if selected_status == 'inactive' %}selected{% endif %}>Inactive</option>
+                            <option value="suspended" {% if selected_status == 'suspended' %}selected{% endif %}>Suspended</option>
                         </select>
                     </div>
                     <div class="d-grid gap-2">

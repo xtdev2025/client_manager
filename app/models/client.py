@@ -7,9 +7,71 @@ from app.models.plan import Plan
 
 class Client(User):
     """Client model for client management"""
+
+    @staticmethod
+    def _parse_date_input(value):
+        """Parse string or datetime input into a datetime object."""
+        if not value:
+            return None
+        if isinstance(value, datetime):
+            return value
+        if isinstance(value, str):
+            candidate = value.strip()
+            if not candidate:
+                return None
+            for fmt in ('%Y-%m-%d', '%Y-%m-%dT%H:%M'):
+                try:
+                    return datetime.strptime(candidate, fmt)
+                except ValueError:
+                    continue
+        raise ValueError("Invalid date format")
+
+    @staticmethod
+    def _prepare_plan_dates(plan_object_id, activation_input=None, expiration_input=None,
+                             existing_client=None, force_update=False):
+        """Resolve activation and expiration dates for a plan assignment."""
+        if not plan_object_id:
+            return True, None, None, None
+
+        plan = Plan.get_by_id(plan_object_id)
+        if not plan:
+            return False, None, None, "Associated plan not found."
+
+        plan_duration = plan.get('duration_days')
+
+        try:
+            activation = Client._parse_date_input(activation_input)
+        except ValueError:
+            return False, None, None, "Invalid activation date format. Use YYYY-MM-DD."
+
+        try:
+            expiration = Client._parse_date_input(expiration_input)
+        except ValueError:
+            return False, None, None, "Invalid expiration date format. Use YYYY-MM-DD."
+
+        existing_activation = existing_client.get('planActivatedAt') if existing_client else None
+        existing_expiration = existing_client.get('expiredAt') if existing_client else None
+
+        if not activation:
+            if existing_activation and not force_update:
+                activation = existing_activation
+            else:
+                activation = datetime.utcnow()
+
+        if not expiration:
+            if existing_expiration and not force_update:
+                expiration = existing_expiration
+            elif plan_duration:
+                expiration = activation + timedelta(days=plan_duration)
+
+        if activation and expiration and expiration < activation:
+            return False, None, None, "Expiration date cannot be earlier than activation date."
+
+        return True, activation, expiration, None
     
     @staticmethod
-    def create(username, password, plan_id, template_id=None, status='active'):
+    def create(username, password, plan_id, template_id=None, status='active',
+               plan_activation_date=None, plan_expiration_date=None):
         """Create new client"""
         try:
             # Check if username already exists
@@ -23,14 +85,19 @@ class Client(User):
             plan_object_id = ObjectId(plan_id) if plan_id else None
             template_object_id = ObjectId(template_id) if template_id else None
 
-            # Calculate plan expiration when applicable
             expiration_date = None
             plan_activation = None
+
             if plan_object_id:
-                plan = Plan.get_by_id(plan_object_id)
-                if plan and plan.get('duration_days'):
-                    plan_activation = datetime.utcnow()
-                    expiration_date = plan_activation + timedelta(days=plan.get('duration_days'))
+                success, plan_activation, expiration_date, message = Client._prepare_plan_dates(
+                    plan_object_id,
+                    activation_input=plan_activation_date,
+                    expiration_input=plan_expiration_date,
+                    existing_client=None,
+                    force_update=True
+                )
+                if not success:
+                    return False, message
 
             # Create client object
             new_client = {
@@ -72,24 +139,33 @@ class Client(User):
             if 'password' in data:
                 data['password'] = bcrypt.generate_password_hash(data['password']).decode('utf-8')
             
+            plan_activation_input = data.pop('plan_activation_date', None)
+            plan_expiration_input = data.pop('plan_expiration_date', None)
+
             # Convert plan_id to ObjectId if provided and update expiration
             if 'plan_id' in data:
                 if data['plan_id']:
-                    plan_object_id = ObjectId(data['plan_id'])
+                    plan_object_id = data['plan_id']
+                    if not isinstance(plan_object_id, ObjectId):
+                        plan_object_id = ObjectId(plan_object_id)
+
+                    plan_changed = existing_client.get('plan_id') != plan_object_id
+                    force_update = plan_changed or not existing_client.get('planActivatedAt') or \
+                        bool(plan_activation_input) or bool(plan_expiration_input)
+
+                    success, plan_activation, expiration_date, message = Client._prepare_plan_dates(
+                        plan_object_id,
+                        activation_input=plan_activation_input,
+                        expiration_input=plan_expiration_input,
+                        existing_client=existing_client,
+                        force_update=force_update
+                    )
+                    if not success:
+                        return False, message
+
                     data['plan_id'] = plan_object_id
-
-                    plan = Plan.get_by_id(plan_object_id)
-                    plan_duration = plan.get('duration_days') if plan else None
-                    plan_changed = existing_client.get('plan_id') != plan_object_id if existing_client else True
-                    expiration_missing = not existing_client.get('expiredAt') if existing_client else True
-
-                    if plan_duration and (plan_changed or expiration_missing):
-                        activation = datetime.utcnow()
-                        data['planActivatedAt'] = activation
-                        data['expiredAt'] = activation + timedelta(days=plan_duration)
-                    else:
-                        data['planActivatedAt'] = existing_client.get('planActivatedAt')
-                        data['expiredAt'] = existing_client.get('expiredAt')
+                    data['planActivatedAt'] = plan_activation
+                    data['expiredAt'] = expiration_date
                 else:
                     data['plan_id'] = None
                     data['planActivatedAt'] = None

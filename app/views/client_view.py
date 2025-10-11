@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from app.views.base_view import BaseView
 from app.models.plan import Plan
 from app.models.template import Template
@@ -8,6 +10,28 @@ class ClientView(BaseView):
     """
     View class for client-related templates.
     """
+
+    @staticmethod
+    def _enrich_plan_metadata(client):
+        """Populate plan-related fields such as plan object, name, and expiration."""
+        plan = None
+        if client.get('plan_id'):
+            plan = Plan.get_by_id(client['plan_id'])
+
+        client['plan'] = plan
+        client['plan_name'] = plan['name'] if plan else 'No Plan'
+
+        if plan and not client.get('planActivatedAt'):
+            activation_candidate = client.get('planActivatedAt') or client.get('updatedAt') or client.get('createdAt')
+            if isinstance(activation_candidate, datetime):
+                client['planActivatedAt'] = activation_candidate
+
+        if not client.get('expiredAt') and plan and plan.get('duration_days'):
+            activation = client.get('planActivatedAt')
+            if isinstance(activation, datetime):
+                client['expiredAt'] = activation + timedelta(days=plan.get('duration_days'))
+
+        return client
     
     @staticmethod
     def render_list(clients):
@@ -22,12 +46,7 @@ class ClientView(BaseView):
         """
         # Enrich client data with plan information before rendering
         for client in clients:
-            if 'plan_id' in client and client['plan_id']:
-                plan = Plan.get_by_id(client['plan_id'])
-                client['plan_name'] = plan['name'] if plan else 'No Plan'
-            else:
-                client['plan_name'] = 'No Plan'
-                
+            ClientView._enrich_plan_metadata(client)
             # Add info count
             client['info_count'] = Info.count_by_client(client['_id'])
         
@@ -56,7 +75,7 @@ class ClientView(BaseView):
         )
     
     @staticmethod
-    def render_edit_form(client_data, plans, templates=None, errors=None):
+    def render_edit_form(client_data, plans, templates=None, form_data=None, errors=None):
         """
         Render the client edit form.
         
@@ -69,11 +88,14 @@ class ClientView(BaseView):
         Returns:
             str: Rendered client edit form
         """
+        ClientView._enrich_plan_metadata(client_data)
+
         return BaseView.render(
             'clients/edit.html',
             client=client_data,
             plans=plans,
             templates=templates or [],
+            form_data=form_data,
             errors=errors
         )
     
@@ -89,12 +111,7 @@ class ClientView(BaseView):
             str: Rendered client view template
         """
         # Enrich client data with plan information
-        if 'plan_id' in client_data and client_data['plan_id']:
-            plan = Plan.get_by_id(client_data['plan_id'])
-            client_data['plan_name'] = plan['name'] if plan else 'No Plan'
-            client_data['plan'] = plan
-        else:
-            client_data['plan_name'] = 'No Plan'
+        ClientView._enrich_plan_metadata(client_data)
             
         # Enrich client data with template information
         if 'template_id' in client_data and client_data['template_id']:

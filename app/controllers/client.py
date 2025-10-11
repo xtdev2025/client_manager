@@ -35,25 +35,49 @@ def create_client():
         plan_id = request.form.get('plan_id') or None
         template_id = request.form.get('template_id') or None
         status = request.form.get('status', 'active')
+        plan_activation_date = request.form.get('plan_activation_date') or None
+        plan_expiration_date = request.form.get('plan_expiration_date') or None
+
+        form_payload = {
+            'username': username,
+            'plan_id': plan_id,
+            'template_id': template_id,
+            'status': status,
+            'plan_activation_date': plan_activation_date,
+            'plan_expiration_date': plan_expiration_date
+        }
         
         if not username or not password:
             flash('Please provide username and password', 'danger')
             return ClientView.render_create_form(
-                plans, 
+                plans,
                 templates,
-                form_data={'username': username, 'plan_id': plan_id, 'template_id': template_id, 'status': status}
+                form_data=form_payload
             )
         
         # Create client
-        success, message = Client.create(username, password, plan_id, template_id, status)
+        success, message = Client.create(
+            username,
+            password,
+            plan_id,
+            template_id,
+            status,
+            plan_activation_date=plan_activation_date,
+            plan_expiration_date=plan_expiration_date
+        )
         
         if success:
             flash('Client created successfully', 'success')
             return redirect(url_for('client.list_clients'))
         else:
             flash(f'Error creating client: {message}', 'danger')
+            return ClientView.render_create_form(
+                plans,
+                templates,
+                form_data=form_payload
+            )
     
-    return ClientView.render_create_form(plans)
+    return ClientView.render_create_form(plans, templates)
 
 @client.route('/edit/<client_id>', methods=['GET', 'POST'])
 @login_required
@@ -69,11 +93,19 @@ def edit_client(client_id):
     templates = Template.get_all()
     
     if request.method == 'POST':
+        plan_activation_date = request.form.get('plan_activation_date') or None
+        plan_expiration_date = request.form.get('plan_expiration_date') or None
+
+        plan_id_value = request.form.get('plan_id') or None
+        template_id_value = request.form.get('template_id') or None
+
         data = {
             'username': request.form.get('username'),
-            'plan_id': request.form.get('plan_id') or None,
-            'template_id': request.form.get('template_id') or None,
-            'status': request.form.get('status')
+            'plan_id': plan_id_value,
+            'template_id': template_id_value,
+            'status': request.form.get('status'),
+            'plan_activation_date': plan_activation_date,
+            'plan_expiration_date': plan_expiration_date
         }
         
         # Only update password if provided
@@ -88,6 +120,15 @@ def edit_client(client_id):
             return redirect(url_for('client.list_clients'))
         else:
             flash(f'Error updating client: {message}', 'danger')
+            form_payload = {
+                'username': data.get('username'),
+                'plan_id': plan_id_value,
+                'template_id': template_id_value,
+                'status': data.get('status'),
+                'plan_activation_date': plan_activation_date,
+                'plan_expiration_date': plan_expiration_date
+            }
+            return ClientView.render_edit_form(client_data, plans, templates, form_data=form_payload)
     
     return ClientView.render_edit_form(client_data, plans, templates)
 
