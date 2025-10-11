@@ -54,9 +54,130 @@
                 {{ template.description if template.description else 'Nenhuma descrição disponível.' }}
             </div>
 
-            <h6 class="text-uppercase text-muted">Conteúdo</h6>
-            <div class="border rounded p-3 bg-light">
-                <pre class="mb-0">{{ template.content|tojson(indent=2) if template.content else '{}' }}</pre>
+            <!-- Header Configuration -->
+            <h6 class="text-uppercase text-muted mt-4">
+                <i class="fas fa-heading me-2"></i>Header
+            </h6>
+            <div class="border rounded p-3 bg-light mb-4">
+                {% if template.header and template.header.enabled %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Status:</strong> <span class="badge bg-success">Habilitado</span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Cor de Fundo:</strong> 
+                            <span class="d-inline-block align-middle" style="width: 20px; height: 20px; background-color: {{ template.header.backgroundColor }}; border: 1px solid #ddd; border-radius: 3px;"></span>
+                            <code class="ms-2">{{ template.header.backgroundColor }}</code>
+                        </div>
+                        {% if template.header.logo %}
+                        <div class="col-12 mt-2">
+                            <strong>Logo:</strong> <code>{{ template.header.logo }}</code>
+                        </div>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <span class="text-muted">Header desabilitado</span>
+                {% endif %}
+            </div>
+
+            <!-- Footer Configuration -->
+            <h6 class="text-uppercase text-muted mt-4">
+                <i class="fas fa-shoe-prints me-2"></i>Footer
+            </h6>
+            <div class="border rounded p-3 bg-light mb-4">
+                {% if template.footer and template.footer.enabled %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Status:</strong> <span class="badge bg-success">Habilitado</span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Cor de Fundo:</strong> 
+                            <span class="d-inline-block align-middle" style="width: 20px; height: 20px; background-color: {{ template.footer.backgroundColor }}; border: 1px solid #ddd; border-radius: 3px;"></span>
+                            <code class="ms-2">{{ template.footer.backgroundColor }}</code>
+                        </div>
+                    </div>
+                {% else %}
+                    <span class="text-muted">Footer desabilitado</span>
+                {% endif %}
+            </div>
+
+            <!-- Versions Configuration -->
+            <h6 class="text-uppercase text-muted mt-4">
+                <i class="fas fa-mobile-alt me-2"></i>Versões
+            </h6>
+            <div class="border rounded p-3 bg-light mb-4">
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Mobile:</strong>
+                        {% if template.versions and template.versions.mobile and template.versions.mobile.enabled %}
+                            <span class="badge bg-success">Habilitado</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Desabilitado</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Desktop:</strong>
+                        {% if template.versions and template.versions.desktop and template.versions.desktop.enabled %}
+                            <span class="badge bg-success">Habilitado</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Desabilitado</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pages Configuration -->
+            <h6 class="text-uppercase text-muted mt-4">
+                <i class="fas fa-file-alt me-2"></i>Páginas ({{ template.pages|length if template.pages else 0 }})
+            </h6>
+            <div class="border rounded p-3 bg-light mb-4">
+                {% if template.pages %}
+                    {% for page in template.pages %}
+                    <div class="mb-3 pb-3 {% if not loop.last %}border-bottom{% endif %}">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <strong>{{ page.name }}</strong>
+                                <span class="badge bg-primary ms-2">{{ page.type }}</span>
+                                {% if page.required %}
+                                <span class="badge bg-success ms-1">Obrigatória</span>
+                                {% endif %}
+                            </div>
+                            <code>{{ page.id }}</code>
+                        </div>
+                        
+                        {% if page.type == 'login' and page.loginTypes %}
+                        <div class="mt-2">
+                            <small class="text-muted">Tipos de Login:</small>
+                            <div class="mt-1">
+                                {% for loginType in page.loginTypes %}
+                                    {% if loginType == 'user_pass' %}
+                                    <span class="badge bg-info me-1">Login + Senha</span>
+                                    {% elif loginType == 'agency_account_pass' %}
+                                    <span class="badge bg-info me-1">Agência + Conta + Senha</span>
+                                    {% elif loginType == 'phone' %}
+                                    <span class="badge bg-info me-1">Celular</span>
+                                    {% elif loginType == 'cpf' %}
+                                    <span class="badge bg-info me-1">CPF</span>
+                                    {% elif loginType == 'selfie' %}
+                                    <span class="badge bg-info me-1">Selfie</span>
+                                    {% elif loginType == 'document' %}
+                                    <span class="badge bg-info me-1">Documento</span>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if page.type == 'splashscreen' and page.duration %}
+                        <div class="mt-2">
+                            <small class="text-muted">Duração:</small> <code>{{ page.duration }}ms</code>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <span class="text-muted">Nenhuma página configurada</span>
+                {% endif %}
             </div>
         </div>
 

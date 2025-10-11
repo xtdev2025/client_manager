@@ -29,6 +29,8 @@
                     <tr>
                         <th>Nome</th>
                         <th>Descrição</th>
+                        <th>Páginas</th>
+                        <th>Versões</th>
                         <th>Status</th>
                         <th>Criado em</th>
                         <th class="text-end">Ações</th>
@@ -38,7 +40,24 @@
                     {% for template in templates %}
                     <tr>
                         <td>{{ template.name }}</td>
-                        <td>{{ template.description|default('—')|truncate(60) }}</td>
+                        <td>{{ template.description|default('—')|truncate(50) }}</td>
+                        <td>
+                            <span class="badge bg-info">
+                                <i class="fas fa-file-alt me-1"></i>{{ template.pages|length if template.pages else 0 }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if template.versions %}
+                                {% if template.versions.mobile and template.versions.mobile.enabled %}
+                                <i class="fas fa-mobile-alt text-primary" title="Mobile"></i>
+                                {% endif %}
+                                {% if template.versions.desktop and template.versions.desktop.enabled %}
+                                <i class="fas fa-desktop text-primary" title="Desktop"></i>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
                         <td>
                             {% if template.status == 'active' %}
                             <span class="badge bg-success">Ativo</span>

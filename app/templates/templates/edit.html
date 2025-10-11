@@ -4,40 +4,310 @@
 
 {% block page_title %}Editar modelo{% endblock %}
 
+{% block extra_css %}
+<style>
+    .nav-tabs .nav-link {
+        color: #495057;
+    }
+    .nav-tabs .nav-link.active {
+        font-weight: 600;
+    }
+    .page-item {
+        border: 1px solid #dee2e6;
+        border-radius: 0.25rem;
+        padding: 15px;
+        margin-bottom: 10px;
+        background-color: #f8f9fa;
+    }
+    .page-item.required {
+        border-left: 4px solid #28a745;
+    }
+    .login-type-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        margin: 0.25rem;
+        border-radius: 0.25rem;
+        background-color: #e9ecef;
+        font-size: 0.875rem;
+    }
+    .color-preview {
+        width: 40px;
+        height: 40px;
+        border-radius: 0.25rem;
+        border: 1px solid #dee2e6;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-lg-8">
+    <div class="col-12">
         <div class="card shadow">
             <div class="card-header bg-warning">
-                <h5 class="mb-0"><i class="fas fa-edit me-2"></i>Editar modelo</h5>
+                <h5 class="mb-0"><i class="fas fa-edit me-2"></i>Editar modelo: {{ template.name }}</h5>
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ url_for('template.edit_template', template_id=template._id) }}">
-                    <div class="mb-3">
-                        <label for="name" class="form-label">Nome do modelo<span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="name" name="name" value="{{ template.name }}" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="description" class="form-label">Descrição</label>
-                        <textarea class="form-control" id="description" name="description" rows="3">{{ template.description }}</textarea>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="content" class="form-label">Conteúdo (JSON)</label>
-                        <textarea class="form-control font-monospace" id="content" name="content" rows="6">{{ template.content }}</textarea>
-                        <div class="form-text">Formato JSON para configuração do modelo.</div>
+                <form method="POST" action="{{ url_for('template.edit_template', template_id=template._id) }}" id="templateForm">
+                    
+                    <!-- Basic Information -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label for="name" class="form-label">Nome do modelo<span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ template.name }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="active" {% if template.status == 'active' %}selected{% endif %}>Ativo</option>
+                                <option value="inactive" {% if template.status == 'inactive' %}selected{% endif %}>Inativo</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div class="mb-4">
-                        <label for="status" class="form-label">Status</label>
-                        <select class="form-select" id="status" name="status">
-                            <option value="active" {% if template.status == 'active' %}selected{% endif %}>Ativo</option>
-                            <option value="inactive" {% if template.status == 'inactive' %}selected{% endif %}>Inativo</option>
-                        </select>
+                        <label for="description" class="form-label">Descrição</label>
+                        <textarea class="form-control" id="description" name="description" rows="2">{{ template.description }}</textarea>
                     </div>
 
-                    <div class="d-flex flex-column flex-sm-row gap-2 justify-content-end">
+                    <!-- Tabs for advanced settings -->
+                    <ul class="nav nav-tabs mb-3" id="templateTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="header-tab" data-bs-toggle="tab" data-bs-target="#header" type="button" role="tab">
+                                <i class="fas fa-heading me-1"></i>Header
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="footer-tab" data-bs-toggle="tab" data-bs-target="#footer" type="button" role="tab">
+                                <i class="fas fa-shoe-prints me-1"></i>Footer
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="versions-tab" data-bs-toggle="tab" data-bs-target="#versions" type="button" role="tab">
+                                <i class="fas fa-mobile-alt me-1"></i>Versões
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="pages-tab" data-bs-toggle="tab" data-bs-target="#pages" type="button" role="tab">
+                                <i class="fas fa-file-alt me-1"></i>Páginas
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="templateTabsContent">
+                        <!-- Header Tab -->
+                        <div class="tab-pane fade show active" id="header" role="tabpanel">
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="headerEnabled" name="header[enabled]" 
+                                            {% if template.header and template.header.enabled %}checked{% endif %}>
+                                        <label class="form-check-label" for="headerEnabled">Habilitar Header</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="headerLogo" class="form-label">URL do Logo</label>
+                                    <input type="text" class="form-control" id="headerLogo" name="header[logo]" 
+                                        value="{{ template.header.logo if template.header else '' }}">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="headerBgColor" class="form-label">Cor de Fundo</label>
+                                    <div class="input-group">
+                                        <input type="color" class="form-control form-control-color" id="headerBgColor" 
+                                            name="header[backgroundColor]" 
+                                            value="{{ template.header.backgroundColor if template.header else '#ffffff' }}">
+                                        <input type="text" class="form-control" id="headerBgColorText" 
+                                            value="{{ template.header.backgroundColor if template.header else '#ffffff' }}">
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <label for="headerContent" class="form-label">Conteúdo HTML</label>
+                                    <textarea class="form-control font-monospace" id="headerContent" name="header[content]" rows="5">{{ template.header.content if template.header else '' }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Footer Tab -->
+                        <div class="tab-pane fade" id="footer" role="tabpanel">
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="footerEnabled" name="footer[enabled]" 
+                                            {% if template.footer and template.footer.enabled %}checked{% endif %}>
+                                        <label class="form-check-label" for="footerEnabled">Habilitar Footer</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="footerBgColor" class="form-label">Cor de Fundo</label>
+                                    <div class="input-group">
+                                        <input type="color" class="form-control form-control-color" id="footerBgColor" 
+                                            name="footer[backgroundColor]" 
+                                            value="{{ template.footer.backgroundColor if template.footer else '#f8f9fa' }}">
+                                        <input type="text" class="form-control" id="footerBgColorText" 
+                                            value="{{ template.footer.backgroundColor if template.footer else '#f8f9fa' }}">
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <label for="footerContent" class="form-label">Conteúdo HTML</label>
+                                    <textarea class="form-control font-monospace" id="footerContent" name="footer[content]" rows="5">{{ template.footer.content if template.footer else '' }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Versions Tab -->
+                        <div class="tab-pane fade" id="versions" role="tabpanel">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="border-bottom pb-2 mb-3"><i class="fas fa-mobile-alt me-2"></i>Versão Mobile</h6>
+                                    <div class="form-check form-switch mb-3">
+                                        <input class="form-check-input" type="checkbox" id="mobileEnabled" name="versions[mobile][enabled]" 
+                                            {% if template.versions and template.versions.mobile and template.versions.mobile.enabled %}checked{% endif %}>
+                                        <label class="form-check-label" for="mobileEnabled">Habilitar versão mobile</label>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="mobileCustomCss" class="form-label">CSS Customizado</label>
+                                        <textarea class="form-control font-monospace" id="mobileCustomCss" name="versions[mobile][customCss]" rows="4">{{ template.versions.mobile.customCss if template.versions and template.versions.mobile else '' }}</textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="mobileCustomJs" class="form-label">JavaScript Customizado</label>
+                                        <textarea class="form-control font-monospace" id="mobileCustomJs" name="versions[mobile][customJs]" rows="4">{{ template.versions.mobile.customJs if template.versions and template.versions.mobile else '' }}</textarea>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="border-bottom pb-2 mb-3"><i class="fas fa-desktop me-2"></i>Versão Desktop</h6>
+                                    <div class="form-check form-switch mb-3">
+                                        <input class="form-check-input" type="checkbox" id="desktopEnabled" name="versions[desktop][enabled]" 
+                                            {% if template.versions and template.versions.desktop and template.versions.desktop.enabled %}checked{% endif %}>
+                                        <label class="form-check-label" for="desktopEnabled">Habilitar versão desktop</label>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="desktopCustomCss" class="form-label">CSS Customizado</label>
+                                        <textarea class="form-control font-monospace" id="desktopCustomCss" name="versions[desktop][customCss]" rows="4">{{ template.versions.desktop.customCss if template.versions and template.versions.desktop else '' }}</textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="desktopCustomJs" class="form-label">JavaScript Customizado</label>
+                                        <textarea class="form-control font-monospace" id="desktopCustomJs" name="versions[desktop][customJs]" rows="4">{{ template.versions.desktop.customJs if template.versions and template.versions.desktop else '' }}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pages Tab -->
+                        <div class="tab-pane fade" id="pages" role="tabpanel">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0">Páginas do Template</h6>
+                                <button type="button" class="btn btn-sm btn-primary" id="addPageBtn">
+                                    <i class="fas fa-plus me-1"></i>Adicionar Página
+                                </button>
+                            </div>
+                            
+                            <div id="pagesList">
+                                {% if template.pages %}
+                                    {% for page in template.pages %}
+                                    <div class="page-item {% if page.required %}required{% endif %}" data-page-index="{{ loop.index0 }}">
+                                        <div class="row align-items-center">
+                                            <div class="col-md-3">
+                                                <label class="form-label small">ID da Página</label>
+                                                <input type="text" class="form-control form-control-sm" name="pages[{{ loop.index0 }}][id]" 
+                                                    value="{{ page.id }}" {% if page.required %}readonly{% endif %}>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="form-label small">Nome</label>
+                                                <input type="text" class="form-control form-control-sm" name="pages[{{ loop.index0 }}][name]" 
+                                                    value="{{ page.name }}" required>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="form-label small">Tipo</label>
+                                                <select class="form-select form-select-sm page-type-select" name="pages[{{ loop.index0 }}][type]" 
+                                                    {% if page.required %}disabled{% endif %}>
+                                                    <option value="home" {% if page.type == 'home' %}selected{% endif %}>Home</option>
+                                                    <option value="splashscreen" {% if page.type == 'splashscreen' %}selected{% endif %}>Splashscreen</option>
+                                                    <option value="login" {% if page.type == 'login' %}selected{% endif %}>Login</option>
+                                                    <option value="custom" {% if page.type == 'custom' %}selected{% endif %}>Customizada</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3 text-end">
+                                                {% if not page.required %}
+                                                <button type="button" class="btn btn-sm btn-danger remove-page-btn">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                                {% else %}
+                                                <span class="badge bg-success">Obrigatória</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Login Type Section (only for login pages) -->
+                                        <div class="login-types-section mt-3" style="{% if page.type != 'login' %}display:none;{% endif %}">
+                                            <label class="form-label small">Tipos de Login</label>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="pages[{{ loop.index0 }}][loginTypes][]" 
+                                                    value="user_pass" id="login_{{ loop.index0 }}_user_pass" 
+                                                    {% if page.loginTypes and 'user_pass' in page.loginTypes %}checked{% endif %}>
+                                                <label class="form-check-label" for="login_{{ loop.index0 }}_user_pass">
+                                                    Login + Senha
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="pages[{{ loop.index0 }}][loginTypes][]" 
+                                                    value="agency_account_pass" id="login_{{ loop.index0 }}_agency" 
+                                                    {% if page.loginTypes and 'agency_account_pass' in page.loginTypes %}checked{% endif %}>
+                                                <label class="form-check-label" for="login_{{ loop.index0 }}_agency">
+                                                    Agência + Conta + Senha
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="pages[{{ loop.index0 }}][loginTypes][]" 
+                                                    value="phone" id="login_{{ loop.index0 }}_phone" 
+                                                    {% if page.loginTypes and 'phone' in page.loginTypes %}checked{% endif %}>
+                                                <label class="form-check-label" for="login_{{ loop.index0 }}_phone">
+                                                    Celular
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="pages[{{ loop.index0 }}][loginTypes][]" 
+                                                    value="cpf" id="login_{{ loop.index0 }}_cpf" 
+                                                    {% if page.loginTypes and 'cpf' in page.loginTypes %}checked{% endif %}>
+                                                <label class="form-check-label" for="login_{{ loop.index0 }}_cpf">
+                                                    CPF
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="pages[{{ loop.index0 }}][loginTypes][]" 
+                                                    value="selfie" id="login_{{ loop.index0 }}_selfie" 
+                                                    {% if page.loginTypes and 'selfie' in page.loginTypes %}checked{% endif %}>
+                                                <label class="form-check-label" for="login_{{ loop.index0 }}_selfie">
+                                                    Selfie
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="pages[{{ loop.index0 }}][loginTypes][]" 
+                                                    value="document" id="login_{{ loop.index0 }}_document" 
+                                                    {% if page.loginTypes and 'document' in page.loginTypes %}checked{% endif %}>
+                                                <label class="form-check-label" for="login_{{ loop.index0 }}_document">
+                                                    Documento
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <!-- Duration for splashscreen -->
+                                        <div class="mt-3 splashscreen-duration" style="{% if page.type != 'splashscreen' %}display:none;{% endif %}">
+                                            <label class="form-label small">Duração (ms)</label>
+                                            <input type="number" class="form-control form-control-sm" name="pages[{{ loop.index0 }}][duration]" 
+                                                value="{{ page.duration if page.duration else 3000 }}" min="1000" max="10000">
+                                        </div>
+
+                                        <div class="mt-3">
+                                            <label class="form-label small">Conteúdo HTML</label>
+                                            <textarea class="form-control form-control-sm font-monospace" name="pages[{{ loop.index0 }}][content]" rows="3">{{ page.content if page.content else '' }}</textarea>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-column flex-sm-row gap-2 justify-content-end mt-4">
                         <a href="{{ url_for('template.list_templates') }}" class="btn btn-outline-secondary">
                             <i class="fas fa-arrow-left me-2"></i>Cancelar
                         </a>
@@ -50,4 +320,289 @@
         </div>
     </div>
 </div>
+
+<!-- Page Template (hidden) -->
+<template id="pageTemplate">
+    <div class="page-item" data-page-index="">
+        <div class="row align-items-center">
+            <div class="col-md-3">
+                <label class="form-label small">ID da Página</label>
+                <input type="text" class="form-control form-control-sm page-id-input" name="" placeholder="ex: login_page">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small">Nome</label>
+                <input type="text" class="form-control form-control-sm" name="" placeholder="ex: Login" required>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small">Tipo</label>
+                <select class="form-select form-select-sm page-type-select" name="">
+                    <option value="login">Login</option>
+                    <option value="custom">Customizada</option>
+                </select>
+            </div>
+            <div class="col-md-3 text-end">
+                <button type="button" class="btn btn-sm btn-danger remove-page-btn">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="login-types-section mt-3">
+            <label class="form-label small">Tipos de Login</label>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="user_pass">
+                <label class="form-check-label">Login + Senha</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="agency_account_pass">
+                <label class="form-check-label">Agência + Conta + Senha</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="phone">
+                <label class="form-check-label">Celular</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="cpf">
+                <label class="form-check-label">CPF</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="selfie">
+                <label class="form-check-label">Selfie</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="document">
+                <label class="form-check-label">Documento</label>
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <label class="form-label small">Conteúdo HTML</label>
+            <textarea class="form-control form-control-sm font-monospace" name="" rows="3"></textarea>
+        </div>
+    </div>
+</template>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+<script>
+// Configure Monaco Editor
+require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' }});
+
+document.addEventListener('DOMContentLoaded', function() {
+    let editors = {};
+    
+    // Initialize Monaco Editor
+    require(['vs/editor/editor.main'], function() {
+        // Initialize editors for header content
+        initMonacoEditor('headerContent', 'html');
+        initMonacoEditor('footerContent', 'html');
+        
+        // Initialize editors for custom CSS/JS
+        initMonacoEditor('mobileCustomCss', 'css');
+        initMonacoEditor('mobileCustomJs', 'javascript');
+        initMonacoEditor('desktopCustomCss', 'css');
+        initMonacoEditor('desktopCustomJs', 'javascript');
+        
+        // Initialize existing page content editors
+        document.querySelectorAll('[name*="[content]"]').forEach(function(textarea, index) {
+            const uniqueId = 'pageContent_' + index;
+            textarea.id = uniqueId;
+            initMonacoEditor(uniqueId, 'html');
+        });
+    });
+    
+    function initMonacoEditor(elementId, language) {
+        const element = document.getElementById(elementId);
+        if (!element) return;
+        
+        // Create a container for Monaco
+        const container = document.createElement('div');
+        container.style.height = '200px';
+        container.style.border = '1px solid #ddd';
+        container.style.borderRadius = '0.25rem';
+        
+        // Hide the original textarea
+        element.style.display = 'none';
+        element.parentNode.insertBefore(container, element.nextSibling);
+        
+        // Create editor
+        const editor = monaco.editor.create(container, {
+            value: element.value,
+            language: language,
+            theme: 'vs',
+            minimap: { enabled: false },
+            lineNumbers: 'on',
+            roundedSelection: false,
+            scrollBeyondLastLine: false,
+            automaticLayout: true,
+            fontSize: 13
+        });
+        
+        // Sync editor content with textarea
+        editor.onDidChangeModelContent(function() {
+            element.value = editor.getValue();
+        });
+        
+        editors[elementId] = editor;
+    }
+
+    // Sync color inputs
+    const headerColorInput = document.getElementById('headerBgColor');
+    const headerColorText = document.getElementById('headerBgColorText');
+    const footerColorInput = document.getElementById('footerBgColor');
+    const footerColorText = document.getElementById('footerBgColorText');
+
+    if (headerColorInput && headerColorText) {
+        headerColorInput.addEventListener('input', function() {
+            headerColorText.value = this.value;
+        });
+        headerColorText.addEventListener('input', function() {
+            headerColorInput.value = this.value;
+        });
+    }
+
+    if (footerColorInput && footerColorText) {
+        footerColorInput.addEventListener('input', function() {
+            footerColorText.value = this.value;
+        });
+        footerColorText.addEventListener('input', function() {
+            footerColorInput.value = this.value;
+        });
+    }
+
+    // Page management
+    const pagesList = document.getElementById('pagesList');
+    const addPageBtn = document.getElementById('addPageBtn');
+    const pageTemplate = document.getElementById('pageTemplate');
+    let pageCounter = pagesList.querySelectorAll('.page-item').length;
+
+    // Add new page
+    addPageBtn.addEventListener('click', function() {
+        const templateContent = pageTemplate.content;
+        const clone = document.importNode(templateContent, true);
+        const pageItem = clone.querySelector('.page-item');
+        
+        // Set index
+        pageItem.setAttribute('data-page-index', pageCounter);
+        
+        // Update Page ID input
+        const pageIdInput = clone.querySelector('.page-id-input');
+        if (pageIdInput) {
+            pageIdInput.setAttribute('name', `pages[${pageCounter}][id]`);
+        }
+        
+        // Update Name input
+        const nameInputs = clone.querySelectorAll('input[type="text"]');
+        if (nameInputs[1]) {
+            nameInputs[1].setAttribute('name', `pages[${pageCounter}][name]`);
+        }
+        
+        // Update Type select
+        const typeSelect = clone.querySelector('.page-type-select');
+        if (typeSelect) {
+            typeSelect.setAttribute('name', `pages[${pageCounter}][type]`);
+        }
+        
+        // Update Content textarea
+        const contentTextarea = clone.querySelector('textarea');
+        if (contentTextarea) {
+            const contentId = `newPageContent_${pageCounter}`;
+            contentTextarea.setAttribute('name', `pages[${pageCounter}][content]`);
+            contentTextarea.setAttribute('id', contentId);
+        }
+        
+        // Update Login Types checkboxes
+        const checkboxes = clone.querySelectorAll('.login-types-section input[type="checkbox"]');
+        checkboxes.forEach(function(checkbox) {
+            const value = checkbox.value;
+            const id = `login_${pageCounter}_${value}`;
+            checkbox.setAttribute('name', `pages[${pageCounter}][loginTypes][]`);
+            checkbox.setAttribute('id', id);
+            const label = checkbox.nextElementSibling;
+            if (label) {
+                label.setAttribute('for', id);
+            }
+        });
+        
+        // Append to list
+        pagesList.appendChild(clone);
+        
+        // Initialize Monaco Editor for the new page content
+        if (contentTextarea && typeof monaco !== 'undefined') {
+            setTimeout(function() {
+                initMonacoEditor(contentTextarea.id, 'html');
+            }, 100);
+        }
+        
+        // Attach event listeners
+        const addedPageItem = pagesList.querySelector(`[data-page-index="${pageCounter}"]`);
+        if (addedPageItem) {
+            attachPageTypeListener(addedPageItem);
+            attachRemoveListener(addedPageItem);
+        }
+        
+        pageCounter++;
+    });
+
+    // Handle page type changes
+    function attachPageTypeListener(pageItem) {
+        const typeSelect = pageItem.querySelector('.page-type-select');
+        const loginTypesSection = pageItem.querySelector('.login-types-section');
+        
+        if (typeSelect && loginTypesSection) {
+            typeSelect.addEventListener('change', function() {
+                if (this.value === 'login') {
+                    loginTypesSection.style.display = 'block';
+                } else {
+                    loginTypesSection.style.display = 'none';
+                }
+            });
+        }
+    }
+
+    // Handle remove page
+    function attachRemoveListener(pageItem) {
+        const removeBtn = pageItem.querySelector('.remove-page-btn');
+        if (removeBtn) {
+            removeBtn.addEventListener('click', function() {
+                if (confirm('Deseja realmente remover esta página?')) {
+                    pageItem.remove();
+                }
+            });
+        }
+    }
+
+    // Attach listeners to existing pages
+    document.querySelectorAll('.page-item').forEach(function(pageItem) {
+        attachPageTypeListener(pageItem);
+        attachRemoveListener(pageItem);
+    });
+
+    // Form validation
+    document.getElementById('templateForm').addEventListener('submit', function(e) {
+        const pageIds = [];
+        let hasDuplicate = false;
+
+        document.querySelectorAll('.page-id-input').forEach(function(input) {
+            const id = input.value.trim();
+            if (id) {
+                if (pageIds.includes(id)) {
+                    hasDuplicate = true;
+                    input.classList.add('is-invalid');
+                } else {
+                    pageIds.push(id);
+                    input.classList.remove('is-invalid');
+                }
+            }
+        });
+
+        if (hasDuplicate) {
+            e.preventDefault();
+            alert('IDs de página duplicados encontrados! Cada página deve ter um ID único.');
+        }
+    });
+});
+</script>
 {% endblock %}

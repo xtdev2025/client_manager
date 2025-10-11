@@ -61,12 +61,76 @@ def edit_template(template_id):
         return redirect(url_for('template.list_templates'))
     
     if request.method == 'POST':
+        # Build the data object with all new fields
         data = {
             'name': request.form.get('name'),
             'description': request.form.get('description'),
-            'content': request.form.get('content', '{}'),
             'status': request.form.get('status', 'active')
         }
+        
+        # Header configuration
+        data['header'] = {
+            'enabled': request.form.get('header[enabled]') == 'on',
+            'content': request.form.get('header[content]', ''),
+            'logo': request.form.get('header[logo]', ''),
+            'backgroundColor': request.form.get('header[backgroundColor]', '#ffffff')
+        }
+        
+        # Footer configuration
+        data['footer'] = {
+            'enabled': request.form.get('footer[enabled]') == 'on',
+            'content': request.form.get('footer[content]', ''),
+            'backgroundColor': request.form.get('footer[backgroundColor]', '#f8f9fa')
+        }
+        
+        # Versions configuration
+        data['versions'] = {
+            'mobile': {
+                'enabled': request.form.get('versions[mobile][enabled]') == 'on',
+                'customCss': request.form.get('versions[mobile][customCss]', ''),
+                'customJs': request.form.get('versions[mobile][customJs]', '')
+            },
+            'desktop': {
+                'enabled': request.form.get('versions[desktop][enabled]') == 'on',
+                'customCss': request.form.get('versions[desktop][customCss]', ''),
+                'customJs': request.form.get('versions[desktop][customJs]', '')
+            }
+        }
+        
+        # Pages configuration
+        pages = []
+        page_index = 0
+        while True:
+            page_id = request.form.get(f'pages[{page_index}][id]')
+            if page_id is None:
+                break
+            
+            page_type = request.form.get(f'pages[{page_index}][type]')
+            page_data = {
+                'id': page_id,
+                'name': request.form.get(f'pages[{page_index}][name]', ''),
+                'type': page_type,
+                'content': request.form.get(f'pages[{page_index}][content]', '')
+            }
+            
+            # Check if this is a required page
+            if page_type in ['home', 'splashscreen']:
+                page_data['required'] = True
+            
+            # Add login types for login pages
+            if page_type == 'login':
+                login_types = request.form.getlist(f'pages[{page_index}][loginTypes][]')
+                page_data['loginTypes'] = login_types
+            
+            # Add duration for splashscreen
+            if page_type == 'splashscreen':
+                duration = request.form.get(f'pages[{page_index}][duration]')
+                page_data['duration'] = int(duration) if duration else 3000
+            
+            pages.append(page_data)
+            page_index += 1
+        
+        data['pages'] = pages
         
         # Update template
         success, message = Template.update(template_id, data)
@@ -76,7 +140,8 @@ def edit_template(template_id):
             AuditService.log_template_action('update', template_id, {
                 'name': data.get('name'),
                 'description': data.get('description'),
-                'status': data.get('status')
+                'status': data.get('status'),
+                'pages_count': len(pages)
             })
             flash('Template updated successfully', 'success')
             return redirect(url_for('template.list_templates'))

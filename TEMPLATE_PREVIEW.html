@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Template Editor - Preview</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 1200px;
+            width: 100%;
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2em;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 40px;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .feature-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+        .feature-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+            transform: translateY(-2px);
+        }
+        .feature-card h3 {
+            color: #667eea;
+            margin: 0 0 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .feature-card ul {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0 0 0;
+        }
+        .feature-card li {
+            padding: 5px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+        .feature-card li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .icon {
+            font-size: 24px;
+        }
+        .highlight-box {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .highlight-box h3 {
+            margin-top: 0;
+            color: #667eea;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #667eea;
+            color: white;
+            border-radius: 12px;
+            font-size: 0.9em;
+            margin: 5px 5px 5px 0;
+        }
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        .demo-section {
+            margin-top: 40px;
+            border-top: 2px solid #e0e0e0;
+            padding-top: 30px;
+        }
+        .screenshot {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        .screenshot img {
+            width: 100%;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 Template Editor 2.0</h1>
+            <p>Sistema Avançado de Gerenciamento de Templates</p>
+        </div>
+        
+        <div class="content">
+            <div class="highlight-box">
+                <h3>✨ Melhorias Implementadas</h3>
+                <p>O sistema de templates foi completamente renovado com funcionalidades profissionais para edição e customização completa de páginas web.</p>
+            </div>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>
+                        <span class="icon">📝</span>
+                        Header & Footer
+                    </h3>
+                    <ul>
+                        <li>Ativar/desativar</li>
+                        <li>Logo customizado</li>
+                        <li>Cor de fundo</li>
+                        <li>Editor HTML</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <h3>
+                        <span class="icon">📱</span>
+                        Responsivo
+                    </h3>
+                    <ul>
+                        <li>Versão Mobile</li>
+                        <li>Versão Desktop</li>
+                        <li>CSS customizado</li>
+                        <li>JS customizado</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <h3>
+                        <span class="icon">📄</span>
+                        Páginas
+                    </h3>
+                    <ul>
+                        <li>Home (obrigatória)</li>
+                        <li>Splashscreen</li>
+                        <li>Páginas internas</li>
+                        <li>Adicionar/remover</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <h3>
+                        <span class="icon">🔐</span>
+                        Tipos de Login
+                    </h3>
+                    <ul>
+                        <li>Login + Senha</li>
+                        <li>Agência + Conta</li>
+                        <li>CPF / Celular</li>
+                        <li>Selfie / Documento</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <h3>
+                        <span class="icon">💻</span>
+                        Monaco Editor
+                    </h3>
+                    <ul>
+                        <li>Syntax highlight</li>
+                        <li>Auto-complete</li>
+                        <li>Validação em tempo real</li>
+                        <li>Mesmo editor do VS Code</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <h3>
+                        <span class="icon">✅</span>
+                        Validações
+                    </h3>
+                    <ul>
+                        <li>IDs únicos</li>
+                        <li>Campos obrigatórios</li>
+                        <li>Páginas requeridas</li>
+                        <li>Estrutura de dados</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="demo-section">
+                <h2>🚀 Como Funciona</h2>
+                
+                <h3>1. Acesse o Editor de Templates</h3>
+                <p>Navegue até <strong>/templates/</strong> e clique em "Editar" em qualquer template.</p>
+
+                <h3>2. Configure as Abas</h3>
+                <div style="margin: 20px 0;">
+                    <span class="badge">Header</span>
+                    <span class="badge">Footer</span>
+                    <span class="badge">Versões</span>
+                    <span class="badge">Páginas</span>
+                </div>
+
+                <h3>3. Adicione Páginas Personalizadas</h3>
+                <p>Clique em "Adicionar Página" para criar novas páginas internas. Configure o tipo (Login, Customizada) e os tipos de autenticação disponíveis.</p>
+
+                <h3>4. Use o Monaco Editor</h3>
+                <p>Todos os campos de HTML, CSS e JavaScript agora utilizam o Monaco Editor com syntax highlighting e auto-complete.</p>
+            </div>
+
+            <div class="highlight-box" style="border-left-color: #4CAF50;">
+                <h3>📊 Exemplo de Estrutura</h3>
+                <div class="code-block">
+{
+  "name": "Meu Template",
+  "header": {
+    "enabled": true,
+    "logo": "https://example.com/logo.png",
+    "backgroundColor": "#667eea"
+  },
+  "versions": {
+    "mobile": { "enabled": true },
+    "desktop": { "enabled": true }
+  },
+  "pages": [
+    { "id": "home", "type": "home", "required": true },
+    { "id": "login", "type": "login", 
+      "loginTypes": ["cpf", "phone", "selfie"] }
+  ]
+}
+                </div>
+            </div>
+
+            <div class="highlight-box" style="border-left-color: #FF9800;">
+                <h3>⚡ Migração Automática</h3>
+                <p>Execute o script de migração para atualizar templates existentes:</p>
+                <div class="code-block">
+python3 migrate_templates.py
+                </div>
+                <p>✅ Seus templates existentes foram atualizados automaticamente!</p>
+            </div>
+
+            <div style="margin-top: 40px; text-align: center; padding: 30px; background: #f8f9fa; border-radius: 8px;">
+                <h2 style="color: #667eea; margin-bottom: 15px;">🎉 Pronto para Usar!</h2>
+                <p style="font-size: 1.1em; color: #666;">
+                    Acesse <strong>http://127.0.0.1:5000/templates/</strong> para começar a editar seus templates.
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

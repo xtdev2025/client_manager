@@ -10,12 +10,52 @@ class Template:
     def create(name, description, content=None, status='active'):
         """Create a new template"""
         try:
-            # Create template object
+            # Create template object with enhanced structure
             new_template = {
                 'name': name,
                 'description': description,
                 'content': content or {},
                 'status': status,
+                'header': {
+                    'enabled': False,
+                    'content': '',
+                    'logo': '',
+                    'backgroundColor': '#ffffff'
+                },
+                'footer': {
+                    'enabled': False,
+                    'content': '',
+                    'backgroundColor': '#f8f9fa'
+                },
+                'versions': {
+                    'mobile': {
+                        'enabled': True,
+                        'customCss': '',
+                        'customJs': ''
+                    },
+                    'desktop': {
+                        'enabled': True,
+                        'customCss': '',
+                        'customJs': ''
+                    }
+                },
+                'pages': [
+                    {
+                        'id': 'home',
+                        'name': 'Home',
+                        'type': 'home',
+                        'required': True,
+                        'content': ''
+                    },
+                    {
+                        'id': 'splashscreen',
+                        'name': 'Splashscreen',
+                        'type': 'splashscreen',
+                        'required': True,
+                        'duration': 3000,
+                        'content': ''
+                    }
+                ],
                 'createdAt': datetime.utcnow(),
                 'updatedAt': datetime.utcnow()
             }
