@@ -54,9 +54,15 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {% if '/admins/' in request.path %}active{% endif %}" 
+                    <a class="nav-link {% if '/admins/' in request.path and 'audit-logs' not in request.path %}active{% endif %}" 
                        href="{{ url_for('admin.list_admins') }}">
                         <i class="fas fa-user-shield"></i> Administradores
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if 'audit-logs' in request.path %}active{% endif %}" 
+                       href="{{ url_for('admin.audit_logs') }}">
+                        <i class="fas fa-history"></i> Logs de Auditoria
                     </a>
                 </li>
                 {% endif %}
