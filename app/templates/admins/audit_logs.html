@@ -11,8 +11,9 @@
     </div>
     <div class="card-body">
         <form method="GET" action="{{ url_for('admin.audit_logs') }}" class="row g-3">
-            <div class="col-md-3">
-                <label for="entity_type" class="form-label">Tipo de Entidade</label>
+            <!-- Filtros Principais -->
+            <div class="col-lg-4 col-md-6">
+                <label for="entity_type" class="form-label fw-bold">Tipo de Entidade</label>
                 <select name="entity_type" id="entity_type" class="form-select">
                     <option value="">Todos os Tipos</option>
                     <option value="admin" {% if filters.entity_type == 'admin' %}selected{% endif %}>Admin</option>
@@ -24,8 +25,8 @@
                 </select>
             </div>
             
-            <div class="col-md-3">
-                <label for="action" class="form-label">Ação</label>
+            <div class="col-lg-4 col-md-6">
+                <label for="action" class="form-label fw-bold">Ação</label>
                 <select name="action" id="action" class="form-select">
                     <option value="">Todas as Ações</option>
                     <option value="create" {% if filters.action == 'create' %}selected{% endif %}>Criar</option>
@@ -36,8 +37,8 @@
                 </select>
             </div>
             
-            <div class="col-md-3">
-                <label for="user_id" class="form-label">Usuário</label>
+            <div class="col-lg-4 col-md-6">
+                <label for="user_id" class="form-label fw-bold">Usuário</label>
                 <select name="user_id" id="user_id" class="form-select">
                     <option value="">Todos os Usuários</option>
                     {% for admin in admins %}
@@ -48,23 +49,25 @@
                 </select>
             </div>
 
-            <div class="col-md-3">
-                <label for="start_date" class="form-label">Data Início</label>
+            <!-- Filtros de Data -->
+            <div class="col-lg-4 col-md-6">
+                <label for="start_date" class="form-label fw-bold">Data Início</label>
                 <input type="date" name="start_date" id="start_date" class="form-control" 
-                       value="{{ filters.start_date }}">
+                       value="{{ filters.start_date }}" placeholder="Selecione a data inicial">
             </div>
 
-            <div class="col-md-3">
-                <label for="end_date" class="form-label">Data Fim</label>
+            <div class="col-lg-4 col-md-6">
+                <label for="end_date" class="form-label fw-bold">Data Fim</label>
                 <input type="date" name="end_date" id="end_date" class="form-control" 
-                       value="{{ filters.end_date }}">
+                       value="{{ filters.end_date }}" placeholder="Selecione a data final">
             </div>
 
-            <div class="col-md-12">
+            <!-- Botões de Ação -->
+            <div class="col-12 d-flex justify-content-end gap-2">
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-filter me-2"></i>Aplicar Filtros
                 </button>
-                <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-secondary">
+                <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-outline-secondary">
                     <i class="fas fa-times me-2"></i>Limpar Filtros
                 </a>
             </div>

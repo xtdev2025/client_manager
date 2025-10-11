@@ -1,23 +1,30 @@
-{% extends "layout.html" %}
+{% set resolved_user_type = user_type if user_type is defined else ('admin' if user.role in ['admin', 'super_admin'] else 'client') %}
+
+{% if resolved_user_type == 'client' %}
+    {% extends "client_layout.html" %}
+{% else %}
+    {% extends "layout.html" %}
+{% endif %}
 
 {% block title %}Painel - Gerenciador de Clientes{% endblock %}
 
 {% block page_title %}
+    {% if resolved_user_type == 'admin' %}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="mb-1">Painel</h1>
             <p class="text-muted mb-0">Bem-vindo de volta, {{ user.username }}! Veja o que está acontecendo hoje.</p>
         </div>
     </div>
+    {% endif %}
 {% endblock %}
 
 {% block content %}
-<div class="row">
-    {% set resolved_user_type = user_type if user_type is defined else ('admin' if user.role in ['admin', 'super_admin'] else 'client') %}
-    {% if resolved_user_type == 'admin' %}
+{% if resolved_user_type == 'admin' %}
+    <div class="row">
         {% include 'dashboard/admin.html' %}
-    {% else %}
-        {% include 'dashboard/client.html' %}
-    {% endif %}
-</div>
+    </div>
+{% else %}
+    {% include 'dashboard/client.html' %}
+{% endif %}
 {% endblock %}

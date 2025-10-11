@@ -949,3 +949,55 @@ hr {
     border-color: rgba(154, 103, 0, 0.4);
     background-color: rgba(154, 103, 0, 0.1);
 }
+
+/* Client Dashboard Sidebar Styles */
+.sticky-top {
+    position: sticky;
+    z-index: 1020;
+}
+
+.list-group-item-action {
+    transition: all 0.2s ease;
+}
+
+.list-group-item-action:hover {
+    background-color: var(--bg-secondary);
+    border-left: 3px solid var(--accent-color);
+    padding-left: calc(1rem - 3px) !important;
+}
+
+.list-group-item-action:active {
+    background-color: var(--neutral-muted);
+}
+
+.list-group-item.bg-light {
+    background-color: var(--bg-secondary) !important;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.list-group-item .badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 6px;
+}
+
+/* Smooth scrolling for anchor links */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Improved sidebar card shadow */
+.card.shadow-sm {
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-default);
+}
+
+/* Active menu item */
+.list-group-item-action.active {
+    background-color: var(--accent-color);
+    color: white;
+    border-left: 3px solid var(--accent-emphasis);
+}
