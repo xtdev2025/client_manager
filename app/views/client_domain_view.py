@@ -237,5 +237,82 @@ def my_infos():
         flash(f'Erro ao carregar informações: {str(e)}', 'danger')
         return redirect(url_for('main.dashboard'))
 
+@client_domain_bp.route('/my-change-password', methods=['GET', 'POST'])
+@login_required
+def change_password():
+    """Change client password"""
+    # Only clients can access
+    if current_user.is_admin:
+        flash('Esta página é apenas para clientes.', 'warning')
+        return redirect(url_for('main.dashboard'))
+    
+    try:
+        # Convert user id to ObjectId
+        user_id = ObjectId(current_user.id) if isinstance(current_user.id, str) else current_user.id
+        
+        # Get client data and plan
+        client = Client.get_by_id(user_id)
+        plan = None
+        expiration_date = None
+        
+        if client and client.get('plan_id'):
+            plan = Plan.get_by_id(client.get('plan_id'))
+            
+            # Calculate expiration date
+            if client.get('expiredAt'):
+                expiration_date = client.get('expiredAt')
+            elif plan and plan.get('duration_days'):
+                activation_date = client.get('planActivatedAt') or client.get('updatedAt') or client.get('createdAt')
+                if activation_date:
+                    expiration_date = activation_date + timedelta(days=plan.get('duration_days'))
+        
+        if request.method == 'POST':
+            from werkzeug.security import check_password_hash, generate_password_hash
+            
+            current_password = request.form.get('current_password')
+            new_password = request.form.get('new_password')
+            confirm_password = request.form.get('confirm_password')
+            
+            # Validations
+            if not current_password or not new_password or not confirm_password:
+                flash('Todos os campos são obrigatórios.', 'danger')
+                return redirect(url_for('client_domain.change_password'))
+            
+            # Check current password
+            if not check_password_hash(client.get('password'), current_password):
+                flash('Senha atual incorreta.', 'danger')
+                return redirect(url_for('client_domain.change_password'))
+            
+            # Check if new passwords match
+            if new_password != confirm_password:
+                flash('As senhas não coincidem.', 'danger')
+                return redirect(url_for('client_domain.change_password'))
+            
+            # Check password length
+            if len(new_password) < 6:
+                flash('A senha deve ter no mínimo 6 caracteres.', 'danger')
+                return redirect(url_for('client_domain.change_password'))
+            
+            # Update password
+            mongo.db.clients.update_one(
+                {'_id': user_id},
+                {'$set': {
+                    'password': generate_password_hash(new_password),
+                    'updatedAt': datetime.utcnow()
+                }}
+            )
+            
+            flash('Senha alterada com sucesso!', 'success')
+            return redirect(url_for('main.dashboard'))
+        
+        return render_template('client/my_change_password.html',
+                             user=client,
+                             plan=plan,
+                             now=datetime.utcnow(),
+                             navbar_plan_expiration=expiration_date)
+    except Exception as e:
+        flash(f'Erro ao alterar senha: {str(e)}', 'danger')
+        return redirect(url_for('main.dashboard'))
+
 # Import mongo at the bottom to avoid circular import
 from app import mongo

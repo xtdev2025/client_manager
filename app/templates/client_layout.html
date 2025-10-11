@@ -92,7 +92,7 @@
             <div class="sidebar-divider"></div>
 
             <!-- Configurações -->
-            <a href="#" class="sidebar-menu-item">
+            <a href="{{ url_for('client_domain.change_password') }}" class="sidebar-menu-item {{ 'active' if request.endpoint == 'client_domain.change_password' else '' }}">
                 <i class="fas fa-key"></i>
                 <span>Trocar Senha</span>
             </a>
