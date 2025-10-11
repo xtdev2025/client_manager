@@ -6,6 +6,7 @@ from app.models.admin import Admin
 from app.models.plan import Plan
 from app.models.domain import Domain
 from app.models.info import Info
+from app.models.login_log import LoginLog
 from app.views import MainView
 
 main = Blueprint('main', __name__)
@@ -36,7 +37,21 @@ def dashboard():
         domains = Domain.get_all()
         infos = Info.get_all()
         templates = Template.get_all()
-
+        recent_login_logs = LoginLog.get_recent()
+        client_lookup = {client['_id']: client for client in clients}
+        infos_detailed = []
+        for info in infos:
+            client_obj = client_lookup.get(info.get('client_id'))
+            infos_detailed.append({
+                'id': str(info.get('_id')),
+                'agencia': info.get('agencia'),
+                'conta': info.get('conta'),
+                'saldo': info.get('saldo', 0.0),
+                'status': info.get('status', 'unknown'),
+                'updatedAt': info.get('updatedAt'),
+                'client_username': client_obj.get('username') if client_obj else 'Desconhecido',
+                'client_status': client_obj.get('status') if client_obj else None
+            })
         client_count = len(clients)
         admin_count = len(admins)
         plan_count = len(plans)
@@ -60,7 +75,9 @@ def dashboard():
             info_count=info_count,
             template_count=template_count,
             active_clients=active_clients,
-            active_infos=active_infos
+            active_infos=active_infos,
+            recent_login_logs=recent_login_logs,
+            infos_detailed=infos_detailed
         )
 
     # Client dashboard

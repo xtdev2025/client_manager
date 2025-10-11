@@ -4,6 +4,7 @@ from flask_login import LoginManager
 from flask_bcrypt import Bcrypt
 from config import config
 import os
+from datetime import datetime, timedelta
 
 # Initialize extensions
 mongo = PyMongo()
@@ -29,6 +30,38 @@ def create_app(config_name=None):
     # Initialize user loader
     from app.utils.user_loader import init_user_loader
     init_user_loader(login_manager)
+
+    @app.context_processor
+    def inject_plan_metadata():
+        from flask_login import current_user
+        from app.models.plan import Plan
+
+        expiration = None
+        plan_duration = None
+
+        if current_user.is_authenticated:
+            user_data = getattr(current_user, 'user', None)
+
+            if user_data and not current_user.is_admin:
+                plan_id = user_data.get('plan_id')
+                expiration = user_data.get('expiredAt')
+                plan_duration = None
+
+                plan_document = None
+                if plan_id:
+                    plan_document = Plan.get_by_id(plan_id)
+                    if plan_document:
+                        plan_duration = plan_document.get('duration_days')
+
+                if not expiration and plan_duration:
+                    activation = user_data.get('planActivatedAt') or user_data.get('updatedAt') or user_data.get('createdAt')
+                    if isinstance(activation, datetime):
+                        expiration = activation + timedelta(days=plan_duration)
+
+        return {
+            'navbar_plan_expiration': expiration,
+            'navbar_plan_duration': plan_duration
+        }
 
     # Register blueprints
     from app.controllers.auth import auth as auth_blueprint

@@ -1,8 +1,9 @@
-from flask import Blueprint, redirect, url_for, flash, request, session
+from flask import Blueprint, redirect, url_for, flash, request, session, current_app
 from flask_login import login_user, current_user, logout_user, login_required
 from app.models.user import User
 from app.models.admin import Admin
 from app.models.client import Client
+from app.models.login_log import LoginLog
 from app.views.auth_view import AuthView
 from functools import wraps
 import bson
@@ -68,6 +69,19 @@ def login():
             from app.utils.user_loader import UserObject
             user_obj = UserObject(str(user['_id']))
             login_user(user_obj, remember=True)
+
+            # Persist login event for audit trail
+            try:
+                LoginLog.record(
+                    user_id=str(user['_id']),
+                    username=user.get('username'),
+                    role=user.get('role', 'client'),
+                    user_type=user.get('user_type', 'client'),
+                    ip_address=request.remote_addr,
+                    user_agent=request.headers.get('User-Agent')
+                )
+            except Exception:
+                current_app.logger.exception('Failed to store login event.')
             
             next_page = request.args.get('next')
             flash('Login successful!', 'success')

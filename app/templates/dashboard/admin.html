@@ -199,3 +199,120 @@
             </div>
         </div>
     </div>
+
+    <div class="col-12 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-database text-success me-2"></i>Informações de clientes</h5>
+                <span class="badge bg-light text-dark">{{ infos_detailed|length }} registros</span>
+            </div>
+            <div class="card-body p-0">
+                {% if infos_detailed %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Agência</th>
+                                <th>Conta</th>
+                                <th>Saldo</th>
+                                <th>Status</th>
+                                <th>Atualizado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for info in infos_detailed %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        <strong>{{ info.client_username }}</strong>
+                                        <small class="text-muted text-uppercase">{{ info.client_status|default('N/D') }}</small>
+                                    </div>
+                                </td>
+                                <td>{{ info.agencia }}</td>
+                                <td>{{ info.conta }}</td>
+                                <td class="text-success fw-semibold">R$ {{ "%.2f"|format(info.saldo|default(0)) }}</td>
+                                <td>
+                                    {% if info.status == 'active' %}
+                                    <span class="badge bg-success">Ativo</span>
+                                    {% elif info.status == 'inactive' %}
+                                    <span class="badge bg-warning text-dark">Inativo</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">{{ info.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if info.updatedAt %}
+                                        {{ info.updatedAt.strftime('%Y-%m-%d %H:%M:%S') }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-database fa-3x text-muted mb-3"></i>
+                    <p class="text-muted mb-0">Nenhum registro de informação encontrado.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-history text-info me-2"></i>Últimos logins</h5>
+                <span class="badge bg-light text-dark">{{ recent_login_logs|length }} registros</span>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_login_logs %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Usuário</th>
+                                <th>Função</th>
+                                <th>Tipo</th>
+                                <th>IP</th>
+                                <th>Data</th>
+                                <th>Agente</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in recent_login_logs %}
+                            <tr>
+                                <td><strong>{{ log.username }}</strong></td>
+                                <td>
+                                    <span class="badge bg-primary text-uppercase">{{ (log.role or 'client') }}</span>
+                                </td>
+                                <td>{{ log.user_type|default('client') }}</td>
+                                <td>{{ log.ip_address|default('—') }}</td>
+                                <td>
+                                    {% if log.created_at %}
+                                        {{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+                                <td class="text-truncate" style="max-width: 280px;" title="{{ log.user_agent }}">
+                                    {{ log.user_agent|default('—') }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <p class="text-muted mb-0">Nenhum login registrado ainda.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>

@@ -1,8 +1,9 @@
 from flask import current_app
 from bson.objectid import ObjectId
-from datetime import datetime
+from datetime import datetime, timedelta
 from app import mongo, bcrypt
 from app.models.user import User
+from app.models.plan import Plan
 
 class Client(User):
     """Client model for client management"""
@@ -18,17 +19,31 @@ class Client(User):
             # Hash password
             hashed_pw = bcrypt.generate_password_hash(password).decode('utf-8')
             
+            # Prepare related references
+            plan_object_id = ObjectId(plan_id) if plan_id else None
+            template_object_id = ObjectId(template_id) if template_id else None
+
+            # Calculate plan expiration when applicable
+            expiration_date = None
+            plan_activation = None
+            if plan_object_id:
+                plan = Plan.get_by_id(plan_object_id)
+                if plan and plan.get('duration_days'):
+                    plan_activation = datetime.utcnow()
+                    expiration_date = plan_activation + timedelta(days=plan.get('duration_days'))
+
             # Create client object
             new_client = {
                 'username': username,
                 'password': hashed_pw,
-                'plan_id': ObjectId(plan_id) if plan_id else None,
-                'template_id': ObjectId(template_id) if template_id else None,
+                'plan_id': plan_object_id,
+                'template_id': template_object_id,
                 'status': status,
                 'role': 'client',
                 'createdAt': datetime.utcnow(),
                 'updatedAt': datetime.utcnow(),
-                'expiredAt': None  # Set based on plan later
+                'planActivatedAt': plan_activation,
+                'expiredAt': expiration_date
             }
             
             # Insert into database
@@ -48,15 +63,38 @@ class Client(User):
         try:
             if isinstance(client_id, str):
                 client_id = ObjectId(client_id)
+
+            existing_client = Client.get_by_id(client_id)
+            if not existing_client:
+                return False, "Client not found"
                 
             # Ensure password is hashed if provided
             if 'password' in data:
                 data['password'] = bcrypt.generate_password_hash(data['password']).decode('utf-8')
             
-            # Convert plan_id to ObjectId if provided
-            if 'plan_id' in data and data['plan_id']:
-                data['plan_id'] = ObjectId(data['plan_id'])
-                
+            # Convert plan_id to ObjectId if provided and update expiration
+            if 'plan_id' in data:
+                if data['plan_id']:
+                    plan_object_id = ObjectId(data['plan_id'])
+                    data['plan_id'] = plan_object_id
+
+                    plan = Plan.get_by_id(plan_object_id)
+                    plan_duration = plan.get('duration_days') if plan else None
+                    plan_changed = existing_client.get('plan_id') != plan_object_id if existing_client else True
+                    expiration_missing = not existing_client.get('expiredAt') if existing_client else True
+
+                    if plan_duration and (plan_changed or expiration_missing):
+                        activation = datetime.utcnow()
+                        data['planActivatedAt'] = activation
+                        data['expiredAt'] = activation + timedelta(days=plan_duration)
+                    else:
+                        data['planActivatedAt'] = existing_client.get('planActivatedAt')
+                        data['expiredAt'] = existing_client.get('expiredAt')
+                else:
+                    data['plan_id'] = None
+                    data['planActivatedAt'] = None
+                    data['expiredAt'] = None
+
             # Convert template_id to ObjectId if provided
             if 'template_id' in data and data['template_id']:
                 data['template_id'] = ObjectId(data['template_id'])

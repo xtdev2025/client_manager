@@ -65,8 +65,13 @@
             <!-- Theme toggle and User menu -->
             <ul class="navbar-nav navbar-actions align-items-center">
                 {% if current_user.is_authenticated and not current_user.is_admin %}
-                {% set expiration = current_user.user.expiredAt if current_user.user and current_user.user.expiredAt else None %}
-                {% set days_left = (expiration - now).days if expiration else None %}
+                {% set expiration = navbar_plan_expiration if navbar_plan_expiration else (current_user.user.expiredAt if current_user.user and current_user.user.expiredAt else None) %}
+                {% if expiration %}
+                    {% set remaining_seconds = (expiration - now).total_seconds() %}
+                    {% set days_left = (remaining_seconds / 86400)|round(0, 'ceil') %}
+                {% else %}
+                    {% set days_left = None %}
+                {% endif %}
                 <li class="nav-item nav-expiry me-lg-3">
                     {% if days_left is not none %}
                         {% if days_left > 0 %}
