@@ -1,18 +1,50 @@
 # Configuração do GitHub Copilot para o projeto Client Manager
+# Este arquivo configura o comportamento do GitHub Copilot para manter
+# a consistência com a arquitetura MVC + Services do projeto
+
+# Instruções detalhadas
 instructions: ".github/copilot-instructions.md"
 
 # Configurações de sugestões do Copilot
 suggestion:
   # Tipos de arquivo em que o Copilot deve ser mais ativo
   priority:
-    - "**/*.py"   # Arquivos Python
-    - "**/*.html" # Templates HTML
-    - "**/*.css"  # Estilos CSS
-    - "**/*.js"   # JavaScript
+    - "**/*.py"         # Arquivos Python (Models, Controllers, Services, Views)
+    - "**/*.html"       # Templates Jinja2
+    - "**/*.css"        # Estilos CSS
+    - "**/*.js"         # JavaScript frontend
+    - "**/test_*.py"    # Arquivos de testes pytest
+    - "**/*_test.py"    # Arquivos de testes alternativos
+    - "**/schemas/*.py" # Schemas Pydantic
+    - "**/api/*.py"     # Documentação API/Swagger
 
   # Tipos de arquivo que o Copilot deve ignorar ou dar menos prioridade
   ignore:
-    - "**/node_modules/**" # Módulos do Node.js
-    - "**/__pycache__/**"  # Cache de bytecode Python
-    - "**/*.pyc"           # Arquivos compilados Python
-    - "**/venv/**"         # Ambiente virtual Python
+    - "**/node_modules/**"     # Módulos do Node.js
+    - "**/__pycache__/**"      # Cache de bytecode Python
+    - "**/*.pyc"               # Arquivos compilados Python
+    - "**/venv/**"             # Ambiente virtual Python
+    - "**/env/**"              # Ambiente virtual alternativo
+    - "**/.pytest_cache/**"    # Cache do pytest
+    - "**/htmlcov/**"          # Relatórios de coverage
+    - "**/.coverage"           # Dados de coverage
+    - "**/dist/**"             # Distribuições build
+    - "**/build/**"            # Build artifacts
+    - "**/*.egg-info/**"       # Metadata de pacotes
+
+# Contexto específico do projeto
+context:
+  # Frameworks e bibliotecas principais
+  stack:
+    - Flask 2.3.3
+    - MongoDB (PyMongo)
+    - Flask-Login
+    - Pydantic
+    - pytest
+    - Swagger/OpenAPI (apispec)
+  
+  # Padrões arquiteturais
+  architecture: "MVC + Services + Schemas"
+  
+  # Controle de acesso
+  auth: "RBAC (Role-Based Access Control) com Flask-Login"
