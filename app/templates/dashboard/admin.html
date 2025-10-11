@@ -1,0 +1,201 @@
+    <!-- Admin Dashboard -->
+    
+    <!-- Primary Statistics Row -->
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card stat-card stat-card-primary">
+            <div class="card-body position-relative">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stat-label">Total de Clientes</div>
+                        <div class="stat-number">{{ client_count }}</div>
+                        <div class="stat-change">
+                            <i class="fas fa-check-circle"></i>
+                            <span>{{ active_clients }} ativos</span>
+                        </div>
+                    </div>
+                    <div class="icon-hover">
+                        <i class="fas fa-users fa-2x opacity-75"></i>
+                    </div>
+                </div>
+                <a href="{{ url_for('client.list_clients') }}" class="btn btn-sm btn-light mt-3">
+                    <i class="fas fa-arrow-right"></i> Ver todos
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card stat-card stat-card-success">
+            <div class="card-body position-relative">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stat-label">Total de Planos</div>
+                        <div class="stat-number">{{ plan_count }}</div>
+                        <div class="stat-change">
+                            <i class="fas fa-layer-group"></i>
+                            <span>Planos de assinatura</span>
+                        </div>
+                    </div>
+                    <div class="icon-hover">
+                        <i class="fas fa-tags fa-2x opacity-75"></i>
+                    </div>
+                </div>
+                <a href="{{ url_for('plan.list_plans') }}" class="btn btn-sm btn-light mt-3">
+                    <i class="fas fa-arrow-right"></i> Ver todos
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card stat-card stat-card-info">
+            <div class="card-body position-relative">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stat-label">Total de Domínios</div>
+                        <div class="stat-number">{{ domain_count }}</div>
+                        <div class="stat-change">
+                            <i class="fas fa-globe"></i>
+                            <span>Domínios registrados</span>
+                        </div>
+                    </div>
+                    <div class="icon-hover">
+                        <i class="fas fa-globe fa-2x opacity-75"></i>
+                    </div>
+                </div>
+                <a href="{{ url_for('domain.list_domains') }}" class="btn btn-sm btn-light mt-3">
+                    <i class="fas fa-arrow-right"></i> Ver todos
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card stat-card stat-card-warning">
+            <div class="card-body position-relative">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stat-label">Administradores</div>
+                        <div class="stat-number">{{ admin_count }}</div>
+                        <div class="stat-change">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Administradores do sistema</span>
+                        </div>
+                    </div>
+                    <div class="icon-hover">
+                        <i class="fas fa-user-shield fa-2x opacity-75"></i>
+                    </div>
+                </div>
+                <a href="{{ url_for('admin.list_admins') }}" class="btn btn-sm btn-dark mt-3">
+                    <i class="fas fa-arrow-right"></i> Ver todos
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Secondary Statistics Row -->
+    <div class="col-lg-6 col-md-6 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <h6 class="text-muted mb-1">Informações Bancárias</h6>
+                        <h3 class="mb-0">{{ info_count }}</h3>
+                    </div>
+                    <div class="badge bg-primary">
+                        <i class="fas fa-university"></i> {{ active_infos }} ativos
+                    </div>
+                </div>
+                <div class="progress" style="height: 6px;">
+                    <div class="progress-bar bg-primary" role="progressbar" 
+                         style="width: {{ (active_infos / info_count * 100) if info_count > 0 else 0 }}%"></div>
+                </div>
+                <small class="text-muted mt-2 d-block">
+                    {% if info_count > 0 %}
+                        {{ "%.1f"|format(active_infos / info_count * 100) }}% estão ativos
+                    {% else %}
+                        Nenhum registro ainda
+                    {% endif %}
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6 col-md-6 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <h6 class="text-muted mb-1">Modelos</h6>
+                        <h3 class="mb-0">{{ template_count }}</h3>
+                    </div>
+                    <div class="badge bg-secondary">
+                        <i class="fas fa-file-code"></i> Disponíveis
+                    </div>
+                </div>
+                <div class="d-flex gap-2 mt-3">
+                    <a href="{{ url_for('template.list_templates') }}" class="btn btn-sm btn-outline-primary flex-fill">
+                        <i class="fas fa-list"></i> Ver modelos
+                    </a>
+                    <a href="{{ url_for('template.create_template') }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus"></i> Novo
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions and Admin Info Row -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-bolt text-warning me-2"></i>Ações rápidas</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('client.create_client') }}" class="btn btn-outline-primary text-start">
+                        <i class="fas fa-user-plus me-2"></i> Adicionar novo cliente
+                    </a>
+                    <a href="{{ url_for('plan.create_plan') }}" class="btn btn-outline-success text-start">
+                        <i class="fas fa-plus-circle me-2"></i> Criar novo plano
+                    </a>
+                    <a href="{{ url_for('domain.create_domain') }}" class="btn btn-outline-info text-start">
+                        <i class="fas fa-globe me-2"></i> Registrar novo domínio
+                    </a>
+                    {% if user.role == 'super_admin' %}
+                    <a href="{{ url_for('admin.create_admin') }}" class="btn btn-outline-warning text-start">
+                        <i class="fas fa-user-shield me-2"></i> Adicionar novo administrador
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-user-circle text-primary me-2"></i>Perfil do administrador</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-primary bg-opacity-10 rounded-circle p-3 me-3">
+                            <i class="fas fa-user fa-2x text-primary"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0">{{ user.username }}</h5>
+                            <span class="badge bg-primary">{{ user.role }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted d-block mb-1">Último acesso</small>
+                    <strong>{% if user.last_login %}{{ user.last_login.strftime('%Y-%m-%d %H:%M:%S') }}{% else %}N/D{% endif %}</strong>
+                </div>
+                <a href="{{ url_for('admin.profile') }}" class="btn btn-primary w-100">
+                    <i class="fas fa-user-edit me-2"></i> Editar perfil
+                </a>
+            </div>
+        </div>
+    </div>

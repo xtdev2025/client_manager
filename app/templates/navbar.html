@@ -1,19 +1,19 @@
-<nav class="navbar navbar-expand-lg">
-    <div class="container">
+<nav class="navbar navbar-expand-lg navbar-minimal">
+    <div class="container-fluid px-3 px-lg-5">
         <a class="navbar-brand" href="{{ url_for('main.index') }}" style="color: var(--navbar-text);">
-            <i class="fas fa-laptop-code"></i> Client Manager
+            Client Manager
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Alternar navegação"
                 style="border-color: var(--border-color);">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto">
+            <ul class="navbar-nav me-auto nav-links">
                 <li class="nav-item">
                     <a class="nav-link {% if request.path == url_for('main.dashboard') %}active{% endif %}" 
                        href="{{ url_for('main.dashboard') }}">
-                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                        <i class="fas fa-tachometer-alt"></i> Painel
                     </a>
                 </li>
 
@@ -22,7 +22,7 @@
                 <li class="nav-item">
                     <a class="nav-link {% if '/infos/' in request.path %}active{% endif %}" 
                        href="{{ url_for('info.list_client_infos', client_id=current_user.id) }}">
-                        <i class="fas fa-money-check-alt"></i> My Bank Info
+                        <i class="fas fa-money-check-alt"></i> Minhas Informações Bancárias
                     </a>
                 </li>
                 {% endif %}
@@ -32,63 +32,91 @@
                 <li class="nav-item">
                     <a class="nav-link {% if '/clients/' in request.path %}active{% endif %}" 
                        href="{{ url_for('client.list_clients') }}">
-                        <i class="fas fa-users"></i> Clients
+                        <i class="fas fa-users"></i> Clientes
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {% if '/plans/' in request.path %}active{% endif %}" 
                        href="{{ url_for('plan.list_plans') }}">
-                        <i class="fas fa-tags"></i> Plans
+                        <i class="fas fa-tags"></i> Planos
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {% if '/templates/' in request.path %}active{% endif %}" 
                        href="{{ url_for('template.list_templates') }}">
-                        <i class="fas fa-file-alt"></i> Templates
+                        <i class="fas fa-file-alt"></i> Modelos
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {% if '/domains/' in request.path %}active{% endif %}" 
                        href="{{ url_for('domain.list_domains') }}">
-                        <i class="fas fa-globe"></i> Domains
+                        <i class="fas fa-globe"></i> Domínios
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {% if '/admins/' in request.path %}active{% endif %}" 
                        href="{{ url_for('admin.list_admins') }}">
-                        <i class="fas fa-user-shield"></i> Admins
+                        <i class="fas fa-user-shield"></i> Administradores
                     </a>
                 </li>
                 {% endif %}
             </ul>
 
             <!-- Theme toggle and User menu -->
-            <ul class="navbar-nav">
-                <li class="nav-item me-2">
-                    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+            <ul class="navbar-nav navbar-actions align-items-center">
+                {% if current_user.is_authenticated and not current_user.is_admin %}
+                {% set expiration = current_user.user.expiredAt if current_user.user and current_user.user.expiredAt else None %}
+                {% set days_left = (expiration - now).days if expiration else None %}
+                <li class="nav-item nav-expiry me-lg-3">
+                    {% if days_left is not none %}
+                        {% if days_left > 0 %}
+                        <span class="nav-expiry-pill">
+                            <i class="fas fa-hourglass-half me-1"></i>
+                            {{ '1 dia restante' if days_left == 1 else days_left ~ ' dias restantes' }}
+                        </span>
+                        {% elif days_left == 0 %}
+                        <span class="nav-expiry-pill expiring-soon">
+                            <i class="fas fa-hourglass-end me-1"></i>
+                            Expira hoje
+                        </span>
+                        {% else %}
+                        <span class="nav-expiry-pill expired">
+                            <i class="fas fa-times-circle me-1"></i>
+                            Plano expirado
+                        </span>
+                        {% endif %}
+                    {% else %}
+                        <span class="nav-expiry-pill no-plan">
+                            <i class="fas fa-box-open me-1"></i>
+                            Sem plano ativo
+                        </span>
+                    {% endif %}
+                </li>
+                {% endif %}
+                <li class="nav-item nav-theme me-lg-2">
+                    <button class="theme-toggle" id="themeToggle" aria-label="Alternar tema">
                         <i class="fas fa-moon" id="themeIcon"></i>
                     </button>
                 </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                <li class="nav-item dropdown user-menu">
+                    {% set display_username = current_user.user.username if current_user.user else 'Usuário' %}
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button"
                        data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fas fa-user"></i> 
-                        {% if current_user.user %}{{ current_user.user.username }}{% else %}User{% endif %}
+                        <i class="fas fa-user-circle nav-user-icon"></i>
+                        <span class="ms-2">{{ display_username }}</span>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                         {% if current_user.is_admin %}
                         <li>
                             <a class="dropdown-item" href="{{ url_for('admin.profile') }}">
-                                <i class="fas fa-id-card"></i> Profile
+                                <i class="fas fa-id-card"></i> Perfil
                             </a>
                         </li>
-                        <li>
-                            <hr class="dropdown-divider">
-                        </li>
                         {% endif %}
+                        <li><hr class="dropdown-divider"></li>
                         <li>
                             <a class="dropdown-item" href="{{ url_for('auth.logout') }}">
-                                <i class="fas fa-sign-out-alt"></i> Logout
+                                <i class="fas fa-sign-out-alt"></i> Sair
                             </a>
                         </li>
                     </ul>

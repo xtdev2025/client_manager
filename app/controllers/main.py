@@ -52,6 +52,7 @@ def dashboard():
 
         return MainView.render_dashboard(
             user,
+            user_type='admin',
             client_count=client_count,
             admin_count=admin_count,
             plan_count=plan_count,
@@ -85,6 +86,7 @@ def dashboard():
 
         return MainView.render_dashboard(
             user,
+            user_type='client',
             plan=plan,
             client_domains=client_domains,
             client_infos=client_infos,

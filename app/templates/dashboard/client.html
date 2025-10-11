@@ -1,0 +1,246 @@
+    <!-- Client Dashboard -->
+    
+    <!-- Client Statistics -->
+    <div class="col-lg-4 col-md-6 mb-4">
+        <div class="card stat-card stat-card-primary h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <div class="stat-label">Status da conta</div>
+                        {% if user.status == 'active' %}
+                        <div class="stat-number">Ativo</div>
+                        {% else %}
+                        <div class="stat-number">{{ user.status|title }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="icon-hover">
+                        <i class="fas fa-user-circle fa-2x opacity-75"></i>
+                    </div>
+                </div>
+                <small class="d-block mb-1">@{{ user.username }}</small>
+                <small class="d-block">Membro desde {{ user.createdAt.strftime('%Y-%m-%d') }}</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4 col-md-6 mb-4">
+        <div class="card stat-card stat-card-info h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <div class="stat-label">Domínios</div>
+                        <div class="stat-number">{{ client_domains|length }}</div>
+                    </div>
+                    <div class="icon-hover">
+                        <i class="fas fa-globe fa-2x opacity-75"></i>
+                    </div>
+                </div>
+                <small class="d-block">Domínios registrados</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4 col-md-6 mb-4">
+        <div class="card stat-card stat-card-success h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <div class="stat-label">Informações bancárias</div>
+                        <div class="stat-number">{{ client_infos|length }}</div>
+                    </div>
+                    <div class="icon-hover">
+                        <i class="fas fa-university fa-2x opacity-75"></i>
+                    </div>
+                </div>
+                <small class="d-block">Registros de informações</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account Information Card -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-id-card text-primary me-2"></i>Suas informações</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3 pb-3 border-bottom">
+                    <small class="text-muted d-block mb-1">Nome de usuário</small>
+                    <strong>{{ user.username }}</strong>
+                </div>
+                <div class="mb-3 pb-3 border-bottom">
+                    <small class="text-muted d-block mb-1">Status</small>
+                    {% if user.status == 'active' %}
+                    <span class="badge bg-success">
+                        <i class="fas fa-check-circle me-1"></i> Ativo
+                    </span>
+                    {% else %}
+                    <span class="badge bg-danger">
+                        <i class="fas fa-times-circle me-1"></i> {{ user.status }}
+                    </span>
+                    {% endif %}
+                </div>
+                <div class="mb-3 pb-3 border-bottom">
+                    <small class="text-muted d-block mb-1">Criado em</small>
+                    <strong>{{ user.createdAt.strftime('%Y-%m-%d') }}</strong>
+                </div>
+                {% if user.expiredAt %}
+                <div>
+                    <small class="text-muted d-block mb-1">Expira em</small>
+                    <strong>{{ user.expiredAt.strftime('%Y-%m-%d') }}</strong>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-tags text-success me-2"></i>Seu plano</h5>
+            </div>
+            <div class="card-body">
+                {% if plan %}
+                <div class="mb-3 pb-3 border-bottom">
+                    <small class="text-muted d-block mb-1">Nome do plano</small>
+                    <h5 class="mb-0">{{ plan.name }}</h5>
+                </div>
+                <div class="mb-3 pb-3 border-bottom">
+                    <small class="text-muted d-block mb-1">Descrição</small>
+                    <p class="mb-0">{{ plan.description }}</p>
+                </div>
+                <div class="row">
+                    <div class="col-6 mb-3">
+                        <small class="text-muted d-block mb-1">Preço</small>
+                        <strong class="text-success">${{ plan.price }}</strong>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <small class="text-muted d-block mb-1">Duração</small>
+                        <strong>{{ plan.duration_days }} dias</strong>
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                    <p class="text-muted mb-2">Você não tem um plano ativo.</p>
+                    <p class="text-muted small">Entre em contato com um administrador para atribuir um plano.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bank Information Section -->
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-university text-primary me-2"></i>Suas informações bancárias</h5>
+                <a href="{{ url_for('info.list_client_infos', client_id=user._id) }}" class="btn btn-sm btn-primary">
+                    <i class="fas fa-cog me-1"></i> Gerenciar informações
+                </a>
+            </div>
+            <div class="card-body">
+                {% if client_infos|length == 0 %}
+                <div class="text-center py-5">
+                    <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                    <p class="text-muted mb-3">Nenhuma informação bancária encontrada.</p>
+                    <a href="{{ url_for('info.create_info', client_id=user._id) }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i> Adicionar informação
+                    </a>
+                </div>
+                {% else %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Agência</th>
+                                <th>Conta</th>
+                                <th>Saldo</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for info in client_infos %}
+                            <tr>
+                                <td><strong>{{ info.agencia }}</strong></td>
+                                <td>{{ info.conta }}</td>
+                                <td><span class="text-success fw-bold">R$ {{ "%.2f"|format(info.saldo) }}</span></td>
+                                <td>
+                                    {% if info.status == 'active' %}
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check-circle me-1"></i> Ativo
+                                    </span>
+                                    {% elif info.status == 'inactive' %}
+                                    <span class="badge bg-warning">
+                                        <i class="fas fa-pause-circle me-1"></i> Inativo
+                                    </span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">{{ info.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ url_for('info.view_info', info_id=info._id) }}" 
+                                           class="btn btn-sm btn-outline-primary" title="Visualizar">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ url_for('info.edit_info', info_id=info._id) }}" 
+                                           class="btn btn-sm btn-outline-warning" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Domains Section -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-globe text-info me-2"></i>Seus domínios</h5>
+            </div>
+            <div class="card-body">
+                {% if client_domains|length == 0 %}
+                <div class="text-center py-5">
+                    <i class="fas fa-globe fa-3x text-muted mb-3"></i>
+                    <p class="text-muted mb-2">Nenhum domínio atribuído ainda.</p>
+                    <p class="text-muted small">Entre em contato com um administrador para atribuir domínios à sua conta.</p>
+                </div>
+                {% else %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-sitemap me-2"></i>Subdomínio</th>
+                                <th><i class="fas fa-server me-2"></i>Domínio</th>
+                                <th><i class="fas fa-link me-2"></i>Domínio completo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cd in client_domains %}
+                            <tr>
+                                <td><code class="text-primary">{{ cd.subdomain }}</code></td>
+                                <td>{{ cd.domain.name if cd.domain else 'Domínio desconhecido' }}</td>
+                                <td>
+                                    <a href="{{ 'https' if cd.domain and cd.domain.ssl else 'http' }}://{{ cd.full_domain }}" target="_blank" class="text-decoration-none">
+                                        {{ cd.full_domain }}
+                                        <i class="fas fa-external-link-alt ms-1 small"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
