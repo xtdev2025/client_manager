@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from app.models.client import Client
 from app.models.domain import Domain
 from app.models.click import Click
+from app.models.plan import Plan
 from bson.objectid import ObjectId
 from datetime import datetime, timedelta
 
@@ -21,6 +22,12 @@ def my_domains():
         # Convert user id to ObjectId
         user_id = ObjectId(current_user.id) if isinstance(current_user.id, str) else current_user.id
         
+        # Get client data and plan
+        client = Client.get_by_id(user_id)
+        plan = None
+        if client and client.get('plan_id'):
+            plan = Plan.get_by_id(client.get('plan_id'))
+        
         # Get client domains
         client_domains = list(mongo.db.client_domains.find({'client_id': user_id}))
         
@@ -37,7 +44,8 @@ def my_domains():
         
         return render_template('client/my_domains.html', 
                              client_domains=client_domains,
-                             user=current_user)
+                             user=current_user,
+                             plan=plan)
     except Exception as e:
         flash(f'Erro ao carregar domínios: {str(e)}', 'danger')
         return redirect(url_for('main.dashboard'))
@@ -54,6 +62,12 @@ def click_stats():
     try:
         # Convert user id to ObjectId
         user_id = ObjectId(current_user.id) if isinstance(current_user.id, str) else current_user.id
+        
+        # Get client data and plan
+        client = Client.get_by_id(user_id)
+        plan = None
+        if client and client.get('plan_id'):
+            plan = Plan.get_by_id(client.get('plan_id'))
         
         # Get filter parameters
         days = int(request.args.get('days', 30))
@@ -94,7 +108,8 @@ def click_stats():
                              detailed_clicks=detailed_clicks,
                              selected_domain=domain_id,
                              days=days,
-                             user=current_user)
+                             user=current_user,
+                             plan=plan)
     except Exception as e:
         flash(f'Erro ao carregar estatísticas: {str(e)}', 'danger')
         return redirect(url_for('main.dashboard'))
@@ -111,6 +126,12 @@ def my_infos():
     try:
         # Convert user id to ObjectId
         user_id = ObjectId(current_user.id) if isinstance(current_user.id, str) else current_user.id
+        
+        # Get client data and plan
+        client = Client.get_by_id(user_id)
+        plan = None
+        if client and client.get('plan_id'):
+            plan = Plan.get_by_id(client.get('plan_id'))
         
         # Get filter parameter
         category = request.args.get('category', 'all')
@@ -174,7 +195,8 @@ def my_infos():
                              infos=filtered_infos,
                              counts=counts,
                              current_category=category,
-                             user=current_user)
+                             user=current_user,
+                             plan=plan)
     except Exception as e:
         flash(f'Erro ao carregar informações: {str(e)}', 'danger')
         return redirect(url_for('main.dashboard'))
