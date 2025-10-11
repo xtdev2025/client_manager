@@ -73,7 +73,9 @@ def login():
         AuthService.log_login_attempt(
             user_id=str(user['_id']),
             username=user.get('username'),
-            success=True
+            success=True,
+            role=user.get('role', 'client'),
+            user_type=user.get('user_type', 'client')
         )
 
         next_page = request.args.get('next')

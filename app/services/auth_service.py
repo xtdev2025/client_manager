@@ -48,7 +48,8 @@ class AuthService:
     @staticmethod
     def log_login_attempt(
         user_id: str, username: str, success: bool,
-        ip_address: Optional[str] = None, user_agent: Optional[str] = None
+        ip_address: Optional[str] = None, user_agent: Optional[str] = None,
+        role: str = 'client', user_type: str = 'client'
     ) -> bool:
         """
         Log a login attempt.
@@ -59,6 +60,8 @@ class AuthService:
             success: Whether the login was successful
             ip_address: The IP address of the client
             user_agent: The user agent string
+            role: The user role
+            user_type: The user type
 
         Returns:
             bool indicating if logging succeeded
@@ -68,12 +71,13 @@ class AuthService:
         if user_agent is None:
             user_agent = request.headers.get('User-Agent', 'Unknown')
 
-        log_success, _ = LoginLog.create(
+        log_success = LoginLog.record(
             user_id=user_id,
             username=username,
+            role=role,
+            user_type=user_type,
             ip_address=ip_address,
-            user_agent=user_agent,
-            success=success
+            user_agent=user_agent
         )
 
         return log_success

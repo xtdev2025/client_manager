@@ -19,7 +19,8 @@ login_manager.login_message_category = 'info'
 limiter = Limiter(
     key_func=get_remote_address,
     default_limits=["200 per day", "50 per hour"],
-    storage_uri="memory://"
+    storage_uri="memory://",
+    enabled=True  # Will be overridden by app config if RATELIMIT_ENABLED is set
 )
 
 def create_app(config_name=None):
