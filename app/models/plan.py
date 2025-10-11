@@ -1,14 +1,27 @@
+from typing import Tuple, Dict, Any, Optional, List
 from flask import current_app
 from bson.objectid import ObjectId
 from datetime import datetime
 from app import mongo
 
+
 class Plan:
     """Plan model for subscription plans"""
     
     @staticmethod
-    def create(name, description, price, duration_days):
-        """Create a new plan"""
+    def create(name: str, description: str, price: float, duration_days: int) -> Tuple[bool, str]:
+        """
+        Create a new plan.
+        
+        Args:
+            name: The plan name
+            description: The plan description
+            price: The plan price
+            duration_days: The plan duration in days
+            
+        Returns:
+            Tuple containing success status and plan ID or error message
+        """
         try:
             # Create plan object
             new_plan = {
@@ -32,8 +45,17 @@ class Plan:
             return False, str(e)
     
     @staticmethod
-    def update(plan_id, data):
-        """Update plan information"""
+    def update(plan_id: str, data: Dict[str, Any]) -> Tuple[bool, str]:
+        """
+        Update plan information.
+        
+        Args:
+            plan_id: The plan ID
+            data: Dict containing fields to update
+            
+        Returns:
+            Tuple containing success status and message
+        """
         try:
             if isinstance(plan_id, str):
                 plan_id = ObjectId(plan_id)
@@ -61,8 +83,16 @@ class Plan:
             return False, str(e)
     
     @staticmethod
-    def delete(plan_id):
-        """Delete plan"""
+    def delete(plan_id: str) -> Tuple[bool, str]:
+        """
+        Delete plan.
+        
+        Args:
+            plan_id: The plan ID to delete
+            
+        Returns:
+            Tuple containing success status and message
+        """
         try:
             if isinstance(plan_id, str):
                 plan_id = ObjectId(plan_id)
@@ -83,8 +113,13 @@ class Plan:
             return False, str(e)
     
     @staticmethod
-    def get_all():
-        """Get all plans"""
+    def get_all() -> List[Dict[str, Any]]:
+        """
+        Get all plans.
+        
+        Returns:
+            List of plan dicts
+        """
         try:
             plans = list(mongo.db.plans.find())
             return plans
@@ -93,8 +128,16 @@ class Plan:
             return []
     
     @staticmethod
-    def get_by_id(plan_id):
-        """Get plan by ID"""
+    def get_by_id(plan_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Get plan by ID.
+        
+        Args:
+            plan_id: The plan ID
+            
+        Returns:
+            Plan dict if found, None otherwise
+        """
         try:
             if isinstance(plan_id, str):
                 plan_id = ObjectId(plan_id)
