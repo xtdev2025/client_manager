@@ -22,19 +22,18 @@ class User:
             if isinstance(user_id, str):
                 user_id = ObjectId(user_id)
 
-            # Check in both collections
+            # Check in clients collection first
             user = mongo.db.clients.find_one({'_id': user_id})
-            if not user:
-                user = mongo.db.admins.find_one({'_id': user_id})
-
             if user:
-                # Add user type
-                if 'role' not in user:
-                    if mongo.db.clients.find_one({'_id': user_id}):
-                        user['user_type'] = 'client'
-                    else:
-                        user['user_type'] = 'admin'
+                user['user_type'] = 'client'
                 return user
+            
+            # Check in admins collection
+            user = mongo.db.admins.find_one({'_id': user_id})
+            if user:
+                user['user_type'] = 'admin'
+                return user
+
         except Exception as e:
             current_app.logger.error(f"Error getting user by ID: {e}")
         return None
@@ -51,18 +50,18 @@ class User:
             User dict if found, None otherwise
         """
         try:
-            # Check in both collections
+            # Check in clients collection first
             user = mongo.db.clients.find_one({'username': username})
-            if not user:
-                user = mongo.db.admins.find_one({'username': username})
-
             if user:
-                # Add user type
-                if mongo.db.clients.find_one({'username': username}):
-                    user['user_type'] = 'client'
-                else:
-                    user['user_type'] = 'admin'
+                user['user_type'] = 'client'
                 return user
+
+            # Check in admins collection
+            user = mongo.db.admins.find_one({'username': username})
+            if user:
+                user['user_type'] = 'admin'
+                return user
+
         except Exception as e:
             current_app.logger.error(f"Error getting user by username: {e}")
         return None
