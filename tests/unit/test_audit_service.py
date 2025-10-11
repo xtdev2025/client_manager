@@ -1,7 +1,6 @@
 """
 Unit tests for AuditService.
 """
-import pytest
 from app.services.audit_service import AuditService
 from app.models.admin import Admin
 from app import mongo

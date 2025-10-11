@@ -1,7 +1,6 @@
 """
 Integration tests for plan routes.
 """
-import pytest
 from app.models.admin import Admin
 from app.models.plan import Plan
 

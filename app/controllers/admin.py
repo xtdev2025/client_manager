@@ -26,14 +26,14 @@ def create_admin():
         username = request.form.get('username')
         password = request.form.get('password')
         role = request.form.get('role', 'admin')
-        
+
         if not username or not password:
             flash('Please provide username and password', 'danger')
             return AdminView.render_create_form(form_data={'username': username, 'role': role})
-        
+
         # Create admin
         success, message = Admin.create(username, password, role)
-        
+
         if success:
             # Log admin creation in audit trail
             AuditService.log_admin_action('create', message, {'username': username, 'role': role})
@@ -41,7 +41,7 @@ def create_admin():
             return redirect(url_for('admin.list_admins'))
         else:
             flash(f'Error creating admin: {message}', 'danger')
-    
+
     return AdminView.render_create_form()
 
 @admin.route('/edit/<admin_id>', methods=['GET', 'POST'])
@@ -53,25 +53,25 @@ def edit_admin(admin_id):
     if not admin_data:
         flash('Admin not found', 'danger')
         return redirect(url_for('admin.list_admins'))
-    
+
     # Check if trying to edit themselves
     if str(admin_data['_id']) == current_user.id:
         flash('You cannot edit your own account from this page', 'warning')
         return redirect(url_for('admin.list_admins'))
-    
+
     if request.method == 'POST':
         data = {
             'username': request.form.get('username'),
             'role': request.form.get('role')
         }
-        
+
         # Only update password if provided
         if request.form.get('password'):
             data['password'] = request.form.get('password')
-        
+
         # Update admin
         success, message = Admin.update(admin_id, data)
-        
+
         if success:
             # Log admin update in audit trail
             AuditService.log_admin_action('update', admin_id, {'username': data.get('username')})
@@ -79,7 +79,7 @@ def edit_admin(admin_id):
             return redirect(url_for('admin.list_admins'))
         else:
             flash(f'Error updating admin: {message}', 'danger')
-    
+
     return AdminView.render_edit_form(admin_data)
 
 @admin.route('/delete/<admin_id>', methods=['POST'])
@@ -91,21 +91,21 @@ def delete_admin(admin_id):
     if admin_id == current_user.id:
         flash('You cannot delete your own account', 'danger')
         return redirect(url_for('admin.list_admins'))
-    
+
     if request.method == 'POST':
         # Get admin data before deletion for audit log
         admin_data = Admin.get_by_id(admin_id)
         username = admin_data.get('username', 'unknown') if admin_data else 'unknown'
-        
+
         success, message = Admin.delete(admin_id)
-        
+
         if success:
             # Log admin deletion in audit trail
             AuditService.log_admin_action('delete', admin_id, {'username': username})
             flash('Admin deleted successfully', 'success')
         else:
             flash(f'Error deleting admin: {message}', 'danger')
-    
+
     return redirect(url_for('admin.list_admins'))
 
 @admin.route('/profile', methods=['GET', 'POST'])
@@ -117,20 +117,20 @@ def profile():
     if not admin_data:
         flash('Admin not found', 'danger')
         return redirect(url_for('main.dashboard'))
-    
+
     if request.method == 'POST':
         # Only allow password change for own profile
         if request.form.get('password'):
             data = {
                 'password': request.form.get('password')
             }
-            
+
             # Update admin
             success, message = Admin.update(current_user.id, data)
-            
+
             if success:
                 flash('Password updated successfully', 'success')
             else:
                 flash(f'Error updating password: {message}', 'danger')
-    
+
     return AdminView.render_profile(admin_data)
