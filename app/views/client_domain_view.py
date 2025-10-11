@@ -62,7 +62,7 @@ def my_domains():
         flash(f'Erro ao carregar domínios: {str(e)}', 'danger')
         return redirect(url_for('main.dashboard'))
 
-@client_domain_bp.route('/click-stats')
+@client_domain_bp.route('/my-click-stats')
 @login_required
 def click_stats():
     """View click statistics"""
