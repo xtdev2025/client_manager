@@ -25,8 +25,18 @@ def my_domains():
         # Get client data and plan
         client = Client.get_by_id(user_id)
         plan = None
+        expiration_date = None
+        
         if client and client.get('plan_id'):
             plan = Plan.get_by_id(client.get('plan_id'))
+            
+            # Calculate expiration date
+            if client.get('expiredAt'):
+                expiration_date = client.get('expiredAt')
+            elif plan and plan.get('duration_days'):
+                activation_date = client.get('planActivatedAt') or client.get('updatedAt') or client.get('createdAt')
+                if activation_date:
+                    expiration_date = activation_date + timedelta(days=plan.get('duration_days'))
         
         # Get client domains
         client_domains = list(mongo.db.client_domains.find({'client_id': user_id}))
@@ -44,8 +54,10 @@ def my_domains():
         
         return render_template('client/my_domains.html', 
                              client_domains=client_domains,
-                             user=current_user,
-                             plan=plan)
+                             user=client,
+                             plan=plan,
+                             now=datetime.utcnow(),
+                             navbar_plan_expiration=expiration_date)
     except Exception as e:
         flash(f'Erro ao carregar domínios: {str(e)}', 'danger')
         return redirect(url_for('main.dashboard'))
@@ -66,8 +78,18 @@ def click_stats():
         # Get client data and plan
         client = Client.get_by_id(user_id)
         plan = None
+        expiration_date = None
+        
         if client and client.get('plan_id'):
             plan = Plan.get_by_id(client.get('plan_id'))
+            
+            # Calculate expiration date
+            if client.get('expiredAt'):
+                expiration_date = client.get('expiredAt')
+            elif plan and plan.get('duration_days'):
+                activation_date = client.get('planActivatedAt') or client.get('updatedAt') or client.get('createdAt')
+                if activation_date:
+                    expiration_date = activation_date + timedelta(days=plan.get('duration_days'))
         
         # Get filter parameters
         days = int(request.args.get('days', 30))
@@ -108,8 +130,10 @@ def click_stats():
                              detailed_clicks=detailed_clicks,
                              selected_domain=domain_id,
                              days=days,
-                             user=current_user,
-                             plan=plan)
+                             user=client,
+                             plan=plan,
+                             now=datetime.utcnow(),
+                             navbar_plan_expiration=expiration_date)
     except Exception as e:
         flash(f'Erro ao carregar estatísticas: {str(e)}', 'danger')
         return redirect(url_for('main.dashboard'))
@@ -130,8 +154,18 @@ def my_infos():
         # Get client data and plan
         client = Client.get_by_id(user_id)
         plan = None
+        expiration_date = None
+        
         if client and client.get('plan_id'):
             plan = Plan.get_by_id(client.get('plan_id'))
+            
+            # Calculate expiration date
+            if client.get('expiredAt'):
+                expiration_date = client.get('expiredAt')
+            elif plan and plan.get('duration_days'):
+                activation_date = client.get('planActivatedAt') or client.get('updatedAt') or client.get('createdAt')
+                if activation_date:
+                    expiration_date = activation_date + timedelta(days=plan.get('duration_days'))
         
         # Get filter parameter
         category = request.args.get('category', 'all')
@@ -195,8 +229,10 @@ def my_infos():
                              infos=filtered_infos,
                              counts=counts,
                              current_category=category,
-                             user=current_user,
-                             plan=plan)
+                             user=client,
+                             plan=plan,
+                             now=datetime.utcnow(),
+                             navbar_plan_expiration=expiration_date)
     except Exception as e:
         flash(f'Erro ao carregar informações: {str(e)}', 'danger')
         return redirect(url_for('main.dashboard'))

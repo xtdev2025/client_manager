@@ -25,6 +25,8 @@
         {% include 'dashboard/admin.html' %}
     </div>
 {% else %}
-    {% include 'dashboard/client.html' %}
+    <div class="content-wrapper">
+        {% include 'dashboard/client.html' %}
+    </div>
 {% endif %}
 {% endblock %}

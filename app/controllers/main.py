@@ -86,6 +86,8 @@ def dashboard():
     else:
         # Get plan details if client has one
         plan = None
+        expiration_date = None
+        
         if user and user.get('plan_id'):
             plan = Plan.get_by_id(user.get('plan_id'))
 
@@ -96,6 +98,7 @@ def dashboard():
                     user['planActivatedAt'] = activation_candidate
                 if not user.get('expiredAt'):
                     user['expiredAt'] = activation_candidate + timedelta(days=plan.get('duration_days'))
+                expiration_date = user.get('expiredAt')
 
         # Get client domains
         client_domains = []
@@ -118,5 +121,7 @@ def dashboard():
             client_domains=client_domains,
             client_infos=client_infos,
             active_infos=active_infos,
-            info_count=info_count
+            info_count=info_count,
+            now=datetime.utcnow(),
+            navbar_plan_expiration=expiration_date
         )
