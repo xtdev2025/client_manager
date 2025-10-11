@@ -16,17 +16,13 @@
             <div>
                 <!-- Period Filter -->
                 <div class="btn-group" role="group">
-                    <a href="{{ url_for('client_domain.click_stats', days=7) }}" 
-                       class="btn btn-sm btn-{{ 'primary' if days == 7 else 'outline-primary' }}">
-                        7 dias
+                    <a href="{{ url_for('client_domain.click_stats', days=1) }}" 
+                       class="btn btn-sm btn-{{ 'primary' if days == 1 else 'outline-primary' }}">
+                        <i class="fas fa-calendar-day me-1"></i>Hoje
                     </a>
                     <a href="{{ url_for('client_domain.click_stats', days=30) }}" 
                        class="btn btn-sm btn-{{ 'primary' if days == 30 else 'outline-primary' }}">
-                        30 dias
-                    </a>
-                    <a href="{{ url_for('client_domain.click_stats', days=90) }}" 
-                       class="btn btn-sm btn-{{ 'primary' if days == 90 else 'outline-primary' }}">
-                        90 dias
+                        <i class="fas fa-calendar-alt me-1"></i>30 dias
                     </a>
                 </div>
             </div>

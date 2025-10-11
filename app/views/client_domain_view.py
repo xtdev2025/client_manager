@@ -92,7 +92,10 @@ def click_stats():
                     expiration_date = activation_date + timedelta(days=plan.get('duration_days'))
         
         # Get filter parameters
-        days = int(request.args.get('days', 30))
+        days = int(request.args.get('days', 30))  # Default: 30 days
+        # Only allow 1 (today) or 30 (last 30 days)
+        if days not in [1, 30]:
+            days = 30
         domain_id = request.args.get('domain_id')
         
         # Get click statistics
