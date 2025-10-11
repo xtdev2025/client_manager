@@ -42,8 +42,8 @@
                             <span class="badge bg-info">Admin</span>
                             {% endif %}
                         </td>
-                        <td>{{ admin.createdAt.strftime('%Y-%m-%d') }}</td>
-                        <td>{{ admin.updatedAt.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ admin.createdAt.strftime('%Y-%m-%d') if admin.createdAt else 'N/A' }}</td>
+                        <td>{{ admin.updatedAt.strftime('%Y-%m-%d') if admin.updatedAt else 'N/A' }}</td>
                         <td>
                             {% if current_user.is_super_admin and admin._id|string != current_user.id %}
                             <div class="btn-group btn-group-sm" role="group">
