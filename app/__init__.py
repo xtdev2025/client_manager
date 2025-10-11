@@ -49,6 +49,7 @@ def create_app(config_name=None):
 
         expiration = None
         plan_duration = None
+        now = datetime.utcnow()
 
         if current_user.is_authenticated:
             user_data = getattr(current_user, 'user', None)
@@ -71,7 +72,8 @@ def create_app(config_name=None):
 
         return {
             'navbar_plan_expiration': expiration,
-            'navbar_plan_duration': plan_duration
+            'navbar_plan_duration': plan_duration,
+            'now': now
         }
 
     # Register blueprints

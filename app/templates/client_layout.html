@@ -114,6 +114,86 @@
 
     <!-- Main Content Area -->
     <div class="client-main-content">
+        <!-- Fixed Header with Plan Info -->
+        <div class="client-fixed-header">
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center">
+                    <!-- Left: Plan Info -->
+                    <div class="header-plan-info">
+                        {% if user.plan %}
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="plan-badge">
+                                <i class="fas fa-crown me-2"></i>
+                                <strong>{{ user.plan.name }}</strong>
+                            </div>
+                            <div class="plan-divider"></div>
+                            <div class="plan-details">
+                                <span class="text-muted small">Duração: </span>
+                                <strong>{{ user.plan.duration_days }} dias</strong>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="plan-badge no-plan">
+                            <i class="fas fa-box-open me-2"></i>
+                            <span>Sem plano ativo</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Right: Expiration Countdown -->
+                    <div class="header-expiration">
+                        {% set expiration = navbar_plan_expiration if navbar_plan_expiration else (user.expiredAt if user.expiredAt else None) %}
+                        {% if expiration %}
+                            {% set remaining_seconds = (expiration - now).total_seconds() %}
+                            {% set days_left = (remaining_seconds / 86400)|round(0, 'ceil') %}
+                            
+                            {% if days_left > 7 %}
+                            <div class="expiration-badge status-ok">
+                                <i class="fas fa-check-circle me-2"></i>
+                                <div>
+                                    <div class="expiration-label">Plano Ativo</div>
+                                    <div class="expiration-value">{{ days_left }} dias restantes</div>
+                                </div>
+                            </div>
+                            {% elif days_left > 0 %}
+                            <div class="expiration-badge status-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <div>
+                                    <div class="expiration-label">Expira em Breve</div>
+                                    <div class="expiration-value">{{ days_left }} {{ 'dia' if days_left == 1 else 'dias' }} restantes</div>
+                                </div>
+                            </div>
+                            {% elif days_left == 0 %}
+                            <div class="expiration-badge status-danger">
+                                <i class="fas fa-hourglass-end me-2"></i>
+                                <div>
+                                    <div class="expiration-label">Última Chance</div>
+                                    <div class="expiration-value">Expira hoje</div>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="expiration-badge status-expired">
+                                <i class="fas fa-times-circle me-2"></i>
+                                <div>
+                                    <div class="expiration-label">Plano Expirado</div>
+                                    <div class="expiration-value">{{ expiration.strftime('%d/%m/%Y') }}</div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        {% else %}
+                        <div class="expiration-badge status-none">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <div>
+                                <div class="expiration-label">Status</div>
+                                <div class="expiration-value">Sem data de expiração</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Top Bar (optional - for mobile) -->
         <div class="client-topbar">
             <button class="btn btn-link sidebar-toggle" id="sidebarToggle">
