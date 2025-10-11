@@ -120,16 +120,16 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <!-- Left: Plan Info -->
                     <div class="header-plan-info">
-                        {% if user.plan %}
+                        {% if plan %}
                         <div class="d-flex align-items-center gap-3">
                             <div class="plan-badge">
                                 <i class="fas fa-crown me-2"></i>
-                                <strong>{{ user.plan.name }}</strong>
+                                <strong>{{ plan.name }}</strong>
                             </div>
                             <div class="plan-divider"></div>
                             <div class="plan-details">
                                 <span class="text-muted small">Duração: </span>
-                                <strong>{{ user.plan.duration_days }} dias</strong>
+                                <strong>{{ plan.duration_days }} dias</strong>
                             </div>
                         </div>
                         {% else %}
@@ -149,33 +149,33 @@
                             
                             {% if days_left > 7 %}
                             <div class="expiration-badge status-ok">
-                                <i class="fas fa-check-circle me-2"></i>
+                                <i class="fas fa-check-circle"></i>
                                 <div>
-                                    <div class="expiration-label">Plano Ativo</div>
+                                    <div class="expiration-label">✓ Plano Ativo</div>
                                     <div class="expiration-value">{{ days_left }} dias restantes</div>
                                 </div>
                             </div>
                             {% elif days_left > 0 %}
                             <div class="expiration-badge status-warning">
-                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <i class="fas fa-clock"></i>
                                 <div>
-                                    <div class="expiration-label">Expira em Breve</div>
-                                    <div class="expiration-value">{{ days_left }} {{ 'dia' if days_left == 1 else 'dias' }} restantes</div>
+                                    <div class="expiration-label">⚠ Atenção</div>
+                                    <div class="expiration-value">{{ '%.1f'|format(days_left|float) if days_left < 1 else days_left|int }} {{ 'dia restante' if days_left <= 1 else 'dias restantes' }}</div>
                                 </div>
                             </div>
                             {% elif days_left == 0 %}
                             <div class="expiration-badge status-danger">
-                                <i class="fas fa-hourglass-end me-2"></i>
+                                <i class="fas fa-exclamation-circle"></i>
                                 <div>
-                                    <div class="expiration-label">Última Chance</div>
-                                    <div class="expiration-value">Expira hoje</div>
+                                    <div class="expiration-label">🔴 Urgente</div>
+                                    <div class="expiration-value">Expira hoje!</div>
                                 </div>
                             </div>
                             {% else %}
                             <div class="expiration-badge status-expired">
-                                <i class="fas fa-times-circle me-2"></i>
+                                <i class="fas fa-ban"></i>
                                 <div>
-                                    <div class="expiration-label">Plano Expirado</div>
+                                    <div class="expiration-label">✕ Expirado</div>
                                     <div class="expiration-value">{{ expiration.strftime('%d/%m/%Y') }}</div>
                                 </div>
                             </div>

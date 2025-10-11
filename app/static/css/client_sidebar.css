@@ -278,41 +278,63 @@
     display: flex;
     align-items: center;
     gap: 14px;
-    padding: 12px 24px;
-    border-radius: 10px;
+    padding: 0px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 12px;
     border: 2px solid;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    transition: all 0.3s ease;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.expiration-badge::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s;
+}
+
+.expiration-badge:hover::before {
+    left: 100%;
 }
 
 .expiration-badge:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 }
 
 .expiration-badge i {
-    font-size: 26px;
+    font-size: 28px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
 .expiration-label {
-    font-size: 11px;
+    font-size: 10px;
     text-transform: uppercase;
-    letter-spacing: 0.8px;
-    font-weight: 700;
-    opacity: 0.9;
-    margin-bottom: 2px;
+    letter-spacing: 1px;
+    font-weight: 800;
+    opacity: 0.95;
+    margin-bottom: 3px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .expiration-value {
-    font-size: 17px;
-    font-weight: 700;
+    font-size: 18px;
+    font-weight: 800;
     line-height: 1.2;
+    letter-spacing: 0.3px;
 }
 
 /* Status Colors - Enhanced */
 .expiration-badge.status-ok {
-    background: linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, rgba(34, 197, 94, 0.12) 100%);
-    border-color: rgba(34, 197, 94, 0.4);
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.12) 0%, rgba(34, 197, 94, 0.18) 100%);
+    border-color: rgba(34, 197, 94, 0.5);
     color: #15803d;
 }
 
@@ -321,47 +343,69 @@
 }
 
 .expiration-badge.status-warning {
-    background: linear-gradient(135deg, rgba(234, 179, 8, 0.08) 0%, rgba(234, 179, 8, 0.12) 100%);
-    border-color: rgba(234, 179, 8, 0.4);
+    background: linear-gradient(135deg, rgba(234, 179, 8, 0.15) 0%, rgba(234, 179, 8, 0.22) 100%);
+    border-color: rgba(234, 179, 8, 0.5);
     color: #a16207;
     animation: pulse-warning 2s ease-in-out infinite;
 }
 
 @keyframes pulse-warning {
-    0%, 100% { border-color: rgba(234, 179, 8, 0.4); }
-    50% { border-color: rgba(234, 179, 8, 0.6); }
+    0%, 100% { 
+        border-color: rgba(234, 179, 8, 0.5);
+        box-shadow: 0 3px 10px rgba(234, 179, 8, 0.2);
+    }
+    50% { 
+        border-color: rgba(234, 179, 8, 0.7);
+        box-shadow: 0 6px 18px rgba(234, 179, 8, 0.35);
+    }
 }
 
 .expiration-badge.status-warning i {
     color: #eab308;
+    animation: icon-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes icon-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
 }
 
 .expiration-badge.status-danger {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(239, 68, 68, 0.12) 100%);
-    border-color: rgba(239, 68, 68, 0.5);
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(239, 68, 68, 0.22) 100%);
+    border-color: rgba(239, 68, 68, 0.6);
     color: #b91c1c;
     animation: pulse-danger 1.5s ease-in-out infinite;
 }
 
 @keyframes pulse-danger {
     0%, 100% { 
-        border-color: rgba(239, 68, 68, 0.5);
-        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+        border-color: rgba(239, 68, 68, 0.6);
+        box-shadow: 0 3px 12px rgba(239, 68, 68, 0.25);
+        transform: scale(1);
     }
     50% { 
-        border-color: rgba(239, 68, 68, 0.7);
-        box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
+        border-color: rgba(239, 68, 68, 0.8);
+        box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+        transform: scale(1.02);
     }
 }
 
 .expiration-badge.status-danger i {
     color: #ef4444;
+    animation: icon-shake 0.8s ease-in-out infinite;
+}
+
+@keyframes icon-shake {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-5deg); }
+    75% { transform: rotate(5deg); }
 }
 
 .expiration-badge.status-expired {
-    background: linear-gradient(135deg, rgba(107, 114, 128, 0.08) 0%, rgba(107, 114, 128, 0.12) 100%);
-    border-color: rgba(107, 114, 128, 0.4);
+    background: linear-gradient(135deg, rgba(107, 114, 128, 0.12) 0%, rgba(107, 114, 128, 0.18) 100%);
+    border-color: rgba(107, 114, 128, 0.5);
     color: #4b5563;
+    opacity: 0.9;
 }
 
 .expiration-badge.status-expired i {
@@ -369,14 +413,15 @@
 }
 
 .expiration-badge.status-none {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(59, 130, 246, 0.12) 100%);
-    border-color: rgba(59, 130, 246, 0.4);
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(59, 130, 246, 0.18) 100%);
+    border-color: rgba(59, 130, 246, 0.5);
     color: #1e40af;
 }
 
 .expiration-badge.status-none i {
     color: #3b82f6;
 }
+
 
 /* Top Bar */
 .client-topbar {
