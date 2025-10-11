@@ -6,6 +6,7 @@ from app.models.user import User
 from app.services.audit_service import AuditService
 from app.views.admin_view import AdminView
 from bson import ObjectId
+from datetime import datetime
 
 admin = Blueprint('admin', __name__, url_prefix='/admins')
 
@@ -134,3 +135,70 @@ def profile():
                 flash(f'Error updating password: {message}', 'danger')
 
     return AdminView.render_profile(admin_data)
+
+
+@admin.route('/audit-logs')
+@login_required
+@admin_required
+def audit_logs():
+    """View audit logs with filtering and pagination"""
+    # Get filter parameters
+    entity_type = request.args.get('entity_type', '')
+    action = request.args.get('action', '')
+    user_id = request.args.get('user_id', '')
+    start_date_str = request.args.get('start_date', '')
+    end_date_str = request.args.get('end_date', '')
+
+    # Pagination
+    page = request.args.get('page', 1, type=int)
+    per_page = 50
+
+    # Parse dates
+    start_date = None
+    end_date = None
+    if start_date_str:
+        try:
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
+        except ValueError:
+            flash('Invalid start date format', 'warning')
+
+    if end_date_str:
+        try:
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
+            # Set to end of day
+            end_date = end_date.replace(hour=23, minute=59, second=59)
+        except ValueError:
+            flash('Invalid end date format', 'warning')
+
+    # Get logs with filters
+    logs, total = AuditService.get_recent_logs(
+        limit=per_page,
+        entity_type=entity_type if entity_type else None,
+        action=action if action else None,
+        user_id=user_id if user_id else None,
+        start_date=start_date,
+        end_date=end_date,
+        page=page
+    )
+
+    # Calculate pagination
+    total_pages = (total + per_page - 1) // per_page
+
+    # Get all admins for user filter dropdown
+    admins = Admin.get_all()
+
+    return AdminView.render_audit_logs(
+        logs=logs,
+        admins=admins,
+        total=total,
+        page=page,
+        total_pages=total_pages,
+        per_page=per_page,
+        filters={
+            'entity_type': entity_type,
+            'action': action,
+            'user_id': user_id,
+            'start_date': start_date_str,
+            'end_date': end_date_str
+        }
+    )

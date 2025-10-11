@@ -157,18 +157,24 @@ class AuditService:
     @staticmethod
     def get_recent_logs(
         limit: int = 100, entity_type: Optional[str] = None,
-        user_id: Optional[str] = None
+        user_id: Optional[str] = None, action: Optional[str] = None,
+        start_date: Optional[datetime] = None, end_date: Optional[datetime] = None,
+        page: int = 1
     ):
         """
-        Get recent audit logs with optional filtering.
+        Get recent audit logs with optional filtering and pagination.
 
         Args:
-            limit: Maximum number of logs to return
+            limit: Maximum number of logs to return per page
             entity_type: Optional filter by entity type
             user_id: Optional filter by user ID
+            action: Optional filter by action type
+            start_date: Optional filter by start date
+            end_date: Optional filter by end date
+            page: Page number for pagination (1-indexed)
 
         Returns:
-            List of audit log entries
+            Tuple of (list of audit log entries, total count)
         """
         try:
             query = {}
@@ -176,11 +182,31 @@ class AuditService:
                 query['entity_type'] = entity_type
             if user_id:
                 query['user_id'] = user_id
+            if action:
+                query['action'] = action
 
-            logs = mongo.db.audit_logs.find(query).sort('timestamp', -1).limit(limit)
-            return list(logs)
+            # Date range filter
+            if start_date or end_date:
+                query['timestamp'] = {}
+                if start_date:
+                    query['timestamp']['$gte'] = start_date
+                if end_date:
+                    query['timestamp']['$lte'] = end_date
+
+            # Get total count
+            total = mongo.db.audit_logs.count_documents(query)
+
+            # Calculate skip for pagination
+            skip = (page - 1) * limit
+
+            # Get logs with pagination
+            logs = mongo.db.audit_logs.find(query).sort(
+                'timestamp', -1
+            ).skip(skip).limit(limit)
+
+            return list(logs), total
 
         except Exception as e:
             from flask import current_app
             current_app.logger.error(f"Error retrieving audit logs: {e}")
-            return []
+            return [], 0
