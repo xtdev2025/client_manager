@@ -1,70 +1,72 @@
-{% extends 'layout.html' %}
+{% extends "layout.html" %}
+
+{% block title %}Detalhes do Modelo - Gerenciador de Clientes{% endblock %}
+
+{% block page_title %}Detalhes do modelo{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="card">
-        <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
-            <h2>Detalhes do Template</h2>
-            <div>
-                <a href="{{ url_for('template.edit_template', template_id=template._id) }}" class="btn btn-warning">
-                    <i class="fas fa-edit"></i> Editar
-                </a>
-                <a href="{{ url_for('template.list_templates') }}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Voltar
-                </a>
+<div class="card shadow">
+    <div class="card-header bg-info text-white d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <h5 class="mb-0"><i class="fas fa-file-code me-2"></i>{{ template.name }}</h5>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('template.edit_template', template_id=template._id) }}" class="btn btn-warning">
+                <i class="fas fa-edit me-2"></i>Editar
+            </a>
+            <a href="{{ url_for('template.list_templates') }}" class="btn btn-outline-light">
+                <i class="fas fa-arrow-left me-2"></i>Voltar
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row g-4">
+            <div class="col-md-6">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 text-muted">Nome</dt>
+                    <dd class="col-sm-8 fw-semibold">{{ template.name }}</dd>
+
+                    <dt class="col-sm-4 text-muted">Status</dt>
+                    <dd class="col-sm-8">
+                        {% if template.status == 'active' %}
+                        <span class="badge bg-success">Ativo</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Inativo</span>
+                        {% endif %}
+                    </dd>
+
+                    <dt class="col-sm-4 text-muted">ID</dt>
+                    <dd class="col-sm-8"><code>{{ template._id }}</code></dd>
+                </dl>
+            </div>
+            <div class="col-md-6">
+                <dl class="row mb-0">
+                    <dt class="col-sm-5 text-muted">Criado em</dt>
+                    <dd class="col-sm-7">{{ template.createdAt.strftime('%d/%m/%Y %H:%M') if template.createdAt else 'N/D' }}</dd>
+
+                    <dt class="col-sm-5 text-muted">Atualizado em</dt>
+                    <dd class="col-sm-7">{{ template.updatedAt.strftime('%d/%m/%Y %H:%M') if template.updatedAt else 'N/D' }}</dd>
+                </dl>
             </div>
         </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-6">
-                    <dl class="row">
-                        <dt class="col-sm-4">Nome:</dt>
-                        <dd class="col-sm-8">{{ template.name }}</dd>
-                        
-                        <dt class="col-sm-4">Status:</dt>
-                        <dd class="col-sm-8">
-                            {% if template.status == 'active' %}
-                            <span class="badge bg-success">Ativo</span>
-                            {% else %}
-                            <span class="badge bg-secondary">Inativo</span>
-                            {% endif %}
-                        </dd>
-                    </dl>
-                </div>
-                <div class="col-md-6">
-                    <dl class="row">
-                        <dt class="col-sm-4">Criado em:</dt>
-                        <dd class="col-sm-8">{{ template.createdAt.strftime('%d/%m/%Y %H:%M') if template.createdAt else 'N/A' }}</dd>
-                        
-                        <dt class="col-sm-4">Atualizado em:</dt>
-                        <dd class="col-sm-8">{{ template.updatedAt.strftime('%d/%m/%Y %H:%M') if template.updatedAt else 'N/A' }}</dd>
-                        
-                        <dt class="col-sm-4">ID do Template:</dt>
-                        <dd class="col-sm-8">{{ template._id }}</dd>
-                    </dl>
-                </div>
+
+        <div class="mt-4">
+            <h6 class="text-uppercase text-muted">Descrição</h6>
+            <div class="border rounded p-3 bg-light mb-4">
+                {{ template.description if template.description else 'Nenhuma descrição disponível.' }}
             </div>
-            
-            <div class="mt-4">
-                <h5>Descrição:</h5>
-                <div class="border p-3 bg-light mb-4">
-                    {{ template.description if template.description else 'Nenhuma descrição disponível.' }}
-                </div>
-                
-                <h5>Conteúdo:</h5>
-                <div class="border p-3 bg-light">
-                    <pre>{{ template.content|tojson(indent=2) if template.content else '{}' }}</pre>
-                </div>
+
+            <h6 class="text-uppercase text-muted">Conteúdo</h6>
+            <div class="border rounded p-3 bg-light">
+                <pre class="mb-0">{{ template.content|tojson(indent=2) if template.content else '{}' }}</pre>
             </div>
-            
-            <div class="mt-4">
-                <form method="POST" action="{{ url_for('template.delete_template', template_id=template._id) }}" 
-                      onsubmit="return confirm('Tem certeza que deseja excluir este template?');">
-                    <button type="submit" class="btn btn-danger">
-                        <i class="fas fa-trash"></i> Excluir Template
-                    </button>
-                </form>
-            </div>
+        </div>
+
+        <div class="mt-4 d-flex justify-content-end">
+            <form method="POST" action="{{ url_for('template.delete_template', template_id=template._id) }}" 
+                  onsubmit="return confirm('Tem certeza que deseja excluir este modelo?');">
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash me-2"></i>Excluir modelo
+                </button>
+            </form>
         </div>
     </div>
 </div>
