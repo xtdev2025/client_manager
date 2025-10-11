@@ -33,7 +33,7 @@
                         <th>Cloudflare</th>
                         <th>SSL</th>
                         <th>Limite</th>
-                        <th class="text-center">Ações</th>
+                        <th class="text-end">Ações</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -55,7 +55,7 @@
                             {% endif %}
                         </td>
                         <td>{{ domain.domain_limit }}</td>
-                        <td class="text-center">
+                        <td class="text-end">
                             <div class="btn-group btn-group-sm" role="group">
                                 <a href="{{ url_for('domain.view_domain', domain_id=domain._id) }}" class="btn btn-info" title="Visualizar">
                                     <i class="fas fa-eye"></i>

@@ -28,7 +28,7 @@
                         <th>Role</th>
                         <th>Created</th>
                         <th>Last Updated</th>
-                        <th>Actions</th>
+                        <th class="text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -44,7 +44,7 @@
                         </td>
                         <td>{{ admin.createdAt.strftime('%Y-%m-%d') if admin.createdAt else 'N/A' }}</td>
                         <td>{{ admin.updatedAt.strftime('%Y-%m-%d') if admin.updatedAt else 'N/A' }}</td>
-                        <td>
+                        <td class="text-end">
                             {% if current_user.is_super_admin and admin._id|string != current_user.id %}
                             <div class="btn-group btn-group-sm" role="group">
                                 <a href="{{ url_for('admin.edit_admin', admin_id=admin._id) }}" class="btn btn-warning" title="Edit">

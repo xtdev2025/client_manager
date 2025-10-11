@@ -13,7 +13,7 @@
                 <li class="nav-item">
                     <a class="nav-link {% if request.path == url_for('main.dashboard') %}active{% endif %}" 
                        href="{{ url_for('main.dashboard') }}">
-                        <i class="fas fa-tachometer-alt"></i> Painel
+                        <i class="fas fa-chart-line"></i> Painel
                     </a>
                 </li>
 
@@ -22,7 +22,7 @@
                 <li class="nav-item">
                     <a class="nav-link {% if '/infos/' in request.path %}active{% endif %}" 
                        href="{{ url_for('info.list_client_infos', client_id=current_user.id) }}">
-                        <i class="fas fa-money-check-alt"></i> Minhas Informações Bancárias
+                        <i class="fas fa-credit-card"></i> Minhas Informações Bancárias
                     </a>
                 </li>
                 {% endif %}
@@ -38,13 +38,13 @@
                 <li class="nav-item">
                     <a class="nav-link {% if '/plans/' in request.path %}active{% endif %}" 
                        href="{{ url_for('plan.list_plans') }}">
-                        <i class="fas fa-tags"></i> Planos
+                        <i class="fas fa-clipboard-list"></i> Planos
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {% if '/templates/' in request.path %}active{% endif %}" 
                        href="{{ url_for('template.list_templates') }}">
-                        <i class="fas fa-file-alt"></i> Modelos
+                        <i class="fas fa-file-contract"></i> Modelos
                     </a>
                 </li>
                 <li class="nav-item">
@@ -62,7 +62,7 @@
                 <li class="nav-item">
                     <a class="nav-link {% if 'audit-logs' in request.path %}active{% endif %}" 
                        href="{{ url_for('admin.audit_logs') }}">
-                        <i class="fas fa-history"></i> Logs de Auditoria
+                        <i class="fas fa-book-open"></i> Logs de Auditoria
                     </a>
                 </li>
                 {% endif %}
