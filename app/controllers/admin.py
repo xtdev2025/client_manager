@@ -181,6 +181,10 @@ def audit_logs():
         page=page
     )
 
+    # Debug logging
+    from flask import current_app
+    current_app.logger.info(f"Audit logs query returned {total} total logs, {len(logs)} on page {page}")
+
     # Calculate pagination
     total_pages = (total + per_page - 1) // per_page
 

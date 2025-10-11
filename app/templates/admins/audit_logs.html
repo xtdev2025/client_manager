@@ -142,54 +142,17 @@
                         <td><small>{{ log.ip_address if log.ip_address else 'N/A' }}</small></td>
                         <td>
                             {% if log.details %}
-                            <button type="button" class="btn btn-sm btn-outline-secondary" 
-                                    data-bs-toggle="modal" data-bs-target="#detailsModal{{ loop.index }}">
+                            <button type="button" class="btn btn-sm btn-outline-secondary view-details-btn"
+                                    data-timestamp="{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') if log.timestamp else 'N/A' }}"
+                                    data-user-id="{{ log.user_id if log.user_id else 'N/A' }}"
+                                    data-entity-type="{{ log.entity_type }}"
+                                    data-action="{{ log.action }}"
+                                    data-entity-id="{{ log.entity_id if log.entity_id else 'N/A' }}"
+                                    data-ip-address="{{ log.ip_address if log.ip_address else 'N/A' }}"
+                                    data-user-agent="{{ log.user_agent if log.user_agent else 'N/A' }}"
+                                    data-details="{{ log.details|tojson }}">
                                 <i class="fas fa-info-circle"></i> View
                             </button>
-                            
-                            <!-- Details Modal -->
-                            <div class="modal fade" id="detailsModal{{ loop.index }}" tabindex="-1" aria-hidden="true">
-                                <div class="modal-dialog modal-lg">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title">Log Details</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <dl class="row">
-                                                <dt class="col-sm-3">Timestamp:</dt>
-                                                <dd class="col-sm-9">{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') if log.timestamp else 'N/A' }}</dd>
-                                                
-                                                <dt class="col-sm-3">User ID:</dt>
-                                                <dd class="col-sm-9"><code>{{ log.user_id if log.user_id else 'N/A' }}</code></dd>
-                                                
-                                                <dt class="col-sm-3">Entity Type:</dt>
-                                                <dd class="col-sm-9">{{ log.entity_type }}</dd>
-                                                
-                                                <dt class="col-sm-3">Action:</dt>
-                                                <dd class="col-sm-9">{{ log.action }}</dd>
-                                                
-                                                <dt class="col-sm-3">Entity ID:</dt>
-                                                <dd class="col-sm-9"><code>{{ log.entity_id if log.entity_id else 'N/A' }}</code></dd>
-                                                
-                                                <dt class="col-sm-3">IP Address:</dt>
-                                                <dd class="col-sm-9">{{ log.ip_address if log.ip_address else 'N/A' }}</dd>
-                                                
-                                                <dt class="col-sm-3">User Agent:</dt>
-                                                <dd class="col-sm-9"><small>{{ log.user_agent if log.user_agent else 'N/A' }}</small></dd>
-                                                
-                                                <dt class="col-sm-3">Details:</dt>
-                                                <dd class="col-sm-9">
-                                                    <pre class="bg-light p-2 rounded">{{ log.details|tojson(indent=2) }}</pre>
-                                                </dd>
-                                            </dl>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
                             {% else %}
                             <span class="text-muted">-</span>
                             {% endif %}
@@ -253,4 +216,79 @@
         </div>
     </div>
 </div>
+
+<!-- Single Reusable Details Modal -->
+<div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="detailsModalLabel">Log Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <dl class="row">
+                    <dt class="col-sm-3">Timestamp:</dt>
+                    <dd class="col-sm-9" id="modal-timestamp"></dd>
+                    
+                    <dt class="col-sm-3">User ID:</dt>
+                    <dd class="col-sm-9"><code id="modal-user-id"></code></dd>
+                    
+                    <dt class="col-sm-3">Entity Type:</dt>
+                    <dd class="col-sm-9" id="modal-entity-type"></dd>
+                    
+                    <dt class="col-sm-3">Action:</dt>
+                    <dd class="col-sm-9" id="modal-action"></dd>
+                    
+                    <dt class="col-sm-3">Entity ID:</dt>
+                    <dd class="col-sm-9"><code id="modal-entity-id"></code></dd>
+                    
+                    <dt class="col-sm-3">IP Address:</dt>
+                    <dd class="col-sm-9" id="modal-ip-address"></dd>
+                    
+                    <dt class="col-sm-3">User Agent:</dt>
+                    <dd class="col-sm-9"><small id="modal-user-agent"></small></dd>
+                    
+                    <dt class="col-sm-3">Details:</dt>
+                    <dd class="col-sm-9">
+                        <pre class="bg-light p-2 rounded" id="modal-details"></pre>
+                    </dd>
+                </dl>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Handle view details button clicks
+document.addEventListener('DOMContentLoaded', function() {
+    const detailsModal = new bootstrap.Modal(document.getElementById('detailsModal'));
+    
+    document.querySelectorAll('.view-details-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            // Get data from button attributes
+            document.getElementById('modal-timestamp').textContent = this.dataset.timestamp;
+            document.getElementById('modal-user-id').textContent = this.dataset.userId;
+            document.getElementById('modal-entity-type').textContent = this.dataset.entityType;
+            document.getElementById('modal-action').textContent = this.dataset.action;
+            document.getElementById('modal-entity-id').textContent = this.dataset.entityId;
+            document.getElementById('modal-ip-address').textContent = this.dataset.ipAddress;
+            document.getElementById('modal-user-agent').textContent = this.dataset.userAgent;
+            
+            // Format and display details JSON
+            try {
+                const details = JSON.parse(this.dataset.details);
+                document.getElementById('modal-details').textContent = JSON.stringify(details, null, 2);
+            } catch (e) {
+                document.getElementById('modal-details').textContent = this.dataset.details;
+            }
+            
+            // Show the modal
+            detailsModal.show();
+        });
+    });
+});
+</script>
 {% endblock %}
