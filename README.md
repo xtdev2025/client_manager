@@ -794,11 +794,159 @@ flake8 app/ --count --show-source --statistics
 - ✅ Use type hints quando possível
 - ✅ Documente funções complexas
 - ✅ Mantenha funções com responsabilidade única
-- ✅ Valide dados de entrada
+- ✅ Valide dados de entrada com pydantic schemas
 - ✅ Use try-except para operações de banco de dados
 - ✅ Registre logs de erros com `current_app.logger`
 - ✅ Não commite credenciais ou chaves secretas
 - ✅ Teste localmente antes de fazer push
+- ✅ Utilize a camada de serviços para lógica de negócio
+- ✅ Implemente auditoria para operações sensíveis
+
+### 🧪 Testes
+
+O projeto utiliza **pytest** para testes automatizados.
+
+#### Executar Todos os Testes
+
+```bash
+# Instalar dependências de teste
+pip install -r requirements.txt
+
+# Executar todos os testes
+pytest
+
+# Executar com cobertura
+pytest --cov=app --cov-report=html
+
+# Executar apenas testes unitários
+pytest tests/unit/
+
+# Executar apenas testes de integração
+pytest tests/integration/
+
+# Executar testes específicos
+pytest tests/unit/test_auth_service.py -v
+```
+
+#### Estrutura de Testes
+
+```plaintext
+tests/
+├── __init__.py
+├── conftest.py              # Fixtures e configurações
+├── unit/                    # Testes unitários
+│   ├── test_auth_service.py
+│   ├── test_client_service.py
+│   └── ...
+└── integration/             # Testes de integração
+    ├── test_auth_routes.py
+    └── ...
+```
+
+#### Escrever Novos Testes
+
+```python
+# Exemplo de teste unitário
+def test_validate_client_data(app):
+    """Test client data validation"""
+    with app.app_context():
+        # Setup
+        success, plan_id = Plan.create('Test Plan', 'Desc', 99.99, 30)
+        
+        # Execute
+        valid, error = ClientService.validate_client_data(
+            'testuser', 'password123', plan_id
+        )
+        
+        # Assert
+        assert valid is True
+        assert error is None
+```
+
+### 🔒 Checklist de Segurança para Produção
+
+Antes de fazer deploy em produção, certifique-se de:
+
+#### Configuração
+
+- [ ] Alterar `SECRET_KEY` para uma chave forte e aleatória
+- [ ] Definir `FLASK_ENV=production`
+- [ ] Configurar `MONGO_URI` com credenciais seguras
+- [ ] Usar HTTPS com certificado SSL válido
+- [ ] Configurar firewall para portas adequadas
+- [ ] Definir rate limiting adequado para sua aplicação
+
+#### Autenticação e Autorização
+
+- [ ] Alterar senha padrão do super admin (`Admin@123`)
+- [ ] Implementar política de senhas fortes
+- [ ] Considerar implementar 2FA para administradores
+- [ ] Revisar e testar todas as permissões RBAC
+- [ ] Validar que decoradores `@admin_required` e `@super_admin_required` estão em todas as rotas sensíveis
+
+#### Banco de Dados
+
+- [ ] Criar backup automático do MongoDB
+- [ ] Configurar autenticação no MongoDB
+- [ ] Restringir acesso ao MongoDB apenas para IPs conhecidos
+- [ ] Implementar índices para melhor performance
+- [ ] Criptografar dados sensíveis (informações bancárias)
+
+#### Logging e Monitoramento
+
+- [ ] Configurar logs de aplicação em produção
+- [ ] Implementar monitoramento de erros (ex: Sentry)
+- [ ] Revisar logs de auditoria regularmente
+- [ ] Configurar alertas para atividades suspeitas
+
+#### Validação e Sanitização
+
+- [ ] Todas as entradas de usuário são validadas
+- [ ] Proteção contra SQL/NoSQL injection (PyMongo protege por padrão)
+- [ ] Proteção CSRF habilitada em formulários
+- [ ] Validação de upload de arquivos (se implementado)
+
+#### Dependências e Atualizações
+
+- [ ] Todas as dependências estão atualizadas
+- [ ] Vulnerabilidades conhecidas foram corrigidas
+- [ ] Configurar alertas de segurança do GitHub
+- [ ] Planejar atualizações regulares
+
+#### Infraestrutura
+
+- [ ] Usar servidor WSGI em produção (Gunicorn, uWSGI)
+- [ ] Configurar proxy reverso (Nginx, Apache)
+- [ ] Limitar recursos (CPU, memória) por processo
+- [ ] Configurar backup de arquivos estáticos
+
+### 🔧 Troubleshooting
+
+#### Problema: Testes falhando com erro de conexão MongoDB
+
+```bash
+# Solução: Certifique-se que MongoDB está rodando
+sudo systemctl start mongodb
+# ou
+mongod --dbpath /path/to/data
+```
+
+#### Problema: Rate limiting muito restritivo
+
+```python
+# Ajustar em app/__init__.py
+limiter = Limiter(
+    key_func=get_remote_address,
+    default_limits=["500 per day", "100 per hour"]  # Aumentar limites
+)
+```
+
+#### Problema: Erros de importação em testes
+
+```bash
+# Adicionar diretório raiz ao PYTHONPATH
+export PYTHONPATH="${PYTHONPATH}:/path/to/client_manager"
+```
 
 ### Debugging
 
@@ -903,6 +1051,94 @@ Vá ao GitHub e clique em "New Pull Request".
 - Referencie issues relacionadas
 - Certifique-se de que o código passa no Flake8
 - Atualize a documentação se necessário
+
+---
+
+## 🚀 Melhorias Arquiteturais Recentes
+
+### Camada de Serviços (`app/services/`)
+
+O projeto agora implementa uma **camada de serviços** para separar a lógica de negócio dos controllers:
+
+- **AuthService**: Gerencia autenticação, validação de credenciais e registro de login
+- **ClientService**: Lógica de negócio para operações com clientes
+- **AuditService**: Sistema de auditoria para registrar operações sensíveis
+
+**Benefícios**:
+- ✅ Separação clara de responsabilidades
+- ✅ Código mais testável e reutilizável
+- ✅ Facilita manutenção e evolução do código
+
+### Validação com Pydantic (`app/schemas/`)
+
+Schemas de validação para garantir integridade dos dados:
+
+- **UserCreateSchema**: Validação de criação de usuários
+- **ClientCreateSchema**: Validação específica para clientes
+- **AdminCreateSchema**: Validação específica para admins
+- **PlanCreateSchema**: Validação de planos
+- **DomainCreateSchema**: Validação de domínios
+
+**Benefícios**:
+- ✅ Validação robusta e centralizada
+- ✅ Type safety com hints
+- ✅ Mensagens de erro descritivas
+
+### Rate Limiting com Flask-Limiter
+
+Proteção contra abuso e ataques de força bruta:
+
+```python
+# Login: 10 tentativas por minuto
+@limiter.limit("10 per minute")
+
+# Registro de admin: 5 tentativas por minuto
+@limiter.limit("5 per minute")
+
+# Limite global: 200 requisições/dia, 50/hora
+default_limits=["200 per day", "50 per hour"]
+```
+
+### Sistema de Auditoria
+
+Registro automático de operações sensíveis na collection `audit_logs`:
+
+- ✅ Criação, edição e exclusão de admins
+- ✅ Criação, edição e exclusão de planos
+- ✅ Criação e exclusão de domínios
+- ✅ Tentativas de login (sucesso e falha)
+
+**Informações registradas**:
+- Ação realizada
+- Tipo de entidade
+- ID da entidade afetada
+- ID do usuário que realizou a ação
+- IP address e User Agent
+- Timestamp
+- Detalhes adicionais
+
+### Type Hints
+
+Todas as funções principais agora possuem **type hints** para melhor:
+- IDE autocomplete
+- Detecção de erros em tempo de desenvolvimento
+- Documentação automática
+- Refatoração segura
+
+### Testes Automatizados
+
+Suite completa de testes com pytest:
+
+```plaintext
+tests/
+├── unit/                    # Testes unitários
+│   ├── test_auth_service.py
+│   └── test_client_service.py
+└── integration/             # Testes de integração
+    └── test_auth_routes.py
+```
+
+**Cobertura**: Testes para autenticação, validação, CRUD de clientes
 
 ---
 

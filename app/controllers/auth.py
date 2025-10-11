@@ -1,22 +1,26 @@
+from typing import Any, Callable
 from flask import Blueprint, redirect, url_for, flash, request, session, current_app
 from flask_login import login_user, current_user, logout_user, login_required
+from app import limiter
 from app.models.user import User
 from app.models.admin import Admin
 from app.models.client import Client
 from app.models.login_log import LoginLog
+from app.services.auth_service import AuthService
+from app.services.audit_service import AuditService
 from app.views.auth_view import AuthView
 from functools import wraps
 import bson
 
 auth = Blueprint('auth', __name__)
 
-def admin_required(f):
+def admin_required(f: Callable[..., Any]) -> Callable[..., Any]:
     """Decorator for routes that require admin access"""
     @wraps(f)
-    def decorated_function(*args, **kwargs):
+    def decorated_function(*args: Any, **kwargs: Any) -> Any:
         if not current_user.is_authenticated:
             return redirect(url_for('auth.login'))
-        
+
         user = User.get_by_id(current_user.id)
         if not user or 'role' not in user or user['role'] not in ['admin', 'super_admin']:
             flash('You do not have permission to access this page.', 'danger')
@@ -24,13 +28,13 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-def super_admin_required(f):
+def super_admin_required(f: Callable[..., Any]) -> Callable[..., Any]:
     """Decorator for routes that require super admin access"""
     @wraps(f)
-    def decorated_function(*args, **kwargs):
+    def decorated_function(*args: Any, **kwargs: Any) -> Any:
         if not current_user.is_authenticated:
             return redirect(url_for('auth.login'))
-        
+
         user = User.get_by_id(current_user.id)
         if not user or 'role' not in user or user['role'] != 'super_admin':
             flash('You do not have permission to access this page.', 'danger')
@@ -39,56 +43,45 @@ def super_admin_required(f):
     return decorated_function
 
 @auth.route('/login', methods=['GET', 'POST'])
+@limiter.limit("10 per minute")
 def login():
-    """Login route"""
+    """Login route with rate limiting"""
     if current_user.is_authenticated:
         return redirect(url_for('main.index'))
-    
+
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        
-        if not username or not password:
-            flash('Please provide both username and password', 'danger')
-            return AuthView.render_login(form_data={'username': username})
-        
-        user = User.get_by_username(username)
-        
-        if user and User.check_password(user, password):
-            # Store user type and role in session
-            session['user_type'] = user.get('user_type', 'client')
-            session['role'] = user.get('role', 'client')
-            
-            # Handle client-specific validation
-            if session['user_type'] == 'client':
-                if user.get('status') != 'active':
-                    flash('Your account is not active. Please contact support.', 'warning')
-                    return AuthView.render_login(form_data={'username': username})
-            
-            # Create a User object for Flask-Login
-            from app.utils.user_loader import UserObject
-            user_obj = UserObject(str(user['_id']))
-            login_user(user_obj, remember=True)
 
-            # Persist login event for audit trail
-            try:
-                LoginLog.record(
-                    user_id=str(user['_id']),
-                    username=user.get('username'),
-                    role=user.get('role', 'client'),
-                    user_type=user.get('user_type', 'client'),
-                    ip_address=request.remote_addr,
-                    user_agent=request.headers.get('User-Agent')
-                )
-            except Exception:
-                current_app.logger.exception('Failed to store login event.')
-            
-            next_page = request.args.get('next')
-            flash('Login successful!', 'success')
-            return redirect(next_page if next_page else url_for('main.dashboard'))
-        else:
-            flash('Invalid username or password', 'danger')
-    
+        # Use AuthService for authentication
+        success, user, error_message = AuthService.authenticate_user(username, password)
+
+        if not success:
+            flash(error_message, 'danger')
+            return AuthView.render_login(form_data={'username': username})
+
+        # Store user type and role in session
+        session['user_type'] = user.get('user_type', 'client')
+        session['role'] = user.get('role', 'client')
+
+        # Create a User object for Flask-Login
+        from app.utils.user_loader import UserObject
+        user_obj = UserObject(str(user['_id']))
+        login_user(user_obj, remember=True)
+
+        # Log the successful login
+        AuthService.log_login_attempt(
+            user_id=str(user['_id']),
+            username=user.get('username'),
+            success=True,
+            role=user.get('role', 'client'),
+            user_type=user.get('user_type', 'client')
+        )
+
+        next_page = request.args.get('next')
+        flash('Login successful!', 'success')
+        return redirect(next_page if next_page else url_for('main.dashboard'))
+
     return AuthView.render_login()
 
 @auth.route('/logout')
@@ -106,67 +99,71 @@ def register():
     """Register route for clients"""
     if current_user.is_authenticated:
         return redirect(url_for('main.index'))
-    
+
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
         confirm_password = request.form.get('confirm_password')
-        
+
         if not username or not password or not confirm_password:
             flash('Please fill out all fields', 'danger')
             return AuthView.render_register(form_data={'username': username})
-        
+
         if password != confirm_password:
             flash('Passwords do not match', 'danger')
             return AuthView.render_register(form_data={'username': username})
-        
+
         # Check if username already exists
         if User.get_by_username(username):
             flash('Username already exists', 'danger')
             return AuthView.render_register(form_data={'username': username})
-        
+
         # Create client with default plan (None for now)
         success, message = Client.create(username, password, None)
-        
+
         if success:
             flash('Registration successful! You can now login.', 'success')
             return redirect(url_for('auth.login'))
         else:
             flash(f'Registration failed: {message}', 'danger')
-    
+
     return AuthView.render_register()
 
 @auth.route('/register_admin', methods=['GET', 'POST'])
 @login_required
 @super_admin_required
+@limiter.limit("5 per minute")
 def register_admin():
-    """Register route for admins (only accessible by super_admin)"""
+    """Register route for admins (only accessible by super_admin) with rate limiting"""
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
         confirm_password = request.form.get('confirm_password')
         role = request.form.get('role', 'admin')
-        
+
         if not username or not password or not confirm_password:
             flash('Please fill out all fields', 'danger')
             return AuthView.render_register_admin(form_data={'username': username})
-        
+
         if password != confirm_password:
             flash('Passwords do not match', 'danger')
             return AuthView.render_register_admin(form_data={'username': username, 'role': role})
-        
-        # Check if username already exists
-        if User.get_by_username(username):
-            flash('Username already exists', 'danger')
+
+        # Use AuthService for validation
+        valid, error = AuthService.validate_registration_data(username, password)
+        if not valid:
+            flash(error, 'danger')
             return AuthView.render_register_admin(form_data={'username': username, 'role': role})
-        
+
         # Create admin
         success, message = Admin.create(username, password, role)
-        
+
         if success:
+            # Log the admin creation in audit trail
+            AuditService.log_admin_action('create', message, {'role': role})
             flash('Admin registration successful!', 'success')
             return redirect(url_for('admin.list_admins'))
         else:
             flash(f'Registration failed: {message}', 'danger')
-    
+
     return AuthView.render_register_admin()
