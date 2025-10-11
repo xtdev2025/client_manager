@@ -68,6 +68,12 @@ def edit_plan(plan_id):
         success, message = Plan.update(plan_id, data)
 
         if success:
+            # Log plan update in audit trail
+            AuditService.log_plan_action('update', plan_id, {
+                'name': data.get('name'),
+                'price': data.get('price'),
+                'duration_days': data.get('duration_days')
+            })
             flash('Plan updated successfully', 'success')
             return redirect(url_for('plan.list_plans'))
         else:
@@ -81,9 +87,15 @@ def edit_plan(plan_id):
 def delete_plan(plan_id):
     """Delete a plan"""
     if request.method == 'POST':
+        # Get plan data before deletion for audit log
+        plan_data = Plan.get_by_id(plan_id)
+        plan_name = plan_data.get('name', 'unknown') if plan_data else 'unknown'
+        
         success, message = Plan.delete(plan_id)
 
         if success:
+            # Log plan deletion in audit trail
+            AuditService.log_plan_action('delete', plan_id, {'name': plan_name})
             flash('Plan deleted successfully', 'success')
         else:
             flash(f'Error deleting plan: {message}', 'danger')

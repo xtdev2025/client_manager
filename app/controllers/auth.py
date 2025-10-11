@@ -88,6 +88,13 @@ def login():
 @login_required
 def logout():
     """Logout route"""
+    # Log logout before clearing session
+    user_id = current_user.id if current_user.is_authenticated else None
+    username = current_user.user.get('username', 'unknown') if current_user.is_authenticated and current_user.user else 'unknown'
+    
+    if user_id:
+        AuditService.log_admin_action('logout', user_id, {'username': username})
+    
     logout_user()
     session.pop('user_type', None)
     session.pop('role', None)
