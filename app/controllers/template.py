@@ -90,6 +90,7 @@ def edit_template(template_id):
             page_type = request.form.get(f"pages[{page_index}][type]", "custom")
             page_content = request.form.get(f"pages[{page_index}][content]", "")
             page_order = request.form.get(f"pages[{page_index}][order]", str(page_index + 1))
+            page_fixed = request.form.get(f"pages[{page_index}][fixed]") == "true"
 
             # Skip empty pages
             if not page_name:
@@ -109,6 +110,7 @@ def edit_template(template_id):
                 "type": page_type,
                 "content": page_content,
                 "order": int(page_order),
+                "fixed": page_fixed,
             }
 
             pages.append(page_data)

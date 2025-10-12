@@ -116,6 +116,7 @@ def create_default_templates():
                         "name": "Home",
                         "type": "home",
                         "order": 1,
+                        "fixed": True,  # Home page is fixed by default
                         "content": """<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -236,6 +237,7 @@ def create_default_templates():
                         "name": "Home",
                         "type": "home",
                         "order": 1,
+                        "fixed": True,  # Home page is fixed by default
                         "content": """<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -324,6 +326,7 @@ def create_default_templates():
                         "name": "Home",
                         "type": "home",
                         "order": 1,
+                        "fixed": True,  # Home page is fixed by default
                         "content": """<!DOCTYPE html>
 <html lang="pt-BR">
 <head>

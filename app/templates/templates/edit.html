@@ -45,6 +45,16 @@
         border-left: 4px solid #28a745;
     }
     
+    .page-list-item.page-fixed {
+        border-left: 4px solid #ffc107;
+        background: #fffbf0;
+    }
+    
+    .page-list-item.page-home.page-fixed {
+        border-left: 4px solid #28a745;
+        background: #f0fff4;
+    }
+    
     .drag-handle {
         cursor: move;
         color: #6c757d;
@@ -134,13 +144,13 @@
                                                 
                                                 <div class="flex-grow-1">
                                                     <div class="row g-2 mb-2">
-                                                        <div class="col-md-5">
+                                                        <div class="col-md-4">
                                                             <label class="form-label small mb-1">Nome</label>
                                                             <input type="text" class="form-control form-control-sm" 
                                                                 name="pages[{{ loop.index0 }}][name]" 
                                                                 value="{{ page.name }}" required>
                                                         </div>
-                                                        <div class="col-md-4">
+                                                        <div class="col-md-3">
                                                             <label class="form-label small mb-1">Tipo</label>
                                                             <select class="form-select form-select-sm page-type-select" 
                                                                 name="pages[{{ loop.index0 }}][type]">
@@ -148,12 +158,25 @@
                                                                 <option value="custom" {% if page.type == 'custom' %}selected{% endif %}>Personalizada</option>
                                                             </select>
                                                         </div>
-                                                        <div class="col-md-3">
+                                                        <div class="col-md-2">
                                                             <label class="form-label small mb-1">Ordem</label>
                                                             <input type="number" class="form-control form-control-sm page-order" 
                                                                 name="pages[{{ loop.index0 }}][order]" 
                                                                 value="{{ page.order if page.order else loop.index }}" 
                                                                 min="1" required>
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <label class="form-label small mb-1">Opções</label>
+                                                            <div class="form-check">
+                                                                <input type="checkbox" class="form-check-input page-fixed-checkbox" 
+                                                                    name="pages[{{ loop.index0 }}][fixed]" 
+                                                                    id="page_fixed_{{ loop.index0 }}"
+                                                                    value="true"
+                                                                    {% if page.fixed %}checked{% endif %}>
+                                                                <label class="form-check-label small" for="page_fixed_{{ loop.index0 }}">
+                                                                    <i class="fas fa-lock me-1"></i>Página Fixa
+                                                                </label>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                     
@@ -167,7 +190,8 @@
                                                             data-page-index="{{ loop.index0 }}">
                                                             <i class="fas fa-code me-1"></i>Editar HTML
                                                         </button>
-                                                        <button type="button" class="btn btn-sm btn-outline-danger remove-page-btn">
+                                                        <button type="button" class="btn btn-sm btn-outline-danger remove-page-btn"
+                                                            {% if page.fixed %}disabled title="Páginas fixas não podem ser removidas"{% endif %}>
                                                             <i class="fas fa-trash me-1"></i>Remover
                                                         </button>
                                                     </div>
@@ -240,22 +264,32 @@
             
             <div class="flex-grow-1">
                 <div class="row g-2 mb-2">
-                    <div class="col-md-5">
+                    <div class="col-md-4">
                         <label class="form-label small mb-1">Nome</label>
                         <input type="text" class="form-control form-control-sm page-name-input" 
                             name="" placeholder="Nome da página" required>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label small mb-1">Tipo</label>
                         <select class="form-select form-select-sm page-type-select" name="">
                             <option value="home">Home</option>
                             <option value="custom" selected>Personalizada</option>
                         </select>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label small mb-1">Ordem</label>
                         <input type="number" class="form-control form-control-sm page-order" 
                             name="" value="1" min="1" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small mb-1">Opções</label>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input page-fixed-checkbox" 
+                                name="" value="true" id="">
+                            <label class="form-check-label small" for="">
+                                <i class="fas fa-lock me-1"></i>Página Fixa
+                            </label>
+                        </div>
                     </div>
                 </div>
                 
@@ -351,6 +385,14 @@ document.getElementById('addPageBtn').addEventListener('click', function() {
     const contentInput = pageItem.querySelector('.page-content-input');
     if (contentInput) contentInput.setAttribute('name', `pages[${pageCounter}][content]`);
     
+    const fixedCheckbox = pageItem.querySelector('.page-fixed-checkbox');
+    if (fixedCheckbox) {
+        fixedCheckbox.setAttribute('name', `pages[${pageCounter}][fixed]`);
+        fixedCheckbox.setAttribute('id', `page_fixed_${pageCounter}`);
+        const fixedLabel = pageItem.querySelector('.form-check-label');
+        if (fixedLabel) fixedLabel.setAttribute('for', `page_fixed_${pageCounter}`);
+    }
+    
     // Update edit button
     const editBtn = pageItem.querySelector('.edit-html-btn');
     editBtn.setAttribute('data-page-index', pageCounter);
@@ -436,10 +478,38 @@ document.getElementById('saveHtmlBtn').addEventListener('click', function() {
 // Remove page
 document.addEventListener('click', function(e) {
     if (e.target.closest('.remove-page-btn')) {
+        const removeBtn = e.target.closest('.remove-page-btn');
+        
+        // Check if button is disabled (fixed page)
+        if (removeBtn.disabled) {
+            alert('Esta página é fixa e não pode ser removida. Desmarque a opção "Página Fixa" para poder removê-la.');
+            return;
+        }
+        
         if (confirm('Tem certeza que deseja remover esta página?')) {
             const pageItem = e.target.closest('.page-list-item');
             pageItem.remove();
             reindexPages();
+        }
+    }
+});
+
+// Handle fixed checkbox changes
+document.addEventListener('change', function(e) {
+    if (e.target.classList.contains('page-fixed-checkbox')) {
+        const pageItem = e.target.closest('.page-list-item');
+        const removeBtn = pageItem.querySelector('.remove-page-btn');
+        
+        if (e.target.checked) {
+            // Disable remove button for fixed pages
+            removeBtn.disabled = true;
+            removeBtn.setAttribute('title', 'Páginas fixas não podem ser removidas');
+            pageItem.classList.add('page-fixed');
+        } else {
+            // Enable remove button
+            removeBtn.disabled = false;
+            removeBtn.removeAttribute('title');
+            pageItem.classList.remove('page-fixed');
         }
     }
 });
