@@ -20,20 +20,10 @@ jobs:
         ports:
           - 27017:27017
         options: >-
-          --health-cmd "mongo --eval 'db.runCommand({ping: 1})'"
+          --health-cmd "mongosh --eval 'db.runCommand({ping: 1})' || mongo --eval 'db.runCommand({ping: 1})'"
           --health-interval 10s
           --health-timeout 5s
-          --health-retries 5
-      
-      redis:
-        image: redis:7-alpine
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          --health-retries 10
     
     steps:
     - uses: actions/checkout@v4
@@ -42,28 +32,104 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
+        cache: 'pip'
     
-    - name: Cache dependencies
-      uses: actions/cache@v4
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y mongodb-clients
     
-    - name: Install dependencies
+    - name: Verify MongoDB connection
+      run: |
+        echo "Waiting for MongoDB..."
+        for i in {1..30}; do
+          if mongosh --eval "db.runCommand({ping: 1})" localhost:27017 2>/dev/null || mongo --eval "db.runCommand({ping: 1})" localhost:27017 2>/dev/null; then
+            echo "MongoDB is ready!"
+            break
+          fi
+          echo "Waiting for MongoDB... ($i/30)"
+          sleep 2
+        done
+    
+    - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+        pip install -r requirements-dev.txt
     
-    - name: Set up test environment
+    - name: Create .env file for tests
       run: |
-        cp .env.example .env
-        echo "MONGODB_URI=mongodb://localhost:27017/test_db" >> .env
-        echo "REDIS_URL=redis://localhost:6379/0" >> .env
-        echo "SECRET_KEY=test_secret_key_for_testing_only" >> .env
+        cat > .env << EOF
+        FLASK_ENV=testing
+        FLASK_DEBUG=False
+        SECRET_KEY=test_secret_key_for_github_actions_only
+        MONGO_URI=mongodb://localhost:27017/test_clientmanager
+        MONGODB_URI=mongodb://localhost:27017/test_clientmanager
+        DATABASE_NAME=test_clientmanager
+        EOF
+        echo "✅ .env created for tests"
     
-    - name: Run tests
+    - name: Initialize test database
       run: |
-        pytest tests/ -v
+        python -c "
+        import sys
+        import os
+        from dotenv import load_dotenv
+        load_dotenv()
+        
+        # Verificar se MongoDB está acessível
+        from pymongo import MongoClient
+        try:
+            client = MongoClient(os.getenv('MONGO_URI', 'mongodb://localhost:27017/test_clientmanager'), serverSelectionTimeoutMS=5000)
+            client.admin.command('ping')
+            print('✅ MongoDB connection successful')
+            
+            # Limpar banco de teste
+            db_name = 'test_clientmanager'
+            if db_name in client.list_database_names():
+                client.drop_database(db_name)
+                print(f'✅ Test database {db_name} cleaned')
+            
+            client.close()
+        except Exception as e:
+            print(f'❌ MongoDB connection failed: {e}')
+            sys.exit(1)
+        "
     
+    - name: Run linting
+      run: |
+        flake8 app/ --count --select=E9,F63,F7,F82 --show-source --statistics --max-line-length=100
+        flake8 app/ --count --exit-zero --max-complexity=10 --max-line-length=100 --statistics
+      continue-on-error: true
+    
+    - name: Run tests with coverage
+      run: |
+        pytest tests/ -v --cov=app --cov-report=xml --cov-report=term-missing
+      env:
+        FLASK_ENV: testing
+        MONGO_URI: mongodb://localhost:27017/test_clientmanager
+    
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v4
+      if: matrix.python-version == '3.10'
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+      continue-on-error: true
+    
+    - name: Cleanup test database
+      if: always()
+      run: |
+        python -c "
+        from pymongo import MongoClient
+        try:
+            client = MongoClient('mongodb://localhost:27017/', serverSelectionTimeoutMS=5000)
+            client.drop_database('test_clientmanager')
+            print('✅ Test database cleaned up')
+            client.close()
+        except Exception as e:
+            print(f'⚠️ Cleanup warning: {e}')
+        "
+
