@@ -2,6 +2,7 @@ from bson import ObjectId
 from flask import Blueprint, abort, flash, redirect, request, url_for
 from flask_login import current_user, login_required
 
+from app import mongo
 from app.controllers.auth import admin_required, super_admin_required
 from app.models.client import Client
 from app.models.domain import Domain
@@ -41,6 +42,7 @@ def create_client():
         status = request.form.get("status", "active")
         plan_activation_date = request.form.get("plan_activation_date") or None
         plan_expiration_date = request.form.get("plan_expiration_date") or None
+        domain = request.form.get("domain", "").strip()
 
         form_payload = {
             "username": username,
@@ -49,6 +51,7 @@ def create_client():
             "status": status,
             "plan_activation_date": plan_activation_date,
             "plan_expiration_date": plan_expiration_date,
+            "domain": domain,
         }
 
         if not username or not password:
@@ -67,18 +70,64 @@ def create_client():
         )
 
         if success:
+            client_id = message  # message contains the client_id on success
+
+            # Create domain association if provided and template is selected
+            if domain and template_id:
+                # First, check if main domain exists (seusite.com)
+                main_domain = mongo.db.domains.find_one({"name": "seusite.com"})
+
+                if main_domain:
+                    domain_id = str(main_domain["_id"])
+                    # Assign subdomain to client
+                    domain_success, domain_message = Domain.assign_to_client(
+                        client_id=client_id, domain_id=domain_id, subdomain=domain
+                    )
+
+                    if domain_success:
+                        flash(f"Client created with domain {domain}.seusite.com", "success")
+                    else:
+                        flash(
+                            f"Client created but domain assignment failed: {domain_message}",
+                            "warning",
+                        )
+                else:
+                    # Create main domain if it doesn't exist
+                    domain_created, domain_id = Domain.create(
+                        name="seusite.com", ssl=True, domain_limit=999
+                    )
+
+                    if domain_created:
+                        # Now assign subdomain
+                        domain_success, domain_message = Domain.assign_to_client(
+                            client_id=client_id, domain_id=domain_id, subdomain=domain
+                        )
+
+                        if domain_success:
+                            flash(f"Client created with domain {domain}.seusite.com", "success")
+                        else:
+                            flash(
+                                f"Client created but domain assignment failed: {domain_message}",
+                                "warning",
+                            )
+                    else:
+                        flash("Client created but main domain creation failed", "warning")
+            else:
+                flash("Client created successfully", "success")
+
             # Log client creation in audit trail
             AuditService.log_client_action(
                 "create",
-                message,
+                client_id,
                 {
                     "username": username,
                     "plan_id": plan_id,
                     "template_id": template_id,
                     "status": status,
+                    "domain": f"{domain}.seusite.com" if domain and template_id else None,
                 },
             )
-            flash("Client created successfully", "success")
+
             return redirect(url_for("client.list_clients"))
         else:
             flash(f"Error creating client: {message}", "danger")

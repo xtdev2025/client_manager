@@ -25,23 +25,27 @@
                             <option value="">No Plan</option>
                             {% for plan in plans %}
                             {% set selected_plan = form_data.get('plan_id') if form_data else '' %}
-                            <option value="{{ plan._id }}" {% if selected_plan and selected_plan|string == plan._id|string %}selected{% endif %}>
-                                {{ plan.name }} (${{ plan.price }})
+                            <option value="{{ plan._id }}" 
+                                data-duration="{{ plan.duration_days }}"
+                                data-price="{{ plan.price }}"
+                                {% if selected_plan and selected_plan|string == plan._id|string %}selected{% endif %}>
+                                {{ plan.name }} (${{ plan.price }}) - {{ plan.duration_days }} dias
                             </option>
                             {% endfor %}
                         </select>
+                        <div class="form-text">Selecione um plano para calcular automaticamente as datas</div>
                     </div>
                     <div class="mb-3">
                         <label for="plan_activation_date" class="form-label">Plan Activation Date</label>
                         <input type="date" class="form-control" id="plan_activation_date" name="plan_activation_date"
                                value="{{ form_data.get('plan_activation_date') if form_data and form_data.get('plan_activation_date') else '' }}">
-                        <div class="form-text">Leave blank to activate the plan today.</div>
+                        <div class="form-text">Será preenchido automaticamente com a data de hoje</div>
                     </div>
                     <div class="mb-3">
                         <label for="plan_expiration_date" class="form-label">Plan Expiration Date</label>
                         <input type="date" class="form-control" id="plan_expiration_date" name="plan_expiration_date"
                                value="{{ form_data.get('plan_expiration_date') if form_data and form_data.get('plan_expiration_date') else '' }}">
-                        <div class="form-text">Leave blank to calculate automatically based on the selected plan.</div>
+                        <div class="form-text">Será calculado automaticamente baseado na duração do plano</div>
                     </div>
                     
                     <div class="mb-3">
@@ -55,6 +59,24 @@
                             </option>
                             {% endfor %}
                         </select>
+                        <div class="form-text">Selecione um template para criar o domínio</div>
+                    </div>
+                    
+                    <!-- Domain field (hidden by default) -->
+                    <div class="mb-3" id="domainField" style="display: none;">
+                        <label for="domain" class="form-label">
+                            <i class="fas fa-globe me-2"></i>Domínio
+                        </label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="domain" name="domain" 
+                                   placeholder="exemplo" 
+                                   value="{{ form_data.get('domain') if form_data else '' }}">
+                            <span class="input-group-text">.seusite.com</span>
+                        </div>
+                        <div class="form-text">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Digite apenas o subdomínio (ex: "empresa" para empresa.seusite.com)
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label for="status" class="form-label">Status</label>
@@ -78,4 +100,106 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const planSelect = document.getElementById('plan_id');
+    const templateSelect = document.getElementById('template_id');
+    const activationDateInput = document.getElementById('plan_activation_date');
+    const expirationDateInput = document.getElementById('plan_expiration_date');
+    const domainField = document.getElementById('domainField');
+    const domainInput = document.getElementById('domain');
+    const usernameInput = document.getElementById('username');
+    
+    // Function to format date as YYYY-MM-DD
+    function formatDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+    
+    // Function to calculate dates based on plan
+    function updateDates() {
+        const selectedOption = planSelect.options[planSelect.selectedIndex];
+        
+        if (planSelect.value && selectedOption.dataset.duration) {
+            const today = new Date();
+            const durationDays = parseInt(selectedOption.dataset.duration);
+            
+            // Set activation date to today
+            activationDateInput.value = formatDate(today);
+            
+            // Calculate expiration date
+            const expirationDate = new Date(today);
+            expirationDate.setDate(expirationDate.getDate() + durationDays);
+            expirationDateInput.value = formatDate(expirationDate);
+            
+            // Visual feedback
+            activationDateInput.classList.add('is-valid');
+            expirationDateInput.classList.add('is-valid');
+            
+            setTimeout(() => {
+                activationDateInput.classList.remove('is-valid');
+                expirationDateInput.classList.remove('is-valid');
+            }, 2000);
+        } else {
+            // Clear dates if no plan selected
+            activationDateInput.value = '';
+            expirationDateInput.value = '';
+        }
+    }
+    
+    // Function to show/hide domain field
+    function toggleDomainField() {
+        if (templateSelect.value) {
+            domainField.style.display = 'block';
+            
+            // Auto-fill domain based on username if not already filled
+            if (!domainInput.value && usernameInput.value) {
+                const suggestedDomain = usernameInput.value
+                    .toLowerCase()
+                    .trim()
+                    .replace(/[^a-z0-9]/g, '');
+                domainInput.value = suggestedDomain;
+            }
+            
+            // Smooth animation
+            domainField.style.opacity = '0';
+            domainField.style.transition = 'opacity 0.3s ease-in';
+            setTimeout(() => {
+                domainField.style.opacity = '1';
+            }, 10);
+        } else {
+            domainField.style.display = 'none';
+            domainInput.value = '';
+        }
+    }
+    
+    // Event listeners
+    planSelect.addEventListener('change', updateDates);
+    templateSelect.addEventListener('change', toggleDomainField);
+    
+    // Auto-suggest domain when username changes
+    usernameInput.addEventListener('input', function() {
+        if (templateSelect.value && !domainInput.value) {
+            const suggestedDomain = this.value
+                .toLowerCase()
+                .trim()
+                .replace(/[^a-z0-9]/g, '');
+            domainInput.value = suggestedDomain;
+        }
+    });
+    
+    // Initialize on page load
+    if (planSelect.value) {
+        updateDates();
+    }
+    if (templateSelect.value) {
+        toggleDomainField();
+    }
+    
+    console.log('✓ Client creation form initialized with auto-fill features');
+});
+</script>
 {% endblock %}
