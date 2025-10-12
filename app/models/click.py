@@ -92,6 +92,32 @@ class Click:
             return []
 
     @staticmethod
+    def get_domain_click_count(client_id, domain_id, days=30):
+        """Get count of clicks for a specific domain of a client"""
+        try:
+            if isinstance(client_id, str):
+                client_id = ObjectId(client_id)
+            if isinstance(domain_id, str):
+                domain_id = ObjectId(domain_id)
+
+            # Calculate date range
+            end_date = datetime.utcnow()
+            start_date = end_date - timedelta(days=days)
+
+            count = mongo.db.clicks.count_documents(
+                {
+                    "client_id": client_id,
+                    "domain_id": domain_id,
+                    "timestamp": {"$gte": start_date, "$lte": end_date},
+                }
+            )
+
+            return count
+        except Exception as e:
+            current_app.logger.error(f"Error getting domain click count: {e}")
+            return 0
+
+    @staticmethod
     def get_click_stats(client_id, days=30):
         """Get click statistics grouped by domain"""
         try:

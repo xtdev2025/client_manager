@@ -129,7 +129,7 @@ def client_dashboard():
     client_domains = Domain.get_client_domains(user["_id"])
     client_infos = Info.get_by_client(user["_id"])
 
-    # Enrich client_domains with info count
+    # Enrich client_domains with info count and click count
     for client_domain in client_domains:
         domain_id = client_domain.get("domain_id")
         # Count infos for this specific client_domain relationship
@@ -137,6 +137,12 @@ def client_dashboard():
             info for info in client_infos 
             if info.get("domain_id") == domain_id
         ])
+        # Count clicks for this specific domain
+        client_domain["click_count"] = Click.get_domain_click_count(
+            user["_id"], 
+            domain_id, 
+            days=30
+        )
 
     # Get click statistics
     total_clicks = Click.get_total_clicks(user["_id"], days=30)
