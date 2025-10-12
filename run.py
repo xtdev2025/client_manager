@@ -9,11 +9,6 @@ def print_startup_info():
     print("🚀 CLIENT MANAGER - Sistema de Gerenciamento de Clientes")
     print("="*80)
     print("\n📍 Servidor rodando em: http://localhost:5000")
-    print("\n📚 DOCUMENTAÇÃO DA API (63 Endpoints Documentados):")
-    print("   • Swagger UI (Interativo): http://localhost:5000/api/docs")
-    print("   • OpenAPI JSON Spec:       http://localhost:5000/api/swagger.json")
-    print("   • Documentação Completa:   docs/API_DOCUMENTATION.md")
-    print("   • Quick Reference:         docs/API_QUICK_REFERENCE.md")
     
     print("\n🔐 AUTENTICAÇÃO:")
     print("   • Login:           http://localhost:5000/auth/login")
@@ -44,17 +39,19 @@ def print_startup_info():
     print(f"   • Rate Limiting:   Ativo (200/dia, 50/hora)")
     
     print("\n📝 ENDPOINTS REGISTRADOS:")
-    # Count and group endpoints
+    # Count and group endpoints (excluding Swagger and static)
     endpoints_by_blueprint = {}
     total_routes = 0
     
     for rule in app.url_map.iter_rules():
-        if rule.endpoint != 'static':
+        if rule.endpoint not in ['static', 'swagger_ui.static', 'swagger_ui.show']:
             blueprint = rule.endpoint.split('.')[0] if '.' in rule.endpoint else 'main'
-            if blueprint not in endpoints_by_blueprint:
-                endpoints_by_blueprint[blueprint] = 0
-            endpoints_by_blueprint[blueprint] += 1
-            total_routes += 1
+            # Skip swagger_ui blueprint
+            if blueprint != 'swagger_ui':
+                if blueprint not in endpoints_by_blueprint:
+                    endpoints_by_blueprint[blueprint] = 0
+                endpoints_by_blueprint[blueprint] += 1
+                total_routes += 1
     
     for blueprint, count in sorted(endpoints_by_blueprint.items()):
         print(f"   • {blueprint.capitalize():20s} {count:3d} rotas")
@@ -63,7 +60,6 @@ def print_startup_info():
     
     print("\n💡 DICAS:")
     print("   • Use Ctrl+C para parar o servidor")
-    print("   • Acesse /api/docs para documentação interativa")
     print("   • Logs de auditoria disponíveis em /admins/audit-logs")
     print("   • Usuário padrão: superadmin (veja logs acima para senha)")
     
