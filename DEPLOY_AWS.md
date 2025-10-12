@@ -4,9 +4,11 @@
 
 ### Pré-requisitos
 
-- [ ] Conta AWS (criar em: <https://aws.amazon.com/free/>)
+- [ ] **Conta AWS + Credenciais** - [📖 Ver guia completo de como obter](docs/AWS_CREDENTIALS_SETUP.md)
 - [ ] AWS CLI instalado
 - [ ] MongoDB Atlas (criar em: <https://cloud.mongodb.com>)
+
+> 🆕 **Primeira vez na AWS?** Veja nosso guia completo: [Como Obter Credenciais AWS](docs/AWS_CREDENTIALS_SETUP.md)
 
 ### Opção A: Elastic Beanstalk (Recomendado para Produção)
 

@@ -29,10 +29,12 @@ Guia completo para fazer deploy da aplicação Flask na Amazon Web Services (AWS
 
 ### Pré-requisitos Gerais
 
-- Conta AWS (criar em: https://aws.amazon.com/free/)
+- **Conta AWS** - [📖 Como criar e obter credenciais](AWS_CREDENTIALS_SETUP.md)
 - AWS CLI instalado
 - Git instalado
 - MongoDB Atlas (ou DocumentDB na AWS)
+
+> 🆕 **Primeira vez na AWS?** Veja nosso guia completo: [Como Obter Credenciais AWS](AWS_CREDENTIALS_SETUP.md)
 
 ---
 
