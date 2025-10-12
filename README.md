@@ -238,7 +238,21 @@ O projeto segue o padrão **MVC (Model-View-Controller)** com separação clara 
 
 ## 🚀 Instalação e Configuração
 
-### Pré-requisitos
+### 📦 Deploy em Produção
+
+**Quer fazer deploy no Azure?** Veja nossos guias:
+
+- 📘 **[Guia Completo de Deploy Azure](docs/AZURE_DEPLOYMENT.md)** - Instruções detalhadas
+- ⚡ **[Quick Start Azure](DEPLOY_AZURE.md)** - Deploy em 5 minutos
+
+```bash
+# Deploy automático para Azure App Service
+./scripts/azure_deploy.sh
+```
+
+---
+
+### Pré-requisitos (Desenvolvimento Local)
 
 Certifique-se de ter instalado:
 

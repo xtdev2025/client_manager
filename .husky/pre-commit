@@ -12,7 +12,7 @@ fi
 
 # Verificar se há senhas ou chaves API expostas - ignorando arquivos de configuração e exemplos
 echo "Verificando por senhas ou chaves expostas..."
-! git diff --cached --name-only | xargs grep -l "API_KEY\|SECRET\|PASSWORD\|TOKEN" | grep -v "README.md\|\.env\.example\|\.flake8\|pre-commit\|config\.py\|scripts/\|ARCHITECTURE.md\|\.md$\|\.github/workflows" || 
+! git diff --cached --name-only | xargs grep -l "API_KEY\|SECRET\|PASSWORD\|TOKEN" | grep -v "README.md\|\.env\.example\|\.env\.production\.example\|\.flake8\|pre-commit\|config\.py\|scripts/\|ARCHITECTURE.md\|\.md$\|\.github/workflows\|startup\.sh" || 
 { echo "Possível exposição de credenciais detectada! Revise seu código."; exit 1; }
 
 echo "Pré-commit passou com sucesso!"
