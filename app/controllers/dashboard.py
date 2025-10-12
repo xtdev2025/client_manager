@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from functools import lru_cache
 
 from flask import Blueprint, jsonify, request
 from flask_login import current_user, login_required
@@ -18,35 +17,52 @@ from app.views.dashboard_view import DashboardView
 dashboard = Blueprint("dashboard", __name__, url_prefix="/dashboard")
 
 
-@lru_cache(maxsize=32, typed=True)
 def _get_admin_stats_cached():
-    """Cached admin statistics - expires every 5 minutes"""
+    """Get admin statistics"""
     from app import mongo
     db = mongo.db
     assert db is not None
-    return {
-        "total_clients": db.clients.count_documents({}),
-        "active_clients": db.clients.count_documents({"status": "active"}),
-        "total_infos": db.infos.count_documents({}),
-        "active_infos": db.infos.count_documents({"status": "active"}),
-        "total_domains": db.domains.count_documents({}),
-        "total_plans": db.plans.count_documents({}),
-        "total_templates": db.templates.count_documents({}),
-        "total_admins": db.admins.count_documents({}),
-    }
+    
+    try:
+        return {
+            "total_clients": db.clients.count_documents({}),
+            "active_clients": db.clients.count_documents({"status": "active"}),
+            "total_infos": db.infos.count_documents({}),
+            "active_infos": db.infos.count_documents({"status": "active"}),
+            "total_domains": db.domains.count_documents({}),
+            "total_plans": db.plans.count_documents({}),
+            "total_templates": db.templates.count_documents({}),
+            "total_admins": db.admins.count_documents({}),
+        }
+    except Exception as e:
+        print(f"Error getting admin stats: {e}")
+        return {
+            "total_clients": 0,
+            "active_clients": 0,
+            "total_infos": 0,
+            "active_infos": 0,
+            "total_domains": 0,
+            "total_plans": 0,
+            "total_templates": 0,
+            "total_admins": 0,
+        }
 
 
-@lru_cache(maxsize=16, typed=True)
 def _get_plan_distribution_cached():
-    """Cached plan distribution"""
+    """Get plan distribution"""
     from app import mongo
     db = mongo.db
     assert db is not None
-    plan_pipeline = [
-        {"$lookup": {"from": "plans", "localField": "plan_id", "foreignField": "_id", "as": "plan"}},
-        {"$group": {"_id": {"$ifNull": [{"$arrayElemAt": ["$plan.name", 0]}, "Sem Plano"]}, "count": {"$sum": 1}}}
-    ]
-    return {item["_id"]: item["count"] for item in db.clients.aggregate(plan_pipeline)}
+    
+    try:
+        plan_pipeline = [
+            {"$lookup": {"from": "plans", "localField": "plan_id", "foreignField": "_id", "as": "plan"}},
+            {"$group": {"_id": {"$ifNull": [{"$arrayElemAt": ["$plan.name", 0]}, "Sem Plano"]}, "count": {"$sum": 1}}}
+        ]
+        return {item["_id"]: item["count"] for item in db.clients.aggregate(plan_pipeline)}
+    except Exception as e:
+        print(f"Error getting plan distribution: {e}")
+        return {}
 
 
 @dashboard.route("/")

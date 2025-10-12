@@ -13,6 +13,14 @@ class DashboardView(BaseView):
         context = {
             "user": user,
             "user_type": "admin",
+            "stats": stats,
+            "recent_logins": recent_logins,  # Template expects this name
+            "plan_distribution": plan_distribution,
+            "client_activity": client_activity,
+            "new_clients": new_clients,
+            "new_infos": new_infos,
+            "recent_clicks": recent_clicks or [],
+            # Legacy variable names for backward compatibility
             "client_count": stats.get("total_clients", 0),
             "active_clients": stats.get("active_clients", 0),
             "plan_count": stats.get("total_plans", 0),
@@ -23,12 +31,7 @@ class DashboardView(BaseView):
             "template_count": stats.get("total_templates", 0),
             "total_clicks": stats.get("total_clicks", 0),
             "recent_login_logs": recent_logins,
-            "infos_detailed": [],  # Will be populated below if needed
-            "plan_distribution": plan_distribution,
-            "client_activity": client_activity,
-            "new_clients": new_clients,
-            "new_infos": new_infos,
-            "recent_clicks": recent_clicks or []
+            "infos_detailed": [],
         }
         
         return BaseView.render(
