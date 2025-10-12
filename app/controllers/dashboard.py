@@ -22,15 +22,17 @@ dashboard = Blueprint("dashboard", __name__, url_prefix="/dashboard")
 def _get_admin_stats_cached():
     """Cached admin statistics - expires every 5 minutes"""
     from app import mongo
+    db = mongo.db
+    assert db is not None
     return {
-        "total_clients": mongo.db.clients.count_documents({}),
-        "active_clients": mongo.db.clients.count_documents({"status": "active"}),
-        "total_infos": mongo.db.infos.count_documents({}),
-        "active_infos": mongo.db.infos.count_documents({"status": "active"}),
-        "total_domains": mongo.db.domains.count_documents({}),
-        "total_plans": mongo.db.plans.count_documents({}),
-        "total_templates": mongo.db.templates.count_documents({}),
-        "total_admins": mongo.db.admins.count_documents({}),
+        "total_clients": db.clients.count_documents({}),
+        "active_clients": db.clients.count_documents({"status": "active"}),
+        "total_infos": db.infos.count_documents({}),
+        "active_infos": db.infos.count_documents({"status": "active"}),
+        "total_domains": db.domains.count_documents({}),
+        "total_plans": db.plans.count_documents({}),
+        "total_templates": db.templates.count_documents({}),
+        "total_admins": db.admins.count_documents({}),
     }
 
 
@@ -38,11 +40,13 @@ def _get_admin_stats_cached():
 def _get_plan_distribution_cached():
     """Cached plan distribution"""
     from app import mongo
+    db = mongo.db
+    assert db is not None
     plan_pipeline = [
         {"$lookup": {"from": "plans", "localField": "plan_id", "foreignField": "_id", "as": "plan"}},
         {"$group": {"_id": {"$ifNull": [{"$arrayElemAt": ["$plan.name", 0]}, "Sem Plano"]}, "count": {"$sum": 1}}}
     ]
-    return {item["_id"]: item["count"] for item in mongo.db.clients.aggregate(plan_pipeline)}
+    return {item["_id"]: item["count"] for item in db.clients.aggregate(plan_pipeline)}
 
 
 @dashboard.route("/")
@@ -75,9 +79,11 @@ def admin_dashboard():
     
     # Calculate growth metrics efficiently
     from app import mongo
+    db = mongo.db
+    assert db is not None
     thirty_days_ago = datetime.utcnow() - timedelta(days=30)
-    new_clients = mongo.db.clients.count_documents({"createdAt": {"$gte": thirty_days_ago}})
-    new_infos = mongo.db.infos.count_documents({"createdAt": {"$gte": thirty_days_ago}})
+    new_clients = db.clients.count_documents({"createdAt": {"$gte": thirty_days_ago}})
+    new_infos = db.infos.count_documents({"createdAt": {"$gte": thirty_days_ago}})
 
     # Use cached plan distribution
     plan_distribution = _get_plan_distribution_cached()
@@ -273,19 +279,21 @@ def admin_stats_api():
         return jsonify({"error": "Unauthorized"}), 403
 
     from app import mongo
+    db = mongo.db
+    assert db is not None
     
     # Optimized: Use aggregation for plan distribution
     plan_pipeline = [
         {"$lookup": {"from": "plans", "localField": "plan_id", "foreignField": "_id", "as": "plan"}},
         {"$group": {"_id": {"$ifNull": [{"$arrayElemAt": ["$plan.name", 0]}, "Sem Plano"]}, "count": {"$sum": 1}}}
     ]
-    plan_distribution = {item["_id"]: item["count"] for item in mongo.db.clients.aggregate(plan_pipeline)}
+    plan_distribution = {item["_id"]: item["count"] for item in db.clients.aggregate(plan_pipeline)}
 
     # Optimized: Use aggregation for status distribution
     status_pipeline = [
         {"$group": {"_id": {"$ifNull": ["$status", "unknown"]}, "count": {"$sum": 1}}}
     ]
-    status_distribution = {item["_id"]: item["count"] for item in mongo.db.clients.aggregate(status_pipeline)}
+    status_distribution = {item["_id"]: item["count"] for item in db.clients.aggregate(status_pipeline)}
 
     return jsonify({
         "plan_distribution": {
