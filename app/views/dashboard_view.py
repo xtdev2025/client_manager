@@ -6,7 +6,7 @@ class DashboardView(BaseView):
 
     @staticmethod
     def render_admin_dashboard(user, stats, recent_logins, plan_distribution, 
-                             client_activity, new_clients, new_infos):
+                             client_activity, new_clients, new_infos, recent_clicks=None):
         """Render admin enterprise dashboard"""
         return BaseView.render(
             "dashboard/admin_enterprise.html",
@@ -16,7 +16,8 @@ class DashboardView(BaseView):
             plan_distribution=plan_distribution,
             client_activity=client_activity,
             new_clients=new_clients,
-            new_infos=new_infos
+            new_infos=new_infos,
+            recent_clicks=recent_clicks or []
         )
 
     @staticmethod

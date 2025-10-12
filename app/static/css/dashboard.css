@@ -600,6 +600,16 @@
     }
 }
 
+@media (max-width: 992px) {
+    .stat-number {
+        font-size: 1.6rem;
+    }
+    
+    .stat-label {
+        font-size: 0.8rem;
+    }
+}
+
 @media (max-width: 768px) {
     .dashboard-container {
         padding: var(--spacing-md) 0;
@@ -641,11 +651,20 @@
         margin-bottom: var(--spacing-xs);
         width: 100%;
     }
+    
+    /* Table responsiveness improvements */
+    .table-responsive {
+        font-size: 0.875rem;
+    }
 }
 
 @media (max-width: 576px) {
     .stat-number {
-        font-size: 1.5rem;
+        font-size: 1.3rem;
+    }
+    
+    .stat-label {
+        font-size: 0.7rem;
     }
     
     .chart-container {
@@ -654,6 +673,14 @@
     
     .recent-activity {
         max-height: 300px;
+    }
+    
+    .dashboard-card h5 {
+        font-size: 0.95rem;
+    }
+    
+    .growth-indicator {
+        font-size: 0.75rem;
     }
 }
 
@@ -743,4 +770,45 @@ a:focus {
 
 .border-bottom {
     border-bottom: 1px solid var(--border-color) !important;
+}
+
+/* ===== TABLE ENHANCEMENTS ===== */
+.table-hover tbody tr {
+    transition: background-color var(--transition-fast);
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(9, 105, 218, 0.05);
+}
+
+.table-light {
+    background-color: var(--dashboard-bg);
+}
+
+.table th {
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+    border-bottom: 2px solid var(--border-color);
+}
+
+.table td {
+    vertical-align: middle;
+    padding: 0.75rem 0.5rem;
+}
+
+.table-sm td,
+.table-sm th {
+    padding: 0.5rem 0.5rem;
+}
+
+/* Click log table specific styling */
+.table code {
+    background-color: rgba(9, 105, 218, 0.1);
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+    font-size: 0.85em;
+    color: var(--gh-blue);
 }

@@ -103,6 +103,40 @@ def admin_dashboard():
             "total": stats["total_clients"] + (i * 3)
         })
     client_activity.reverse()
+    
+    # Get recent clicks with detailed information
+    recent_clicks_pipeline = [
+        {"$sort": {"timestamp": -1}},
+        {"$limit": 15},
+        {
+            "$lookup": {
+                "from": "users",
+                "localField": "client_id",
+                "foreignField": "_id",
+                "as": "user"
+            }
+        },
+        {
+            "$lookup": {
+                "from": "domains",
+                "localField": "domain_id",
+                "foreignField": "_id",
+                "as": "domain"
+            }
+        },
+        {
+            "$project": {
+                "timestamp": 1,
+                "ip_address": 1,
+                "user_agent": 1,
+                "subdomain": 1,
+                "referer": 1,
+                "username": {"$arrayElemAt": ["$user.username", 0]},
+                "domain_name": {"$arrayElemAt": ["$domain.name", 0]}
+            }
+        }
+    ]
+    recent_clicks = list(db.clicks.aggregate(recent_clicks_pipeline))
 
     return DashboardView.render_admin_dashboard(
         user=user,
@@ -111,7 +145,8 @@ def admin_dashboard():
         plan_distribution=plan_distribution,
         client_activity=client_activity,
         new_clients=new_clients,
-        new_infos=new_infos
+        new_infos=new_infos,
+        recent_clicks=recent_clicks
     )
 
 
@@ -388,4 +423,73 @@ def admin_clicks_api():
             "tension": 0.1,
             "fill": True
         }]
+    })
+
+
+@dashboard.route("/api/admin-recent-clicks")
+@login_required
+def admin_recent_clicks_api():
+    """API endpoint for recent clicks with detailed information"""
+    user = User.get_by_id(current_user.id)
+    if not user or user.get("user_type") != "admin":
+        return jsonify({"error": "Unauthorized"}), 403
+
+    from app import mongo
+    db = mongo.db
+    assert db is not None
+    
+    limit = request.args.get("limit", 20, type=int)
+    
+    # Get recent clicks with user and domain information
+    pipeline = [
+        {"$sort": {"timestamp": -1}},
+        {"$limit": limit},
+        {
+            "$lookup": {
+                "from": "users",
+                "localField": "client_id",
+                "foreignField": "_id",
+                "as": "user"
+            }
+        },
+        {
+            "$lookup": {
+                "from": "domains",
+                "localField": "domain_id",
+                "foreignField": "_id",
+                "as": "domain"
+            }
+        },
+        {
+            "$project": {
+                "timestamp": 1,
+                "ip_address": 1,
+                "user_agent": 1,
+                "subdomain": 1,
+                "referer": 1,
+                "username": {"$arrayElemAt": ["$user.username", 0]},
+                "domain_name": {"$arrayElemAt": ["$domain.name", 0]}
+            }
+        }
+    ]
+    
+    recent_clicks = list(db.clicks.aggregate(pipeline))
+    
+    # Format data for response
+    formatted_clicks = []
+    for click in recent_clicks:
+        formatted_clicks.append({
+            "id": str(click["_id"]),
+            "timestamp": click["timestamp"].strftime("%Y-%m-%d %H:%M:%S") if click.get("timestamp") else "N/A",
+            "username": click.get("username", "Desconhecido"),
+            "domain": f"{click.get('subdomain', '')}.{click.get('domain_name', 'N/A')}" if click.get("domain_name") else "N/A",
+            "ip_address": click.get("ip_address", "N/A"),
+            "user_agent": click.get("user_agent", "N/A"),
+            "referer": click.get("referer", "N/A")
+        })
+    
+    return jsonify({
+        "success": True,
+        "clicks": formatted_clicks,
+        "total": len(formatted_clicks)
     })

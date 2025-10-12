@@ -10,175 +10,272 @@
 
 {% block content %}
 <div class="dashboard-container">
-<div class="container-fluid">
+<div class="container-fluid px-3 px-lg-4">
+    <!-- Header Section -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h1 class="h3 mb-0">Dashboard Enterprise</h1>
-                    <p class="text-muted mb-0">Visão geral completa do sistema</p>
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+                <div class="mb-3 mb-md-0">
+                    <h1 class="h3 mb-1"><i class="fas fa-tachometer-alt text-primary me-2"></i>Dashboard Enterprise</h1>
+                    <p class="text-muted mb-0 small">Visão geral completa do sistema em tempo real</p>
+                </div>
+                <div class="d-flex gap-2 flex-wrap">
+                    <button class="btn btn-sm btn-outline-primary" onclick="location.reload()">
+                        <i class="fas fa-sync-alt"></i> Atualizar
+                    </button>
+                    <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-clipboard-list"></i> Logs
+                    </a>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-md-3">
+    <!-- Statistics Cards - Full Width Responsive Grid -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-4 col-lg-2">
             <div class="stat-card">
                 <div class="stat-number">{{ stats.total_clients }}</div>
-                <div class="stat-label">Total de Clientes</div>
+                <div class="stat-label">Total Clientes</div>
                 <div class="growth-indicator growth-up">
-                    ↗ +{{ new_clients }} este mês
+                    <i class="fas fa-arrow-up"></i> +{{ new_clients }} este mês
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-4 col-lg-2">
             <div class="stat-card success">
                 <div class="stat-number">{{ stats.active_clients }}</div>
-                <div class="stat-label">Clientes Ativos</div>
+                <div class="stat-label">Ativos</div>
                 <div class="growth-indicator">
-                    {{ "%.1f"|format((stats.active_clients / stats.total_clients * 100) if stats.total_clients > 0 else 0) }}% do total
+                    {{ "%.1f"|format((stats.active_clients / stats.total_clients * 100) if stats.total_clients > 0 else 0) }}%
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-4 col-lg-2">
             <div class="stat-card info">
                 <div class="stat-number">{{ stats.total_infos }}</div>
-                <div class="stat-label">Total de Infos</div>
+                <div class="stat-label">Total Infos</div>
                 <div class="growth-indicator growth-up">
-                    ↗ +{{ new_infos }} este mês
+                    <i class="fas fa-arrow-up"></i> +{{ new_infos }}
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-4 col-lg-2">
             <div class="stat-card warning">
                 <div class="stat-number">{{ stats.total_domains }}</div>
-                <div class="stat-label">Domínios Ativos</div>
+                <div class="stat-label">Domínios</div>
                 <div class="growth-indicator">
-                    {{ stats.total_plans }} planos disponíveis
+                    {{ stats.total_plans }} planos
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-4 col-lg-2">
             <div class="stat-card info">
                 <div class="stat-number">{{ stats.total_clicks }}</div>
-                <div class="stat-label">Total de Clicks</div>
+                <div class="stat-label">Total Clicks</div>
                 <div class="growth-indicator">
-                    Últimos 30 dias
+                    30 dias
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <div class="stat-card danger">
+                <div class="stat-number">{{ stats.total_admins }}</div>
+                <div class="stat-label">Admins</div>
+                <div class="growth-indicator">
+                    Sistema
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="row">
-        <!-- Charts Section -->
-        <div class="col-md-8">
-            <div class="dashboard-card">
-                <h5 class="mb-3">Distribuição de Planos</h5>
-                <div class="chart-container">
-                    <canvas id="planChart"></canvas>
+    <!-- Main Content Row - Charts and Activity -->
+    <div class="row g-3 mb-4">
+        <!-- Left Column - Charts (Larger on desktop) -->
+        <div class="col-12 col-lg-8">
+            <!-- Clicks Chart - Full Width -->
+            <div class="dashboard-card mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0"><i class="fas fa-chart-line text-info me-2"></i>Clicks nos Últimos 30 Dias</h5>
+                    <span class="badge bg-info">{{ stats.total_clicks }} total</span>
                 </div>
-            </div>
-
-            <div class="dashboard-card">
-                <h5 class="mb-3">Status dos Clientes</h5>
-                <div class="chart-container">
-                    <canvas id="statusChart"></canvas>
-                </div>
-            </div>
-            
-            <div class="dashboard-card">
-                <h5 class="mb-3">Clicks nos Últimos 30 Dias</h5>
-                <div class="chart-container">
+                <div class="chart-container" style="height: 280px;">
                     <canvas id="adminClicksChart"></canvas>
                 </div>
             </div>
+
+            <!-- Distribution Charts Row -->
+            <div class="row g-3">
+                <div class="col-12 col-md-6">
+                    <div class="dashboard-card">
+                        <h5 class="mb-3"><i class="fas fa-chart-pie text-primary me-2"></i>Distribuição de Planos</h5>
+                        <div class="chart-container" style="height: 250px;">
+                            <canvas id="planChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="dashboard-card">
+                        <h5 class="mb-3"><i class="fas fa-chart-bar text-success me-2"></i>Status dos Clientes</h5>
+                        <div class="chart-container" style="height: 250px;">
+                            <canvas id="statusChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- Activity Section -->
-        <div class="col-md-4">
+        <!-- Right Column - Activity and Summary -->
+        <div class="col-12 col-lg-4">
+            <!-- System Summary Card -->
+            <div class="dashboard-card mb-3">
+                <h5 class="mb-3"><i class="fas fa-server text-success me-2"></i>Resumo do Sistema</h5>
+                <div class="row text-center g-2">
+                    <div class="col-6">
+                        <div class="p-2 bg-light rounded">
+                            <div class="h4 mb-1 text-primary">{{ stats.total_templates }}</div>
+                            <small class="text-muted">Templates</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-2 bg-light rounded">
+                            <div class="h4 mb-1 text-success">{{ stats.active_infos }}</div>
+                            <small class="text-muted">Infos Ativas</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-2 bg-light rounded">
+                            <div class="h4 mb-1 text-warning">{{ stats.inactive_clients }}</div>
+                            <small class="text-muted">Inativos</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-2 bg-light rounded">
+                            <div class="h4 mb-1 text-info">{{ stats.total_domains }}</div>
+                            <small class="text-muted">Domínios</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Logins -->
             <div class="dashboard-card">
-                <h5 class="mb-3">Atividade Recente</h5>
-                <div class="recent-activity">
-                    {% for login in recent_logins %}
+                <h5 class="mb-3"><i class="fas fa-sign-in-alt text-warning me-2"></i>Logins Recentes</h5>
+                <div class="recent-activity" style="max-height: 350px;">
+                    {% for login in recent_logins[:5] %}
                     <div class="activity-item">
-                        <div>
-                            <strong>{{ login.username or 'Usuário' }}</strong>
-                            <br>
-                            <small class="text-muted">Login realizado</small>
+                        <div class="flex-grow-1">
+                            <strong class="d-block">{{ login.username or 'Usuário' }}</strong>
+                            <small class="text-muted">
+                                <i class="fas fa-clock me-1"></i>
+                                {{ login.created_at.strftime('%d/%m %H:%M') if login.created_at else 'N/A' }}
+                            </small>
                         </div>
-                        <div class="text-muted">
-                            <small>{{ login.created_at.strftime('%d/%m %H:%M') if login.created_at else 'N/A' }}</small>
-                        </div>
+                        <span class="badge bg-primary">{{ login.role or 'client' }}</span>
                     </div>
                     {% endfor %}
                     {% if not recent_logins %}
                     <div class="text-center text-muted py-3">
-                        Nenhuma atividade recente
+                        <i class="fas fa-inbox fa-2x mb-2"></i>
+                        <p class="mb-0 small">Nenhuma atividade recente</p>
                     </div>
                     {% endif %}
-                </div>
-            </div>
-
-            <div class="dashboard-card">
-                <h5 class="mb-3">Resumo do Sistema</h5>
-                <div class="row text-center">
-                    <div class="col-6 mb-3">
-                        <div class="h4 text-primary">{{ stats.total_templates }}</div>
-                        <small class="text-muted">Templates</small>
-                    </div>
-                    <div class="col-6 mb-3">
-                        <div class="h4 text-success">{{ stats.total_admins }}</div>
-                        <small class="text-muted">Administradores</small>
-                    </div>
-                    <div class="col-6">
-                        <div class="h4 text-info">{{ stats.active_infos }}</div>
-                        <small class="text-muted">Infos Ativas</small>
-                    </div>
-                    <div class="col-6">
-                        <div class="h4 text-warning">{{ stats.inactive_clients }}</div>
-                        <small class="text-muted">Clientes Inativos</small>
-                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Quick Actions -->
-    <div class="row mt-4">
+    <!-- Recent Clicks Log Section - Full Width -->
+    <div class="row mb-4">
         <div class="col-12">
             <div class="dashboard-card">
-                <h5 class="mb-3">Ações Rápidas</h5>
-                <div class="row quick-actions">
-                    <div class="col-md-2">
-                        <a href="{{ url_for('client.create_client') }}" class="btn btn-primary btn-block">
-                            <i class="fas fa-user-plus"></i> Novo Cliente
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0"><i class="fas fa-mouse-pointer text-danger me-2"></i>Últimos Clicks Registrados</h5>
+                    <span class="badge bg-danger">{{ recent_clicks|length }} registros</span>
+                </div>
+                {% if recent_clicks %}
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="text-nowrap"><i class="fas fa-clock me-1"></i>Data/Hora</th>
+                                <th class="text-nowrap"><i class="fas fa-user me-1"></i>Usuário</th>
+                                <th class="text-nowrap"><i class="fas fa-globe me-1"></i>Domínio</th>
+                                <th class="text-nowrap"><i class="fas fa-network-wired me-1"></i>IP</th>
+                                <th class="text-nowrap d-none d-lg-table-cell"><i class="fas fa-desktop me-1"></i>User Agent</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for click in recent_clicks %}
+                            <tr>
+                                <td class="text-nowrap">
+                                    <small>{{ click.timestamp.strftime('%d/%m/%Y %H:%M:%S') if click.timestamp else 'N/A' }}</small>
+                                </td>
+                                <td>
+                                    <strong class="text-primary">{{ click.username or 'Desconhecido' }}</strong>
+                                </td>
+                                <td class="text-truncate" style="max-width: 200px;">
+                                    {% if click.subdomain and click.domain_name %}
+                                        <code class="small">{{ click.subdomain }}.{{ click.domain_name }}</code>
+                                    {% else %}
+                                        <span class="text-muted">N/A</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ click.ip_address or 'N/A' }}</span>
+                                </td>
+                                <td class="text-truncate d-none d-lg-table-cell" style="max-width: 300px;" title="{{ click.user_agent }}">
+                                    <small class="text-muted">{{ click.user_agent or 'N/A' }}</small>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-mouse-pointer fa-3x text-muted mb-3"></i>
+                    <p class="text-muted mb-0">Nenhum click registrado ainda.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions - Full Width -->
+    <div class="row">
+        <div class="col-12">
+            <div class="dashboard-card">
+                <h5 class="mb-3"><i class="fas fa-bolt text-warning me-2"></i>Ações Rápidas</h5>
+                <div class="row g-2 quick-actions">
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <a href="{{ url_for('client.create_client') }}" class="btn btn-primary w-100">
+                            <i class="fas fa-user-plus"></i> <span class="d-none d-sm-inline">Novo</span> Cliente
                         </a>
                     </div>
-                    <div class="col-md-2">
-                        <a href="{{ url_for('plan.create_plan') }}" class="btn btn-success btn-block">
-                            <i class="fas fa-plus"></i> Novo Plano
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <a href="{{ url_for('plan.create_plan') }}" class="btn btn-success w-100">
+                            <i class="fas fa-plus"></i> <span class="d-none d-sm-inline">Novo</span> Plano
                         </a>
                     </div>
-                    <div class="col-md-2">
-                        <a href="{{ url_for('domain.create_domain') }}" class="btn btn-info btn-block">
-                            <i class="fas fa-globe"></i> Novo Domínio
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <a href="{{ url_for('domain.create_domain') }}" class="btn btn-info w-100">
+                            <i class="fas fa-globe"></i> <span class="d-none d-sm-inline">Novo</span> Domínio
                         </a>
                     </div>
-                    <div class="col-md-2">
-                        <a href="{{ url_for('template.create_template') }}" class="btn btn-warning btn-block">
-                            <i class="fas fa-file-alt"></i> Novo Template
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <a href="{{ url_for('template.create_template') }}" class="btn btn-warning w-100">
+                            <i class="fas fa-file-alt"></i> <span class="d-none d-sm-inline">Novo</span> Template
                         </a>
                     </div>
-                    <div class="col-md-2">
-                        <a href="{{ url_for('client.list_clients') }}" class="btn btn-secondary btn-block">
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <a href="{{ url_for('client.list_clients') }}" class="btn btn-secondary w-100">
                             <i class="fas fa-list"></i> Ver Clientes
                         </a>
                     </div>
-                    <div class="col-md-2">
-                        <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-dark btn-block">
-                            <i class="fas fa-history"></i> Logs de Auditoria
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-dark w-100">
+                            <i class="fas fa-history"></i> Logs Audit
                         </a>
                     </div>
                 </div>
