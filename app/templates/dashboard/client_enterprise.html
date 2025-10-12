@@ -26,22 +26,24 @@
     {% if plan_info %}
     <div class="row mb-4">
         <div class="col-12">
-            <div class="plan-status {{ 'plan-expired' if plan_info.is_expired else ('plan-warning' if plan_info.days_remaining < 7 else 'plan-active') }}">
+            <div class="plan-status {{ 'plan-expired' if plan_info.is_expired else ('plan-warning' if plan_info.days_remaining and plan_info.days_remaining < 7 else 'plan-active') }}">
                 <div class="row align-items-center">
                     <div class="col-md-8">
                         <h5 class="mb-1">Plano: {{ plan_info.name }}</h5>
                         <p class="mb-0">
                             {% if plan_info.is_expired %}
                                 Plano expirado em {{ plan_info.expires_at.strftime('%d/%m/%Y') }}
-                            {% else %}
+                            {% elif plan_info.expires_at %}
                                 Expira em {{ plan_info.expires_at.strftime('%d/%m/%Y') }} ({{ plan_info.days_remaining }} dias restantes)
+                            {% else %}
+                                Plano ativo sem data de expiração
                             {% endif %}
                         </p>
                     </div>
                     <div class="col-md-4 text-right">
                         {% if plan_info.is_expired %}
                             <span class="badge badge-light badge-lg">EXPIRADO</span>
-                        {% elif plan_info.days_remaining < 7 %}
+                        {% elif plan_info.days_remaining and plan_info.days_remaining < 7 %}
                             <span class="badge badge-light badge-lg">EXPIRA EM BREVE</span>
                         {% else %}
                             <span class="badge badge-light badge-lg">ATIVO</span>

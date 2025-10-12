@@ -93,7 +93,7 @@
                             <small class="text-muted">Login realizado</small>
                         </div>
                         <div class="text-muted">
-                            <small>{{ login.timestamp.strftime('%d/%m %H:%M') if login.timestamp else 'N/A' }}</small>
+                            <small>{{ login.created_at.strftime('%d/%m %H:%M') if login.created_at else 'N/A' }}</small>
                         </div>
                     </div>
                     {% endfor %}

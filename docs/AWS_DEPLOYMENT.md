@@ -18,6 +18,14 @@ Guia completo para fazer deploy da aplicação Flask na Amazon Web Services (AWS
 
 ## 🎯 Visão Geral
 
+### ⚠️ Importante: Segurança de Credenciais
+
+**NUNCA** use credenciais hardcoded em produção. Sempre use:
+- Variáveis de ambiente: `$VARIABLE_NAME`
+- AWS Secrets Manager para dados sensíveis
+- AWS Systems Manager Parameter Store
+- Arquivos `.env` (apenas desenvolvimento)
+
 ### Comparação das Opções
 
 | Opção | Dificuldade | Controle | Custo/mês | Melhor Para |

@@ -44,7 +44,6 @@ O novo sistema de dashboard enterprise foi desenvolvido para fornecer uma visão
 #### Templates
 - `app/templates/dashboard/admin_enterprise.html` - Dashboard administrativo
 - `app/templates/dashboard/client_enterprise.html` - Dashboard do cliente
-- `app/templates/dashboard/simple.html` - Dashboard simplificado
 
 #### Assets
 - `app/static/css/dashboard.css` - Estilos específicos do dashboard
@@ -80,7 +79,6 @@ O novo sistema de dashboard enterprise foi desenvolvido para fornecer uma visão
 - `/dashboard/` - Dashboard principal (redireciona baseado no tipo de usuário)
 - `/dashboard/admin` - Dashboard administrativo
 - `/dashboard/client` - Dashboard do cliente
-- `/dashboard/simple` - Dashboard simplificado
 
 ### APIs
 - `/dashboard/api/clicks-chart` - Dados de clicks para gráficos
@@ -157,10 +155,6 @@ O dashboard foi desenvolvido com design responsivo:
 2. Monitore status do plano e expiração
 3. Analise clicks nos seus domínios
 4. Use filtros temporais nos gráficos
-
-### Alternando Versões
-- Use o botão "Versão Simplificada" para dashboard básico
-- Use o botão "Dashboard Completo" para versão enterprise
 
 ## Troubleshooting
 

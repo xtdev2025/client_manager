@@ -33,15 +33,3 @@ class DashboardView(BaseView):
             click_stats=click_stats,
             clicks_by_date=clicks_by_date
         )
-
-    @staticmethod
-    def render_simple_dashboard(user, stats, recent_logins=None, plan_info=None, client_domains=None):
-        """Render simple dashboard"""
-        return BaseView.render(
-            "dashboard/simple.html",
-            user=user,
-            stats=stats,
-            recent_logins=recent_logins,
-            plan_info=plan_info,
-            client_domains=client_domains
-        )

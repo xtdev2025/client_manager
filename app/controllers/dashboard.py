@@ -139,14 +139,23 @@ def client_dashboard():
 
     # Plan expiration info
     plan_info = None
-    if plan and user.get("expiredAt"):
-        days_remaining = (user["expiredAt"] - datetime.utcnow()).days
-        plan_info = {
-            "name": plan["name"],
-            "expires_at": user["expiredAt"],
-            "days_remaining": max(0, days_remaining),
-            "is_expired": days_remaining < 0
-        }
+    if plan:
+        if user.get("expiredAt"):
+            days_remaining = (user["expiredAt"] - datetime.utcnow()).days
+            plan_info = {
+                "name": plan["name"],
+                "expires_at": user["expiredAt"],
+                "days_remaining": max(0, days_remaining),
+                "is_expired": days_remaining < 0
+            }
+        else:
+            # Show plan even without expiration date
+            plan_info = {
+                "name": plan["name"],
+                "expires_at": None,
+                "days_remaining": None,
+                "is_expired": False
+            }
 
     return DashboardView.render_client_dashboard(
         user=user,
