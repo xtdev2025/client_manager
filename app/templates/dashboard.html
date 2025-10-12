@@ -20,13 +20,15 @@
 {% endblock %}
 
 {% block content %}
-{% if resolved_user_type == 'admin' %}
-    <div class="row">
-        {% include 'dashboard/admin.html' %}
-    </div>
-{% else %}
-    <div class="content-wrapper">
-        {% include 'dashboard/client.html' %}
-    </div>
-{% endif %}
+<div class="container-fluid">
+    {% if resolved_user_type == 'admin' %}
+        <div class="row">
+            {% include 'dashboard/admin.html' %}
+        </div>
+    {% else %}
+        <div class="content-wrapper">
+            {% include 'dashboard/client.html' %}
+        </div>
+    {% endif %}
+</div>
 {% endblock %}

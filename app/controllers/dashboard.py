@@ -103,6 +103,40 @@ def admin_dashboard():
             "total": stats["total_clients"] + (i * 3)
         })
     client_activity.reverse()
+    
+    # Get recent clicks with detailed information
+    recent_clicks_pipeline = [
+        {"$sort": {"timestamp": -1}},
+        {"$limit": 15},
+        {
+            "$lookup": {
+                "from": "users",
+                "localField": "client_id",
+                "foreignField": "_id",
+                "as": "user"
+            }
+        },
+        {
+            "$lookup": {
+                "from": "domains",
+                "localField": "domain_id",
+                "foreignField": "_id",
+                "as": "domain"
+            }
+        },
+        {
+            "$project": {
+                "timestamp": 1,
+                "ip_address": 1,
+                "user_agent": 1,
+                "subdomain": 1,
+                "referer": 1,
+                "username": {"$arrayElemAt": ["$user.username", 0]},
+                "domain_name": {"$arrayElemAt": ["$domain.name", 0]}
+            }
+        }
+    ]
+    recent_clicks = list(db.clicks.aggregate(recent_clicks_pipeline))
 
     return DashboardView.render_admin_dashboard(
         user=user,
@@ -111,7 +145,8 @@ def admin_dashboard():
         plan_distribution=plan_distribution,
         client_activity=client_activity,
         new_clients=new_clients,
-        new_infos=new_infos
+        new_infos=new_infos,
+        recent_clicks=recent_clicks
     )
 
 
