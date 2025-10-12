@@ -101,31 +101,339 @@ def create_default_plans():
 
 
 def create_default_templates():
-    """Create default templates"""
+    """Create default templates with pages structure"""
     try:
-        # Define the default templates
+        # Define the default templates with proper page structure
         default_templates = [
             {
                 "name": "Basic Template",
+                "slug": "basic_template",
                 "description": "A simple template for basic websites",
-                "content": '{"header": true, "footer": true, "sidebar": false}',
                 "status": "active",
+                "pages": [
+                    {
+                        "id": "page_home",
+                        "name": "Home",
+                        "type": "home",
+                        "order": 1,
+                        "content": """<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Basic Template</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="#">Sua Empresa</a>
+        </div>
+    </nav>
+    
+    <main class="container my-5">
+        <div class="text-center">
+            <h1>Bem-vindo ao Basic Template</h1>
+            <p class="lead">Um template simples e funcional para começar seu site</p>
+            <a href="#" class="btn btn-primary">Saiba Mais</a>
+        </div>
+    </main>
+    
+    <footer class="bg-dark text-white text-center py-3 mt-5">
+        <p>&copy; 2025 Sua Empresa. Todos os direitos reservados.</p>
+    </footer>
+</body>
+</html>""",
+                    },
+                    {
+                        "id": "page_about",
+                        "name": "Sobre",
+                        "type": "custom",
+                        "order": 2,
+                        "content": """<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sobre - Basic Template</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="#">Sua Empresa</a>
+        </div>
+    </nav>
+    
+    <main class="container my-5">
+        <h1>Sobre Nós</h1>
+        <p>Somos uma empresa dedicada a fornecer as melhores soluções para nossos clientes.</p>
+    </main>
+    
+    <footer class="bg-dark text-white text-center py-3 mt-5">
+        <p>&copy; 2025 Sua Empresa. Todos os direitos reservados.</p>
+    </footer>
+</body>
+</html>""",
+                    },
+                    {
+                        "id": "page_contact",
+                        "name": "Contato",
+                        "type": "custom",
+                        "order": 3,
+                        "content": """<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contato - Basic Template</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="#">Sua Empresa</a>
+        </div>
+    </nav>
+    
+    <main class="container my-5">
+        <h1>Entre em Contato</h1>
+        <form>
+            <div class="mb-3">
+                <label class="form-label">Nome</label>
+                <input type="text" class="form-control">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-control">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Mensagem</label>
+                <textarea class="form-control" rows="4"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Enviar</button>
+        </form>
+    </main>
+    
+    <footer class="bg-dark text-white text-center py-3 mt-5">
+        <p>&copy; 2025 Sua Empresa. Todos os direitos reservados.</p>
+    </footer>
+</body>
+</html>""",
+                    },
+                ],
                 "createdAt": datetime.utcnow(),
                 "updatedAt": datetime.utcnow(),
             },
             {
                 "name": "Professional Template",
+                "slug": "professional_template",
                 "description": "A professional template for business websites",
-                "content": '{"header": true, "footer": true, "sidebar": true, "gallery": true}',
                 "status": "active",
+                "pages": [
+                    {
+                        "id": "page_home",
+                        "name": "Home",
+                        "type": "home",
+                        "order": 1,
+                        "content": """<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Template</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">Empresa Profissional</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="#">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Serviços</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Sobre</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Contato</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <header class="bg-light py-5">
+        <div class="container text-center">
+            <h1 class="display-4">Soluções Profissionais para Seu Negócio</h1>
+            <p class="lead">Transformamos ideias em resultados</p>
+            <button class="btn btn-primary btn-lg">Conhecer Serviços</button>
+        </div>
+    </header>
+    
+    <main class="container my-5">
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Consultoria</h5>
+                        <p class="card-text">Análise e estratégia para seu negócio crescer.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Desenvolvimento</h5>
+                        <p class="card-text">Soluções tecnológicas sob medida.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Suporte</h5>
+                        <p class="card-text">Atendimento completo e dedicado.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer class="bg-dark text-white text-center py-4">
+        <div class="container">
+            <p>&copy; 2025 Empresa Profissional. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>""",
+                    }
+                ],
                 "createdAt": datetime.utcnow(),
                 "updatedAt": datetime.utcnow(),
             },
             {
                 "name": "E-commerce Template",
+                "slug": "ecommerce_template",
                 "description": "Template optimized for online stores",
-                "content": '{"header": true, "footer": true, "sidebar": true, "cart": true, "product_display": true}',
                 "status": "active",
+                "pages": [
+                    {
+                        "id": "page_home",
+                        "name": "Home",
+                        "type": "home",
+                        "order": 1,
+                        "content": """<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loja Online</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-shop"></i> Loja Online
+            </a>
+            <div class="ms-auto">
+                <a href="#" class="btn btn-outline-light">
+                    <i class="bi bi-cart"></i> Carrinho (0)
+                </a>
+            </div>
+        </div>
+    </nav>
+    
+    <header class="bg-primary text-white py-5">
+        <div class="container text-center">
+            <h1 class="display-4">Ofertas Especiais</h1>
+            <p class="lead">Até 50% de desconto em produtos selecionados</p>
+        </div>
+    </header>
+    
+    <main class="container my-5">
+        <h2 class="mb-4">Produtos em Destaque</h2>
+        <div class="row">
+            <div class="col-md-3 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Produto 1</h5>
+                        <p class="card-text text-muted">R$ 99,90</p>
+                        <button class="btn btn-primary w-100">
+                            <i class="bi bi-cart-plus"></i> Adicionar
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Produto 2</h5>
+                        <p class="card-text text-muted">R$ 149,90</p>
+                        <button class="btn btn-primary w-100">
+                            <i class="bi bi-cart-plus"></i> Adicionar
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Produto 3</h5>
+                        <p class="card-text text-muted">R$ 199,90</p>
+                        <button class="btn btn-primary w-100">
+                            <i class="bi bi-cart-plus"></i> Adicionar
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Produto 4</h5>
+                        <p class="card-text text-muted">R$ 249,90</p>
+                        <button class="btn btn-primary w-100">
+                            <i class="bi bi-cart-plus"></i> Adicionar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer class="bg-dark text-white py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5>Atendimento</h5>
+                    <p>contato@loja.com<br>Tel: (11) 1234-5678</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Formas de Pagamento</h5>
+                    <p>Cartão, Boleto, PIX</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Redes Sociais</h5>
+                    <p>
+                        <i class="bi bi-facebook"></i>
+                        <i class="bi bi-instagram"></i>
+                        <i class="bi bi-twitter"></i>
+                    </p>
+                </div>
+            </div>
+            <hr class="bg-white">
+            <p class="text-center mb-0">&copy; 2025 Loja Online. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>""",
+                    }
+                ],
                 "createdAt": datetime.utcnow(),
                 "updatedAt": datetime.utcnow(),
             },
