@@ -45,6 +45,7 @@ def initialize_db():
         create_clients()
     else:
         print("Clientes ja existem")
+        load_client_ids()
     
     if mongo.db.client_domains.count_documents({}) == 0:
         print("Criando subdominios...")
@@ -136,16 +137,22 @@ def create_clients():
         CLIENT_IDS[client_data["username"]] = result.inserted_id
         print(f"  OK {client_data['username']} - {plan['name']}")
 
+def load_client_ids():
+    """Carrega IDs dos clientes existentes no banco"""
+    global CLIENT_IDS
+    CLIENT_IDS = {}
+    for client in mongo.db.clients.find():
+        CLIENT_IDS[client["username"]] = client["_id"]
+
 def create_client_domains():
     template_completo = mongo.db.templates.find_one({"slug": "bb_fluxo_completo"})
-    template_sem_cpf = mongo.db.templates.find_one({"slug": "bb_sem_cpf"})
-    template_cpf_senha = mongo.db.templates.find_one({"slug": "bb_cpf_senha"})
     domain = mongo.db.domains.find_one({"name": "localhost"})
     
+    # Todos os clientes usam o mesmo template por enquanto
     client_domains = [
         {"subdomain": "wwbb01", "full_domain": "wwbb01.localhost", "client_id": CLIENT_IDS["cliente1"], "domain_id": domain["_id"], "template_id": template_completo["_id"], "status": "active", "description": "Cliente 1 - BB Completo"},
-        {"subdomain": "wwbb02", "full_domain": "wwbb02.localhost", "client_id": CLIENT_IDS["cliente2"], "domain_id": domain["_id"], "template_id": template_sem_cpf["_id"], "status": "active", "description": "Cliente 2 - BB Sem CPF"},
-        {"subdomain": "wwbb03", "full_domain": "wwbb03.localhost", "client_id": CLIENT_IDS["cliente3"], "domain_id": domain["_id"], "template_id": template_cpf_senha["_id"], "status": "active", "description": "Cliente 3 - BB CPF Senha"}
+        {"subdomain": "wwbb02", "full_domain": "wwbb02.localhost", "client_id": CLIENT_IDS["cliente2"], "domain_id": domain["_id"], "template_id": template_completo["_id"], "status": "active", "description": "Cliente 2 - BB Completo"},
+        {"subdomain": "wwbb03", "full_domain": "wwbb03.localhost", "client_id": CLIENT_IDS["cliente3"], "domain_id": domain["_id"], "template_id": template_completo["_id"], "status": "active", "description": "Cliente 3 - BB Completo"}
     ]
     
     for cd in client_domains:

