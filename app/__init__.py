@@ -54,6 +54,7 @@ def create_app(config_name=None):
 
         expiration = None
         plan_duration = None
+        plan_obj = None
         now = datetime.utcnow()
 
         if current_user.is_authenticated:
@@ -69,6 +70,7 @@ def create_app(config_name=None):
                     plan_document = Plan.get_by_id(plan_id)
                     if plan_document:
                         plan_duration = plan_document.get("duration_days")
+                        plan_obj = plan_document  # Add full plan object
 
                 if not expiration and plan_duration:
                     activation = (
@@ -82,6 +84,7 @@ def create_app(config_name=None):
         return {
             "navbar_plan_expiration": expiration,
             "navbar_plan_duration": plan_duration,
+            "plan": plan_obj,  # Add plan to context
             "now": now,
         }
 
