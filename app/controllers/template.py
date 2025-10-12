@@ -1,5 +1,5 @@
 from bson import ObjectId
-from flask import Blueprint, abort, flash, redirect, request, url_for
+from flask import Blueprint, abort, current_app, flash, redirect, request, url_for
 from flask_login import current_user, login_required
 
 from app.controllers.auth import admin_required
@@ -68,14 +68,15 @@ def edit_template(template_id):
         return redirect(url_for("template.list_templates"))
 
     if request.method == "POST":
-        # Build the data object with all new fields
+        # Build the data object with all fields including slug
         data = {
             "name": request.form.get("name"),
+            "slug": request.form.get("slug"),  # Capture slug from form
             "description": request.form.get("description"),
             "status": request.form.get("status", "active"),
         }
 
-        # Pages configuration (simplified)
+        # Pages configuration
         pages = []
         page_index = 0
         has_home = False
@@ -85,7 +86,15 @@ def edit_template(template_id):
             if page_id is None:
                 break
 
+            page_name = request.form.get(f"pages[{page_index}][name]", "").strip()
             page_type = request.form.get(f"pages[{page_index}][type]", "custom")
+            page_content = request.form.get(f"pages[{page_index}][content]", "")
+            page_order = request.form.get(f"pages[{page_index}][order]", str(page_index + 1))
+
+            # Skip empty pages
+            if not page_name:
+                page_index += 1
+                continue
 
             # Validate only one home page
             if page_type == "home":
@@ -96,16 +105,21 @@ def edit_template(template_id):
 
             page_data = {
                 "id": page_id,
-                "name": request.form.get(f"pages[{page_index}][name]", ""),
+                "name": page_name,
                 "type": page_type,
-                "content": request.form.get(f"pages[{page_index}][content]", ""),
-                "order": int(request.form.get(f"pages[{page_index}][order]", page_index + 1)),
+                "content": page_content,
+                "order": int(page_order),
             }
 
             pages.append(page_data)
             page_index += 1
 
+        # Always include pages in data, even if empty
         data["pages"] = pages
+
+        # Debug logging
+        current_app.logger.info(f"Updating template {template_id} with {len(pages)} pages")
+        current_app.logger.debug(f"Template data: {data}")
 
         # Update template
         success, message = Template.update(template_id, data)
