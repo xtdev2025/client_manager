@@ -1,7 +1,9 @@
-from app import mongo
 from datetime import datetime
+
 from bson.objectid import ObjectId
 from flask import current_app
+
+from app import mongo
 
 
 class LoginLog:
@@ -9,9 +11,9 @@ class LoginLog:
 
     @staticmethod
     def collection():
-        db = getattr(mongo, 'db', None)
+        db = getattr(mongo, "db", None)
         if db is None:
-            raise RuntimeError('Mongo database is not configured')
+            raise RuntimeError("Mongo database is not configured")
         return db.login_logs
 
     @staticmethod
@@ -22,13 +24,13 @@ class LoginLog:
                 user_id = ObjectId(user_id)
 
             doc = {
-                'user_id': user_id,
-                'username': username,
-                'role': role,
-                'user_type': user_type,
-                'ip_address': ip_address,
-                'user_agent': user_agent,
-                'created_at': datetime.utcnow()
+                "user_id": user_id,
+                "username": username,
+                "role": role,
+                "user_type": user_type,
+                "ip_address": ip_address,
+                "user_agent": user_agent,
+                "created_at": datetime.utcnow(),
             }
 
             result = LoginLog.collection().insert_one(doc)
@@ -41,7 +43,7 @@ class LoginLog:
     def get_recent(limit=15):
         """Return the most recent login events ordered by newest first."""
         try:
-            cursor = LoginLog.collection().find().sort('created_at', -1).limit(limit)
+            cursor = LoginLog.collection().find().sort("created_at", -1).limit(limit)
             return list(cursor)
         except Exception as exc:
             current_app.logger.error(f"Failed to fetch login events: {exc}")
@@ -53,6 +55,6 @@ class LoginLog:
         try:
             if isinstance(user_id, str):
                 user_id = ObjectId(user_id)
-            LoginLog.collection().delete_many({'user_id': user_id})
+            LoginLog.collection().delete_many({"user_id": user_id})
         except Exception as exc:
             current_app.logger.warning(f"Failed to clear login events for user {user_id}: {exc}")

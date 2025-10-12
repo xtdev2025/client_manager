@@ -1,7 +1,9 @@
-from typing import Optional, Dict, Any
-from flask import current_app
+from typing import Any, Dict, Optional
+
 from bson.objectid import ObjectId
-from app import mongo, bcrypt
+from flask import current_app
+
+from app import bcrypt, mongo
 
 
 class User:
@@ -23,15 +25,15 @@ class User:
                 user_id = ObjectId(user_id)
 
             # Check in clients collection first
-            user = mongo.db.clients.find_one({'_id': user_id})
+            user = mongo.db.clients.find_one({"_id": user_id})
             if user:
-                user['user_type'] = 'client'
+                user["user_type"] = "client"
                 return user
-            
+
             # Check in admins collection
-            user = mongo.db.admins.find_one({'_id': user_id})
+            user = mongo.db.admins.find_one({"_id": user_id})
             if user:
-                user['user_type'] = 'admin'
+                user["user_type"] = "admin"
                 return user
 
         except Exception as e:
@@ -51,15 +53,15 @@ class User:
         """
         try:
             # Check in clients collection first
-            user = mongo.db.clients.find_one({'username': username})
+            user = mongo.db.clients.find_one({"username": username})
             if user:
-                user['user_type'] = 'client'
+                user["user_type"] = "client"
                 return user
 
             # Check in admins collection
-            user = mongo.db.admins.find_one({'username': username})
+            user = mongo.db.admins.find_one({"username": username})
             if user:
-                user['user_type'] = 'admin'
+                user["user_type"] = "admin"
                 return user
 
         except Exception as e:
@@ -78,6 +80,6 @@ class User:
         Returns:
             True if password matches, False otherwise
         """
-        if 'password' in user:
-            return bcrypt.check_password_hash(user['password'], password)
+        if "password" in user:
+            return bcrypt.check_password_hash(user["password"], password)
         return False

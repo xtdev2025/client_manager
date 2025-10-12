@@ -1,9 +1,11 @@
 """
 Client service for handling client business logic.
 """
-from typing import Optional, Tuple, Dict, Any, List
 from datetime import datetime
+from typing import Any, Dict, List, Optional, Tuple
+
 from bson import ObjectId
+
 from app.models.client import Client
 from app.models.plan import Plan
 from app.models.template import Template
@@ -14,7 +16,7 @@ class ClientService:
 
     @staticmethod
     def validate_client_data(
-        username: str, password: str, plan_id: str, status: str = 'active'
+        username: str, password: str, plan_id: str, status: str = "active"
     ) -> Tuple[bool, Optional[str]]:
         """
         Validate client creation data.
@@ -42,7 +44,7 @@ class ClientService:
             return False, "Selected plan does not exist"
 
         # Validate status
-        if status not in ['active', 'inactive']:
+        if status not in ["active", "inactive"]:
             return False, "Invalid status. Must be 'active' or 'inactive'"
 
         return True, None
@@ -63,16 +65,16 @@ class ClientService:
             return None
 
         # Enrich with plan information
-        if 'plan_id' in client and client['plan_id']:
-            plan = Plan.get_by_id(client['plan_id'])
+        if "plan_id" in client and client["plan_id"]:
+            plan = Plan.get_by_id(client["plan_id"])
             if plan:
-                client['plan'] = plan
+                client["plan"] = plan
 
         # Enrich with template information
-        if 'template_id' in client and client['template_id']:
-            template = Template.get_by_id(client['template_id'])
+        if "template_id" in client and client["template_id"]:
+            template = Template.get_by_id(client["template_id"])
             if template:
-                client['template'] = template
+                client["template"] = template
 
         return client
 
@@ -87,18 +89,19 @@ class ClientService:
         clients = Client.get_all()
 
         for client in clients:
-            if 'plan_id' in client and client['plan_id']:
-                plan = Plan.get_by_id(client['plan_id'])
+            if "plan_id" in client and client["plan_id"]:
+                plan = Plan.get_by_id(client["plan_id"])
                 if plan:
-                    client['plan'] = plan
+                    client["plan"] = plan
 
         return clients
 
     @staticmethod
     def update_client_plan(
-        client_id: str, plan_id: str,
+        client_id: str,
+        plan_id: str,
         activation_date: Optional[str] = None,
-        expiration_date: Optional[str] = None
+        expiration_date: Optional[str] = None,
     ) -> Tuple[bool, str]:
         """
         Update a client's plan assignment.
@@ -120,20 +123,18 @@ class ClientService:
             return False, "Selected plan does not exist"
 
         # Update client
-        update_data = {
-            'plan_id': ObjectId(plan_id) if isinstance(plan_id, str) else plan_id
-        }
+        update_data = {"plan_id": ObjectId(plan_id) if isinstance(plan_id, str) else plan_id}
 
         if activation_date:
-            update_data['planActivatedAt'] = activation_date
+            update_data["planActivatedAt"] = activation_date
         if expiration_date:
-            update_data['expiredAt'] = expiration_date
+            update_data["expiredAt"] = expiration_date
 
         return Client.update(client_id, update_data)
 
     @staticmethod
     def check_client_plan_expiration(
-        client_id: str
+        client_id: str,
     ) -> Tuple[bool, Optional[datetime], Optional[int]]:
         """
         Check if a client's plan is expired or expiring soon.
@@ -151,7 +152,7 @@ class ClientService:
         if not client:
             return False, None, None
 
-        expiration_date = client.get('expiredAt')
+        expiration_date = client.get("expiredAt")
         if not expiration_date:
             return False, None, None
 

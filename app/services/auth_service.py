@@ -1,10 +1,12 @@
 """
 Authentication service for handling authentication business logic.
 """
-from typing import Optional, Tuple, Dict, Any
+from typing import Any, Dict, Optional, Tuple
+
 from flask import request
-from app.models.user import User
+
 from app.models.login_log import LoginLog
+from app.models.user import User
 
 
 class AuthService:
@@ -39,17 +41,21 @@ class AuthService:
             return False, None, "Invalid username or password"
 
         # Check if client account is active
-        user_type = user.get('user_type', 'client')
-        if user_type == 'client' and user.get('status') != 'active':
+        user_type = user.get("user_type", "client")
+        if user_type == "client" and user.get("status") != "active":
             return False, None, "Your account is not active. Please contact support."
 
         return True, user, None
 
     @staticmethod
     def log_login_attempt(
-        user_id: str, username: str, success: bool,
-        ip_address: Optional[str] = None, user_agent: Optional[str] = None,
-        role: str = 'client', user_type: str = 'client'
+        user_id: str,
+        username: str,
+        success: bool,
+        ip_address: Optional[str] = None,
+        user_agent: Optional[str] = None,
+        role: str = "client",
+        user_type: str = "client",
     ) -> bool:
         """
         Log a login attempt.
@@ -69,7 +75,7 @@ class AuthService:
         if ip_address is None:
             ip_address = request.remote_addr
         if user_agent is None:
-            user_agent = request.headers.get('User-Agent', 'Unknown')
+            user_agent = request.headers.get("User-Agent", "Unknown")
 
         log_success = LoginLog.record(
             user_id=user_id,
@@ -77,15 +83,13 @@ class AuthService:
             role=role,
             user_type=user_type,
             ip_address=ip_address,
-            user_agent=user_agent
+            user_agent=user_agent,
         )
 
         return log_success
 
     @staticmethod
-    def validate_registration_data(
-        username: str, password: str
-    ) -> Tuple[bool, Optional[str]]:
+    def validate_registration_data(username: str, password: str) -> Tuple[bool, Optional[str]]:
         """
         Validate registration data.
 

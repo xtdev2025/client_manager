@@ -1,15 +1,17 @@
 """
 Validation utilities using Pydantic schemas.
 """
-from typing import Tuple, Optional, Dict, Any
+from typing import Any, Dict, Optional, Tuple
+
 from pydantic import ValidationError
+
 from app.schemas.user_schemas import (
-    UserCreateSchema,
     AdminCreateSchema,
     ClientCreateSchema,
+    DomainCreateSchema,
     LoginSchema,
     PlanCreateSchema,
-    DomainCreateSchema
+    UserCreateSchema,
 )
 
 
@@ -30,7 +32,7 @@ def validate_user_create(
         return True, validated.model_dump(), None
     except ValidationError as e:
         errors = e.errors()
-        error_msg = '; '.join([f"{err['loc'][0]}: {err['msg']}" for err in errors])
+        error_msg = "; ".join([f"{err['loc'][0]}: {err['msg']}" for err in errors])
         return False, None, error_msg
 
 
@@ -51,7 +53,7 @@ def validate_admin_create(
         return True, validated.model_dump(), None
     except ValidationError as e:
         errors = e.errors()
-        error_msg = '; '.join([f"{err['loc'][0]}: {err['msg']}" for err in errors])
+        error_msg = "; ".join([f"{err['loc'][0]}: {err['msg']}" for err in errors])
         return False, None, error_msg
 
 
@@ -72,7 +74,7 @@ def validate_client_create(
         return True, validated.model_dump(), None
     except ValidationError as e:
         errors = e.errors()
-        error_msg = '; '.join([f"{err['loc'][0]}: {err['msg']}" for err in errors])
+        error_msg = "; ".join([f"{err['loc'][0]}: {err['msg']}" for err in errors])
         return False, None, error_msg
 
 
@@ -91,7 +93,7 @@ def validate_login(data: Dict[str, Any]) -> Tuple[bool, Optional[Dict[str, Any]]
         return True, validated.model_dump(), None
     except ValidationError as e:
         errors = e.errors()
-        error_msg = '; '.join([f"{err['loc'][0]}: {err['msg']}" for err in errors])
+        error_msg = "; ".join([f"{err['loc'][0]}: {err['msg']}" for err in errors])
         return False, None, error_msg
 
 
@@ -112,7 +114,7 @@ def validate_plan_create(
         return True, validated.model_dump(), None
     except ValidationError as e:
         errors = e.errors()
-        error_msg = '; '.join([f"{err['loc'][0]}: {err['msg']}" for err in errors])
+        error_msg = "; ".join([f"{err['loc'][0]}: {err['msg']}" for err in errors])
         return False, None, error_msg
 
 
@@ -133,5 +135,5 @@ def validate_domain_create(
         return True, validated.model_dump(), None
     except ValidationError as e:
         errors = e.errors()
-        error_msg = '; '.join([f"{err['loc'][0]}: {err['msg']}" for err in errors])
+        error_msg = "; ".join([f"{err['loc'][0]}: {err['msg']}" for err in errors])
         return False, None, error_msg

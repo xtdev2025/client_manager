@@ -1,7 +1,9 @@
-from typing import Tuple, Dict, Any, Optional, List
-from flask import current_app
-from bson.objectid import ObjectId
 from datetime import datetime
+from typing import Any, Dict, List, Optional, Tuple
+
+from bson.objectid import ObjectId
+from flask import current_app
+
 from app import mongo
 
 
@@ -25,12 +27,12 @@ class Plan:
         try:
             # Create plan object
             new_plan = {
-                'name': name,
-                'description': description,
-                'price': float(price),
-                'duration_days': int(duration_days),
-                'createdAt': datetime.utcnow(),
-                'updatedAt': datetime.utcnow()
+                "name": name,
+                "description": description,
+                "price": float(price),
+                "duration_days": int(duration_days),
+                "createdAt": datetime.utcnow(),
+                "updatedAt": datetime.utcnow(),
             }
 
             # Insert into database
@@ -61,18 +63,15 @@ class Plan:
                 plan_id = ObjectId(plan_id)
 
             # Convert numeric fields
-            if 'price' in data:
-                data['price'] = float(data['price'])
-            if 'duration_days' in data:
-                data['duration_days'] = int(data['duration_days'])
+            if "price" in data:
+                data["price"] = float(data["price"])
+            if "duration_days" in data:
+                data["duration_days"] = int(data["duration_days"])
 
             # Add updated timestamp
-            data['updatedAt'] = datetime.utcnow()
+            data["updatedAt"] = datetime.utcnow()
 
-            result = mongo.db.plans.update_one(
-                {'_id': plan_id},
-                {'$set': data}
-            )
+            result = mongo.db.plans.update_one({"_id": plan_id}, {"$set": data})
 
             if result.modified_count > 0:
                 return True, "Plan updated successfully"
@@ -98,11 +97,11 @@ class Plan:
                 plan_id = ObjectId(plan_id)
 
             # Check if plan is in use by any clients
-            clients_with_plan = mongo.db.clients.count_documents({'plan_id': plan_id})
+            clients_with_plan = mongo.db.clients.count_documents({"plan_id": plan_id})
             if clients_with_plan > 0:
                 return False, f"Cannot delete plan, it is being used by {clients_with_plan} clients"
 
-            result = mongo.db.plans.delete_one({'_id': plan_id})
+            result = mongo.db.plans.delete_one({"_id": plan_id})
 
             if result.deleted_count > 0:
                 return True, "Plan deleted successfully"
@@ -142,7 +141,7 @@ class Plan:
             if isinstance(plan_id, str):
                 plan_id = ObjectId(plan_id)
 
-            plan = mongo.db.plans.find_one({'_id': plan_id})
+            plan = mongo.db.plans.find_one({"_id": plan_id})
             return plan
         except Exception as e:
             current_app.logger.error(f"Error getting plan by ID: {e}")
