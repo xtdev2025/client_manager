@@ -1,6 +1,13 @@
 {
+  "default": true,
   "MD013": false,
+  "MD033": false,
+  "MD024": {
+    "siblings_only": true
+  },
+  "MD036": false,
+  "MD051": false,
   "MD040": {
-    "allowed_languages": ["text", "bash", "json", "javascript", "python", "yaml", "html", "css"]
+    "allowed_languages": ["bash", "python", "yaml", "json", "javascript", "typescript", "sql", "html", "css", "shell", "text", "env", "plaintext", "ini", "dockerfile", "toml", "xml"]
   }
 }
