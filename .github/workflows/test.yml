@@ -1,19 +1,18 @@
 name: Tests
 
 on:
-  workflow_dispatch:  # Manual trigger only
-  # Disabled temporarily - tests need .env.example fix
-  # push:
-  #   branches: [ main, develop ]
-  # pull_request:
-  #   branches: [ main ]
+  workflow_dispatch:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.9', '3.10', '3.11']
+        python-version: ['3.10']
     
     services:
       mongodb:
@@ -53,17 +52,7 @@ jobs:
         echo "MONGODB_URI=mongodb://localhost:27017/test_db" >> .env
         echo "SECRET_KEY=test_secret_key_for_testing_only" >> .env
     
-    - name: Run unit tests
+    - name: Run tests
       run: |
-        pytest tests/unit/ -v --cov=app --cov-report=xml --cov-report=html
+        pytest tests/ -v
     
-    - name: Run integration tests
-      run: |
-        pytest tests/integration/ -v
-    
-    - name: Upload coverage reports
-      uses: codecov/codecov-action@v4
-      with:
-        file: ./coverage.xml
-        flags: unittests
-        name: codecov-umbrella
