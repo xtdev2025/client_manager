@@ -1,0 +1,16 @@
+#!/bin/sh
+
+echo "📝 Verificando mensagem do commit..."
+
+# Verificar se a mensagem do commit segue o padrão convencional
+commit_regex='^(feat|fix|docs|style|refactor|test|chore)(\(.+\))?: .{1,50}'
+
+if ! grep -qE "$commit_regex" "$1"; then
+  echo "❌ Mensagem do commit inválida!"
+  echo "Use o formato: tipo(escopo): descrição"
+  echo "Tipos válidos: feat, fix, docs, style, refactor, test, chore"
+  echo "Exemplo: feat(auth): adicionar login com Google"
+  exit 1
+fi
+
+echo "✅ Mensagem do commit válida!"

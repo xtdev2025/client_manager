@@ -14,7 +14,7 @@ Guia completo para criar e configurar suas credenciais AWS.
 
 ## 1. 🆕 Criar Conta AWS
 
-### Se você ainda não tem conta AWS:
+### Se você ainda não tem conta AWS
 
 1. **Acesse**: <https://aws.amazon.com/free/>
 
@@ -284,7 +284,7 @@ Se tudo funcionar, você está pronto! ✅
 
 ## 5. 🔒 Segurança e Boas Práticas
 
-### ⚠️ NUNCA Faça Isso:
+### ⚠️ NUNCA Faça Isso
 
 - ❌ Não compartilhe suas Access Keys
 - ❌ Não comite credenciais no Git
@@ -292,7 +292,7 @@ Se tudo funcionar, você está pronto! ✅
 - ❌ Não use em código-fonte
 - ❌ Não envie por email/WhatsApp
 
-### ✅ Sempre Faça Isso:
+### ✅ Sempre Faça Isso
 
 - ✅ Use IAM Users (não root user)
 - ✅ Ative MFA (Multi-Factor Authentication)

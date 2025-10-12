@@ -22,16 +22,19 @@
 ## 🚀 Migração em 3 Passos
 
 ### 1. Atualizar Repositório
+
 ```bash
 git pull origin main
 ```
 
 ### 2. Verificar Permissões
+
 ```bash
 chmod +x scripts/*.py
 ```
 
 ### 3. Usar Novos Comandos
+
 ```bash
 # Exemplo: Deploy Azure
 python scripts/azure_deploy.py
@@ -51,12 +54,14 @@ python scripts/azure_deploy.py
 ## 🆘 Problemas Comuns
 
 ### "python: command not found"
+
 ```bash
 # Use python3 em sistemas mais antigos
 python3 scripts/azure_deploy.py
 ```
 
 ### "Permission denied"
+
 ```bash
 # Torne o script executável
 chmod +x scripts/azure_deploy.py
@@ -64,6 +69,7 @@ chmod +x scripts/azure_deploy.py
 ```
 
 ### Scripts não funcionam no Windows
+
 ```bash
 # Use explicitamente o python
 python scripts/azure_deploy.py

@@ -5,6 +5,7 @@ Este arquivo contém instruções específicas para o GitHub Copilot ajudar no d
 ## � Contexto do Projeto Atual
 
 ### Sistema xPages
+
 O Client Manager faz parte de um ecossistema maior chamado **xPages** que consiste em:
 
 1. **client_manager** (porta 5000) - Sistema administrativo de gerenciamento
@@ -74,6 +75,7 @@ Request → Controller → Service → Model → MongoDB
 ### Padrões de Template Externos
 
 O sistema usa **templates separados em arquivo Python** (`templates_data.py`) para:
+
 - Evitar poluição de código
 - Facilitar manutenção de HTML
 - Permitir versionamento separado
@@ -106,6 +108,7 @@ def get_all_templates():
 ### 🚨 Problemas Comuns e Soluções
 
 #### 1. Erro com `@lru_cache` em funções sem parâmetros
+
 **Problema**: `@lru_cache` não funciona corretamente em funções sem argumentos, pois o cache não consegue diferenciar chamadas.
 
 ```python
@@ -121,6 +124,7 @@ def get_stats():
 ```
 
 #### 2. Variáveis Jinja2 Undefined
+
 **Problema**: Template recebe `UndefinedError` quando variável não está no contexto.
 
 ```python
@@ -143,12 +147,14 @@ return BaseView.render("template.html", **context)
 ```
 
 **Checklist para Views**:
+
 1. ✅ Ler o template e identificar todas as variáveis usadas
 2. ✅ Garantir que todas estão no contexto
 3. ✅ Usar valores padrão (lista vazia, dict vazio) para evitar None
 4. ✅ Adicionar comentários sobre variáveis obrigatórias
 
 #### 3. Corrupção de Arquivos com Docstrings Complexas
+
 **Problema**: Criar arquivos Python com docstrings contendo caracteres especiais pode causar corrupção.
 
 ```bash
@@ -164,6 +170,7 @@ ENDFILE
 ```
 
 #### 4. Inicialização do Banco de Dados
+
 **Padrão Atual**: Usar módulo estruturado `db_init.py` com dados externos
 
 ```python
@@ -184,6 +191,7 @@ def initialize_db():
 ```
 
 **Regras**:
+
 - ✅ Verificar existência antes de criar (`count_documents`)
 - ✅ Usar templates externos (`templates_data.py`)
 - ✅ Sempre usar `datetime.utcnow()` para timestamps
@@ -193,6 +201,7 @@ def initialize_db():
 ### 1. Estrutura MVC + Services
 
 **Models** (`/app/models/`):
+
 - Classes que interagem com MongoDB
 - Métodos estáticos para operações CRUD
 - Validações básicas de dados
@@ -200,6 +209,7 @@ def initialize_db():
 - Retorno padrão: `Tuple[bool, str]` para operações de escrita
 
 **Services** (`/app/services/`):
+
 - Lógica de negócio complexa
 - Validações avançadas
 - Integração entre múltiplos models
@@ -207,6 +217,7 @@ def initialize_db():
 - Reutilizáveis entre controllers
 
 **Controllers** (`/app/controllers/`):
+
 - Definição de rotas Flask
 - Processamento de requisições HTTP
 - Orquestração de Services e Models
@@ -214,12 +225,14 @@ def initialize_db():
 - Retorno de responses (JSON ou redirect)
 
 **Views** (`/app/views/`):
+
 - Preparação de dados para templates
 - Lógica de apresentação
 - Formatação de dados
 - Métodos que retornam `render_template()`
 
 **Schemas** (`/app/schemas/`):
+
 - Validação de dados com Pydantic
 - Serialização/deserialização
 - Type safety em APIs
@@ -234,6 +247,7 @@ def initialize_db():
 - Imports organizados: stdlib → third-party → local
 
 **Exemplo de Docstring:**
+
 ```python
 def authenticate_user(username: str, password: str) -> Tuple[bool, Optional[Dict], Optional[str]]:
     """
@@ -263,6 +277,7 @@ def authenticate_user(username: str, password: str) -> Tuple[bool, Optional[Dict
 - Soft delete quando aplicável (campo `deletedAt`)
 
 **Padrão de Model:**
+
 ```python
 from typing import Tuple, Optional, Dict, Any
 from bson.objectid import ObjectId
@@ -300,16 +315,19 @@ class ModelName:
 ### 4. Segurança
 
 **Autenticação:**
+
 - Flask-Login para gerenciamento de sessões
 - Bcrypt para hashing de senhas (nunca senhas em plaintext)
 - Decorators: `@login_required`, `@admin_required`, `@super_admin_required`
 
 **Autorização RBAC:**
+
 - Roles: `super_admin`, `admin`, `client`
 - Verificação em cada endpoint sensível
 - Auditoria de ações administrativas
 
 **Proteções:**
+
 - CSRF tokens em todos os formulários
 - Rate limiting com Flask-Limiter
 - Validação de entrada com Pydantic
@@ -317,6 +335,7 @@ class ModelName:
 - Headers de segurança configurados
 
 **Exemplo de Controller Seguro:**
+
 ```python
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
@@ -357,19 +376,23 @@ def admin_action():
 #### Problema: Dashboard com erro Jinja2 UndefinedError
 
 **Fluxo de Debugging**:
+
 1. **Ler o erro completo** - Identificar variável e template
+
    ```
    jinja2.exceptions.UndefinedError: 'stats' is undefined
    File: admin_enterprise.html, line 38: {{ stats.total_clients }}
    ```
 
 2. **Verificar Controller** - Onde a variável é criada?
+
    ```python
    # dashboard.py linha 73
    stats = _get_admin_stats_cached()
    ```
 
 3. **Verificar View** - Variável está no contexto?
+
    ```python
    # dashboard_view.py
    context = {
@@ -379,6 +402,7 @@ def admin_action():
    ```
 
 4. **Aplicar Fix** - Adicionar ao contexto
+
    ```python
    context = {
        "user": user,
@@ -387,6 +411,7 @@ def admin_action():
    ```
 
 5. **Verificar Template** - Quais outras variáveis são usadas?
+
    ```bash
    grep -E "\{\{.*\}\}" template.html | grep -v "url_for"
    ```
@@ -396,6 +421,7 @@ def admin_action():
 #### Problema: Servidor não Inicia ou Porta em Uso
 
 **Diagnóstico**:
+
 ```bash
 # 1. Verificar processos Python rodando
 ps aux | grep "[p]ython.*run.py"
@@ -417,12 +443,15 @@ tail -f /tmp/client_manager.log
 #### Problema: MongoDB Connection Error
 
 **Checklist**:
+
 1. ✅ MongoDB está rodando? `systemctl status mongod`
 2. ✅ Porta 27017 acessível? `nc -zv localhost 27017`
 3. ✅ Config correta? Verificar `config.py`:
+
    ```python
    MONGO_URI = os.getenv('MONGO_URI', 'mongodb://localhost:27017/clientmanager')
    ```
+
 4. ✅ Credenciais? Se usar auth, verificar `.env`
 
 ### Criar Novo Endpoint
@@ -430,6 +459,7 @@ tail -f /tmp/client_manager.log
 Fluxo completo para adicionar um novo endpoint:
 
 1. **Definir rota no Controller** (`/app/controllers/`)
+
    ```python
    @bp.route('/resource/action', methods=['GET', 'POST'])
    @login_required
@@ -438,6 +468,7 @@ Fluxo completo para adicionar um novo endpoint:
    ```
 
 2. **Criar Service se necessário** (`/app/services/`)
+
    ```python
    class ResourceService:
        @staticmethod
@@ -446,6 +477,7 @@ Fluxo completo para adicionar um novo endpoint:
    ```
 
 3. **Adicionar método no Model** (`/app/models/`)
+
    ```python
    @staticmethod
    def create(params) -> Tuple[bool, str]:
@@ -453,12 +485,14 @@ Fluxo completo para adicionar um novo endpoint:
    ```
 
 4. **Criar View** (`/app/views/`)
+
    ```python
    def render_action_page(data: Dict) -> str:
        return render_template('action.html', data=data)
    ```
 
 5. **Implementar Template** (`/app/templates/`)
+
    ```html
    {% extends "layout.html" %}
    {% block content %}
@@ -488,6 +522,7 @@ Checklist para novas features:
 ### 🚀 Comandos Úteis do Projeto
 
 #### Inicialização do Sistema
+
 ```bash
 # Client Manager
 cd /home/rootkit/Apps/xPages/client_manager
@@ -503,6 +538,7 @@ tail -f /tmp/landpage.log
 ```
 
 #### MongoDB Management
+
 ```bash
 # Entrar no MongoDB shell
 mongosh clientmanager
@@ -523,6 +559,7 @@ mongorestore --db=clientmanager /tmp/backup/clientmanager
 ```
 
 #### Teste de Subdomínios via Nginx
+
 ```bash
 # Testar resposta HTTP
 curl -I http://wwbb01.dev.7f000101.nip.io
@@ -538,6 +575,7 @@ done
 ```
 
 #### Desenvolvimento
+
 ```bash
 # Rodar testes
 cd /home/rootkit/Apps/xPages/client_manager
@@ -593,6 +631,7 @@ def get_resource(resource_id):
 ## 📚 Bibliotecas Principais
 
 ### Core
+
 - **Flask 2.3.3** - Framework web
 - **PyMongo** - Driver MongoDB
 - **Flask-Login** - Gerenciamento de sessões e autenticação
@@ -600,16 +639,19 @@ def get_resource(resource_id):
 - **Bcrypt** - Hashing de senhas (NUNCA usar plaintext!)
 
 ### Validação e API
+
 - **Pydantic 2.5.0** - Validação de dados e schemas
 - **apispec 6.3.0** - Geração de especificação OpenAPI
 - **flask-swagger-ui 4.11.1** - Interface Swagger UI
 - **apispec-webframeworks 0.5.2** - Integração Flask + APISpec
 
 ### Segurança
+
 - **Flask-Limiter 3.5.0** - Rate limiting
 - **Flask-WTF** - Proteção CSRF
 
 ### Testes
+
 - **pytest 7.4.3** - Framework de testes
 - **pytest-cov 4.1.0** - Coverage de testes
 
@@ -655,6 +697,7 @@ def render_page(subdomain, page_id=None):
 ```
 
 **Características**:
+
 - Auto-detecção da primeira página (menor `order`)
 - `page_id` opcional na URL
 - Redirect automático para primeira página
@@ -665,7 +708,7 @@ def render_page(subdomain, page_id=None):
 Templates HTML seguem este padrão consistente:
 
 1. **Extensão de layout base**: `{% extends "layout.html" %}`
-2. **Blocos Jinja2**: 
+2. **Blocos Jinja2**:
    - `{% block title %}{% endblock %}` - Título da página
    - `{% block content %}{% endblock %}` - Conteúdo principal
 3. **Navegação**: Incluir via `{% include 'navbar.html' %}`
@@ -674,6 +717,7 @@ Templates HTML seguem este padrão consistente:
 6. **Flash messages**: Exibir com Bootstrap alerts
 
 **Exemplo de Template:**
+
 ```html
 {% extends "layout.html" %}
 
@@ -709,11 +753,13 @@ Templates HTML seguem este padrão consistente:
 ### Padrões de Testes
 
 **Estrutura:**
+
 - `tests/unit/` - Testes unitários (Services, Models)
 - `tests/integration/` - Testes de integração (Routes, Controllers)
 - `tests/conftest.py` - Fixtures compartilhadas
 
 **Convenções:**
+
 - Arquivos: `test_*.py` ou `*_test.py`
 - Classes: `TestNomeDaClasse`
 - Métodos: `test_descricao_do_teste`
@@ -721,6 +767,7 @@ Templates HTML seguem este padrão consistente:
 - Mocks: Use `unittest.mock` ou `pytest-mock`
 
 **Exemplo de Teste:**
+
 ```python
 import pytest
 from app.services.auth_service import AuthService
@@ -767,6 +814,7 @@ Ao sugerir implementações, garantir:
 ### Pre-commit Hooks
 
 O projeto usa pre-commit hooks que executam:
+
 - Flake8 para linting
 - Verificação de conflitos de merge
 - Verificação de arquivos grandes
@@ -792,6 +840,7 @@ Seguir este padrão de nomenclatura:
 Formato padrão: `[Área]: Descrição clara e concisa`
 
 **Exemplos:**
+
 - `[Auth]: Adiciona validação de força de senha`
 - `[API]: Implementa documentação Swagger para clients endpoints`
 - `[Tests]: Adiciona testes de integração para admin routes`
@@ -800,6 +849,7 @@ Formato padrão: `[Área]: Descrição clara e concisa`
 - `[Docs]: Atualiza ARCHITECTURE.md com novos padrões`
 
 **Áreas comuns:**
+
 - `[Auth]`, `[API]`, `[Models]`, `[Services]`, `[Controllers]`, `[Views]`
 - `[Tests]`, `[Security]`, `[Docs]`, `[Config]`, `[DB]`, `[Refactor]`
 
@@ -1069,6 +1119,7 @@ AuditService.clear_old_logs(days=90)
 ### Ações Auditadas
 
 Sempre auditar:
+
 - Criação/edição/exclusão de usuários
 - Mudanças de permissões
 - Acesso a dados sensíveis
@@ -1141,11 +1192,13 @@ def get_cached_stats(client_id: str, ttl: int = 300):
 ### 📂 Documentação Interna (Reorganizada!)
 
 **Raiz** (apenas essenciais):
+
 - [`README.md`](../README.md) - Overview do projeto
 - [`CHANGELOG.md`](../CHANGELOG.md) - Histórico de versões
 - [`CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md) - Código de conduta
 
 **docs/** (toda documentação técnica):
+
 - **[`INDEX.md`](../docs/INDEX.md)** - 🆕 Índice completo da documentação
 - [`ARCHITECTURE.md`](../docs/ARCHITECTURE.md) - Arquitetura completa do sistema
 - [`API_QUICK_REFERENCE.md`](../docs/API_QUICK_REFERENCE.md) - Referência rápida da API
@@ -1160,24 +1213,28 @@ def get_cached_stats(client_id: str, ttl: int = 300):
 - [`MODERNIZATION_SUMMARY.md`](../docs/MODERNIZATION_SUMMARY.md) - Resumo da modernização
 
 **Raiz do workspace xPages**:
+
 - [`SISTEMA_COMPLETO.md`](../../SISTEMA_COMPLETO.md) - Documentação completa do sistema xPages
 
 ### 🔗 Acessos Rápidos
 
 **Desenvolvimento Local**:
-- Client Manager: http://localhost:5000
-- Landpage: http://localhost:5001
-- Swagger UI: http://localhost:5000/api/docs
-- Dashboard Admin: http://localhost:5000/dashboard
+
+- Client Manager: <http://localhost:5000>
+- Landpage: <http://localhost:5001>
+- Swagger UI: <http://localhost:5000/api/docs>
+- Dashboard Admin: <http://localhost:5000/dashboard>
 
 **Subdomínios (via nginx)**:
-- wwbb01: http://wwbb01.dev.7f000101.nip.io (BB Fluxo Completo - 7 páginas)
-- wwbb02: http://wwbb02.dev.7f000101.nip.io (BB Sem CPF - 6 páginas)
-- wwbb03: http://wwbb03.dev.7f000101.nip.io (BB CPF e Senha - 6 páginas)
+
+- wwbb01: <http://wwbb01.dev.7f000101.nip.io> (BB Fluxo Completo - 7 páginas)
+- wwbb02: <http://wwbb02.dev.7f000101.nip.io> (BB Sem CPF - 6 páginas)
+- wwbb03: <http://wwbb03.dev.7f000101.nip.io> (BB CPF e Senha - 6 páginas)
 
 ### 📝 Credenciais de Desenvolvimento
 
 **Admins**:
+
 ```
 superadmin / SuperAdmin123!
 admin1 / Admin123!
@@ -1185,6 +1242,7 @@ admin2 / Admin123!
 ```
 
 **Clientes**:
+
 ```
 cliente1 / Senha123!
 cliente2 / Senha123!
@@ -1210,6 +1268,7 @@ cliente3 / Senha123!
 2. **SEMPRE verificar variáveis no contexto Jinja2**
    - Problema: `UndefinedError` quebra a página
    - Solução: Grep no template antes de renderizar
+
    ```bash
    grep -E "\{\{.*\}\}" template.html | grep -v "url_for\|csrf_token"
    ```
@@ -1217,6 +1276,7 @@ cliente3 / Senha123!
 3. **NUNCA criar arquivos Python grandes com create_file**
    - Problema: Corrupção de arquivos com docstrings complexas
    - Solução: Usar heredoc para arquivos grandes
+
    ```bash
    cat > file.py << 'ENDFILE'
    # conteúdo aqui
@@ -1235,7 +1295,7 @@ cliente3 / Senha123!
    - Problema: Template quebra com UndefinedError
    - Solução: Fazer checklist de variáveis do template
 
-### Ao Criar Código, Sempre:
+### Ao Criar Código, Sempre
 
 1. ✅ **Adicionar type hints** em todos os parâmetros e retornos
 2. ✅ **Escrever docstrings** descritivas
@@ -1250,7 +1310,7 @@ cliente3 / Senha123!
 11. ✅ **Usar datetime.utcnow()** para timestamps (nunca now())
 12. ✅ **Verificar None** antes de acessar propriedades
 
-### Ao Revisar Código, Verificar:
+### Ao Revisar Código, Verificar
 
 1. ✅ Segue convenções do projeto
 2. ✅ Tem testes adequados
@@ -1501,6 +1561,7 @@ class Client:
 ### Exemplo Completo: CRUD de Resource
 
 **1. Model (`/app/models/resource.py`):**
+
 ```python
 from typing import Tuple, Optional, Dict, List, Any
 from bson.objectid import ObjectId
@@ -1650,6 +1711,7 @@ class Resource:
 ```
 
 **2. Service (`/app/services/resource_service.py`):**
+
 ```python
 from typing import Tuple, Optional, Dict, List, Any
 from app.models.resource import Resource
@@ -1762,6 +1824,7 @@ class ResourceService:
 ```
 
 **3. Controller (`/app/controllers/resource.py`):**
+
 ```python
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash
 from flask_login import login_required, current_user
@@ -2011,6 +2074,7 @@ def api_list_resources():
 ```
 
 **4. View (`/app/views/resource_view.py`):**
+
 ```python
 from typing import List, Dict, Any, Optional
 from app.models.resource import Resource
@@ -2050,6 +2114,7 @@ class ResourceView:
 ```
 
 **5. Template (`/app/templates/resources/list.html`):**
+
 ```html
 {% extends "layout.html" %}
 
@@ -2153,6 +2218,7 @@ function deleteResource(resourceId) {
 ```
 
 **6. Teste (`/tests/unit/test_resource_service.py`):**
+
 ```python
 import pytest
 from app.services.resource_service import ResourceService
@@ -2262,7 +2328,9 @@ class TestResourceService:
 ## 📌 Resumo para o GitHub Copilot
 
 ### 🎯 Objetivo Principal
+
 Ajudar no desenvolvimento do **Client Manager** (sistema xPages), fornecendo código que:
+
 - ✅ Segue arquitetura MVC + Services
 - ✅ É seguro (RBAC, validações, bcrypt)
 - ✅ Tem tratamento de erros robusto
@@ -2281,18 +2349,21 @@ Ajudar no desenvolvimento do **Client Manager** (sistema xPages), fornecendo có
 ### 🔧 Estado Atual do Sistema
 
 **Infraestrutura**:
+
 - Client Manager: `localhost:5000` (Flask + MongoDB)
 - Landpage: `localhost:5001` (Flask + Jinja2)
 - MongoDB: `localhost:27017/clientmanager`
 - Nginx: Proxy para `*.dev.7f000101.nip.io`
 
 **Base de Dados**:
+
 - 3 admins (superadmin, admin1, admin2)
 - 3 planos (Basic, Standard, Premium)
 - 3 templates BB (19 páginas total)
 - 3 clientes e 3 subdomínios ativos
 
 **Arquivos Importantes**:
+
 - `app/db_init.py` - Inicialização estruturada
 - `app/templates_data.py` - Definições de templates (23K linhas)
 - `docs/INDEX.md` - Índice completo da documentação

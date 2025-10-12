@@ -23,6 +23,7 @@ Closes #(issue)
 ## 📋 Checklist
 
 ### Código
+
 - [ ] Meu código segue o estilo do projeto
 - [ ] Adicionei type hints quando aplicável
 - [ ] Realizei self-review do código
@@ -32,21 +33,25 @@ Closes #(issue)
 - [ ] Usei try-except para operações de banco de dados
 
 ### Testes
+
 - [ ] Adicionei testes que provam que meu fix funciona ou que a feature está implementada
 - [ ] Testes novos e existentes passam localmente
 - [ ] Adicionei testes para casos extremos (edge cases)
 
 ### Documentação
+
 - [ ] Atualizei a documentação relevante
 - [ ] Atualizei o README se necessário
 - [ ] Adicionei docstrings para novas funções/classes
 
 ### Segurança
+
 - [ ] Não expus credenciais ou informações sensíveis
 - [ ] Implementei validação adequada de entrada
 - [ ] Considerei implicações de segurança
 
 ### Banco de Dados
+
 - [ ] Migrations ou alterações de schema estão documentadas
 - [ ] Considerei impacto em dados existentes
 
@@ -54,9 +59,9 @@ Closes #(issue)
 
 <!-- Descreva os passos para testar suas mudanças -->
 
-1. 
-2. 
-3. 
+1.
+2.
+3.
 
 ## 📸 Screenshots (se aplicável)
 

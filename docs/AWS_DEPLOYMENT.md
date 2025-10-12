@@ -21,6 +21,7 @@ Guia completo para fazer deploy da aplicação Flask na Amazon Web Services (AWS
 ### ⚠️ Importante: Segurança de Credenciais
 
 **NUNCA** use credenciais hardcoded em produção. Sempre use:
+
 - Variáveis de ambiente: `$VARIABLE_NAME`
 - AWS Secrets Manager para dados sensíveis
 - AWS Systems Manager Parameter Store
@@ -709,7 +710,7 @@ zappa status production
 
 ### Opção 1: MongoDB Atlas (Recomendado)
 
-1. Criar conta: https://cloud.mongodb.com
+1. Criar conta: <https://cloud.mongodb.com>
 2. Criar cluster gratuito (M0)
 3. Whitelist IP: `0.0.0.0/0` (ou IPs específicos da AWS)
 4. Criar usuário e senha

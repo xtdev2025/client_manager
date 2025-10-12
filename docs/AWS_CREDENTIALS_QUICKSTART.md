@@ -16,11 +16,12 @@
 
 ### 2️⃣ Obter Access Keys
 
-#### Método Rápido (IAM User):
+#### Método Rápido (IAM User)
 
 1. **Acesse**: <https://console.aws.amazon.com/iam/>
 
 2. **Navegue**:
+
    ```
    Console AWS
       ↓
@@ -32,6 +33,7 @@
    ```
 
 3. **Criar usuário**:
+
    ```
    Nome: client-manager-dev
    ☑️ Access key - Programmatic access
@@ -40,11 +42,13 @@
 4. **Permissões** (escolha uma):
 
    **Opção A - Desenvolvimento** (mais fácil):
+
    ```
    ☑️ AdministratorAccess
    ```
 
    **Opção B - Produção** (mais seguro):
+
    ```
    ☑️ AmazonEC2FullAccess
    ☑️ AWSElasticBeanstalkFullAccess
@@ -52,6 +56,7 @@
    ```
 
 5. **Criar e SALVAR**:
+
    ```
    Access Key ID: AKIA... (copie!)
    Secret Access Key: wJalr... (copie!)

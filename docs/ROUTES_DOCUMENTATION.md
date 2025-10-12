@@ -2,7 +2,7 @@
 
 ## Overview
 
-O **Client Manager** é uma aplicação web Flask que utiliza **Server-Side Rendering (SSR)** com templates Jinja2. 
+O **Client Manager** é uma aplicação web Flask que utiliza **Server-Side Rendering (SSR)** com templates Jinja2.
 
 **Não é uma API REST/JSON** - todas as rotas retornam HTML renderizado no servidor.
 
@@ -42,6 +42,7 @@ O **Client Manager** é uma aplicação web Flask que utiliza **Server-Side Rend
 ## Estrutura de Rotas
 
 ### 🏠 Main (`/`)
+
 **Blueprint:** `main`  
 **Arquivo:** `app/controllers/main.py`
 
@@ -53,6 +54,7 @@ O **Client Manager** é uma aplicação web Flask que utiliza **Server-Side Rend
 ---
 
 ### 🔐 Auth (`/auth`)
+
 **Blueprint:** `auth`  
 **Arquivo:** `app/controllers/auth.py`
 
@@ -67,6 +69,7 @@ O **Client Manager** é uma aplicação web Flask que utiliza **Server-Side Rend
 ---
 
 ### 👥 Clients (`/clients`)
+
 **Blueprint:** `client`  
 **Arquivo:** `app/controllers/client.py`
 
@@ -85,6 +88,7 @@ O **Client Manager** é uma aplicação web Flask que utiliza **Server-Side Rend
 ---
 
 ### 🧑‍💼 Client Portal (`/client`)
+
 **Blueprint:** `client_domain_bp`  
 **Arquivo:** `app/views/client_domain_view.py`
 
@@ -98,6 +102,7 @@ O **Client Manager** é uma aplicação web Flask que utiliza **Server-Side Rend
 ---
 
 ### 👨‍💼 Admins (`/admins`)
+
 **Blueprint:** `admin`  
 **Arquivo:** `app/controllers/admin.py`
 
@@ -115,6 +120,7 @@ O **Client Manager** é uma aplicação web Flask que utiliza **Server-Side Rend
 ---
 
 ### 📋 Plans (`/plans`)
+
 **Blueprint:** `plan`  
 **Arquivo:** `app/controllers/plan.py`
 
@@ -129,6 +135,7 @@ O **Client Manager** é uma aplicação web Flask que utiliza **Server-Side Rend
 ---
 
 ### 📄 Templates (`/templates`)
+
 **Blueprint:** `template`  
 **Arquivo:** `app/controllers/template.py`
 
@@ -143,6 +150,7 @@ O **Client Manager** é uma aplicação web Flask que utiliza **Server-Side Rend
 ---
 
 ### 🌍 Domains (`/domains`)
+
 **Blueprint:** `domain`  
 **Arquivo:** `app/controllers/domain.py`
 
@@ -157,6 +165,7 @@ O **Client Manager** é uma aplicação web Flask que utiliza **Server-Side Rend
 ---
 
 ### 📊 Infos (`/infos`)
+
 **Blueprint:** `info`  
 **Arquivo:** `app/controllers/info.py`
 
@@ -171,6 +180,7 @@ O **Client Manager** é uma aplicação web Flask que utiliza **Server-Side Rend
 ---
 
 ### 📢 Public Templates (`/public`)
+
 **Blueprint:** `public_template_bp`  
 **Arquivo:** `app/controllers/public_template.py`
 
@@ -268,6 +278,7 @@ app/templates/
 ### Exemplo de Renderização
 
 **Controller:**
+
 ```python
 from flask import render_template
 
@@ -280,6 +291,7 @@ def dashboard():
 ```
 
 **Template:**
+
 ```jinja2
 {% extends "layout.html" %}
 
@@ -370,6 +382,7 @@ class Client:
 ### 1. Controllers Limpos
 
 ✅ **Bom:**
+
 ```python
 @client.route('/clients/')
 @admin_required
@@ -379,6 +392,7 @@ def list_clients():
 ```
 
 ❌ **Ruim:**
+
 ```python
 @client.route('/clients/')
 @admin_required

@@ -5,6 +5,7 @@ Este documento descreve o plano de implementação para a issue #6.
 ## 📋 Status Atual
 
 ### ✅ Preparação Concluída
+
 - [x] Branch criada: `feature/swagger-openapi-docs`
 - [x] Estrutura de diretórios criada: `app/api/`
 - [x] Dependências adicionadas ao `requirements.txt`
@@ -12,6 +13,7 @@ Este documento descreve o plano de implementação para a issue #6.
 - [x] Lista de 45+ endpoints mapeados
 
 ### 🔧 Dependências Adicionadas
+
 ```
 flask-swagger-ui==4.11.1
 apispec==6.3.0
@@ -21,16 +23,19 @@ apispec-webframeworks==0.5.2
 ## 📊 Endpoints a Documentar (45+)
 
 ### 🏠 Main Routes (2 endpoints)
+
 - `GET /` - Página inicial
 - `GET /dashboard` - Dashboard principal
 
 ### 🔐 Auth Routes (4 endpoints)
+
 - `GET/POST /auth/login` - Login de usuários
 - `GET /auth/logout` - Logout
 - `GET/POST /auth/register` - Registro de clientes
 - `GET/POST /auth/register_admin` - Registro de admins
 
 ### 👥 Client Routes (8 endpoints)
+
 - `GET /clients/` - Listar clientes
 - `GET/POST /clients/create` - Criar cliente
 - `GET/POST /clients/edit/<client_id>` - Editar cliente
@@ -41,12 +46,14 @@ apispec-webframeworks==0.5.2
 - `POST /clients/<client_id>/domains/remove/<client_domain_id>` - Remover domínio
 
 ### 🌐 Client Portal Routes (4 endpoints)
+
 - `GET /client/my-domains` - Meus domínios
 - `GET /client/my-click-stats` - Minhas estatísticas
 - `GET /client/my-infos` - Minhas informações
 - `GET/POST /client/my-change-password` - Trocar senha
 
 ### 👔 Admin Routes (7 endpoints)
+
 - `GET /admins/` - Listar admins
 - `GET/POST /admins/create` - Criar admin
 - `GET/POST /admins/edit/<admin_id>` - Editar admin
@@ -56,6 +63,7 @@ apispec-webframeworks==0.5.2
 - `POST /admins/clear-audit-logs` - Limpar logs
 
 ### 💼 Plan Routes (5 endpoints)
+
 - `GET /plans/` - Listar planos
 - `GET/POST /plans/create` - Criar plano
 - `GET/POST /plans/edit/<plan_id>` - Editar plano
@@ -63,6 +71,7 @@ apispec-webframeworks==0.5.2
 - `GET /plans/view/<plan_id>` - Visualizar plano
 
 ### 🌍 Domain Routes (5 endpoints)
+
 - `GET /domains/` - Listar domínios
 - `GET/POST /domains/create` - Criar domínio
 - `GET/POST /domains/edit/<domain_id>` - Editar domínio
@@ -70,6 +79,7 @@ apispec-webframeworks==0.5.2
 - `GET /domains/view/<domain_id>` - Visualizar domínio
 
 ### 📄 Template Routes (5 endpoints)
+
 - `GET /templates/` - Listar templates
 - `GET/POST /templates/create` - Criar template
 - `GET/POST /templates/edit/<template_id>` - Editar template
@@ -77,6 +87,7 @@ apispec-webframeworks==0.5.2
 - `GET /templates/view/<template_id>` - Visualizar template
 
 ### 🏦 Info Routes (6 endpoints)
+
 - `GET /infos/` - Listar informações bancárias
 - `GET /infos/client/<client_id>` - Infos por cliente
 - `GET/POST /infos/create/<client_id>` - Criar info
@@ -87,12 +98,14 @@ apispec-webframeworks==0.5.2
 ## 🎯 Tarefas Pendentes
 
 ### 1. Configuração Base
+
 - [ ] Implementar função `init_swagger()` em `app/api/swagger.py`
 - [ ] Configurar Swagger UI em `/api/docs`
 - [ ] Configurar APISpec com OpenAPI 3.0
 - [ ] Integrar Swagger com Flask app factory
 
 ### 2. Schemas Pydantic
+
 - [ ] Schema para `User` (Admin/Client)
 - [ ] Schema para `Client` com relacionamentos
 - [ ] Schema para `Admin`
@@ -104,6 +117,7 @@ apispec-webframeworks==0.5.2
 - [ ] Schemas de erro (400, 401, 403, 404, 500)
 
 ### 3. Documentação de Endpoints
+
 - [ ] Documentar Main Routes (2)
 - [ ] Documentar Auth Routes (4)
 - [ ] Documentar Client Routes (8)
@@ -115,18 +129,21 @@ apispec-webframeworks==0.5.2
 - [ ] Documentar Info Routes (6)
 
 ### 4. Autenticação e Segurança
+
 - [ ] Configurar autenticação Bearer Token no Swagger UI
 - [ ] Documentar fluxo de autenticação
 - [ ] Adicionar exemplos de headers de autenticação
 - [ ] Documentar rate limiting
 
 ### 5. Exemplos e Validação
+
 - [ ] Adicionar exemplos de request para cada endpoint
 - [ ] Adicionar exemplos de response (success)
 - [ ] Adicionar exemplos de response (error)
 - [ ] Testar todos os endpoints via Swagger UI
 
 ### 6. Documentação Complementar
+
 - [ ] Atualizar README.md com link para `/api/docs`
 - [ ] Adicionar seção sobre como usar a API
 - [ ] Documentar autenticação via API
@@ -152,6 +169,7 @@ SWAGGER_TAGS = [
 ## 🚀 Como Continuar
 
 1. **Instalar dependências:**
+
    ```bash
    pip install -r requirements.txt
    ```

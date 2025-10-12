@@ -10,11 +10,13 @@ Sistema completo de gerenciamento de clientes com autenticação robusta, contro
 ## 📚 Documentação
 
 ### 📖 Guias de Início Rápido
+
 - **[📋 Índice Completo](docs/INDEX.md)** - Índice organizado de toda documentação
 - **[🚀 API Quick Reference](docs/API_QUICK_REFERENCE.md)** - Referência rápida da API
 - **[🏗️ Arquitetura](docs/ARCHITECTURE.md)** - Arquitetura completa do sistema
 
 ### 🎉 API Documentation (Swagger/OpenAPI)
+
 **Documentação interativa disponível em `/api/docs`**
 
 - ✅ 63+ endpoints documentados
@@ -22,7 +24,9 @@ Sistema completo de gerenciamento de clientes com autenticação robusta, contro
 - ✅ Especificação OpenAPI 3.0.3
 
 ### 📁 Mais Documentação
+
 Toda a documentação técnica está organizada em [`docs/`](docs/):
+
 - Deploy (AWS, Azure)
 - Migração e Modernização
 - Scripts e Rotas
@@ -87,17 +91,20 @@ O **Client Manager** é uma aplicação web desenvolvida em Flask que permite ge
 ### 👤 Gestão de Usuários
 
 #### Super Administradores
+
 - Gerenciamento completo de administradores
 - Criação, edição e exclusão de admins
 - Proteção contra exclusão do último super_admin
 - Acesso total ao sistema
 
 #### Administradores
+
 - Gestão de clientes e planos
 - Visualização de informações
 - Acesso restrito (não pode gerenciar outros admins)
 
 #### Clientes
+
 - Dashboard personalizado
 - Visualização de informações próprias
 - Controle de status de conta (active/inactive)
@@ -185,6 +192,7 @@ O projeto segue o padrão **MVC (Model-View-Controller)** com separação clara 
 ### 🗂️ Camadas do Sistema
 
 #### **Models** (`app/models/`)
+
 - Definição das estruturas de dados
 - Interação com o MongoDB
 - Validações de negócio
@@ -192,6 +200,7 @@ O projeto segue o padrão **MVC (Model-View-Controller)** com separação clara 
 - **Classes**: `User`, `Admin`, `Client`, `Plan`, `Template`, `Domain`, `Info`, `LoginLog`
 
 #### **Controllers** (`app/controllers/`)
+
 - Processamento de requisições HTTP
 - Lógica de negócio
 - Validação de permissões
@@ -199,12 +208,14 @@ O projeto segue o padrão **MVC (Model-View-Controller)** com separação clara 
 - **Blueprints**: `auth`, `admin`, `client`, `plan`, `template`, `domain`, `info`, `main`
 
 #### **Views** (`app/views/`)
+
 - Renderização de templates
 - Preparação de dados para exibição
 - Camada de apresentação
 - **Classes**: `AuthView`, `AdminView`, `ClientView`, `PlanView`, `TemplateView`, `DomainView`, `InfoView`
 
 #### **Templates** (`app/templates/`)
+
 - Interface visual em HTML
 - Herança de layouts (Jinja2)
 - Componentes reutilizáveis (navbar, dashboard)
@@ -255,6 +266,7 @@ O projeto segue o padrão **MVC (Model-View-Controller)** com separação clara 
 **Quer fazer deploy na nuvem?** Veja nossos guias completos:
 
 #### Azure
+
 - 📘 **[Guia Completo Azure](docs/AZURE_DEPLOYMENT.md)** - App Service + VM
 - ⚡ **[Quick Start Azure](DEPLOY_AZURE.md)** - Deploy em 5 minutos
 
@@ -263,6 +275,7 @@ python scripts/azure_deploy.py  # Deploy automático
 ```
 
 #### AWS (Amazon Web Services)
+
 - 📕 **[Guia Completo AWS](docs/AWS_DEPLOYMENT.md)** - 4 opções (EB, EC2, ECS, Lambda)
 - ⚡ **[Quick Start AWS](DEPLOY_AWS.md)** - Deploy em 10 minutos
 
@@ -272,6 +285,7 @@ python scripts/aws_ec2_deploy.py  # EC2 (Mais barato)
 ```
 
 **Opções de Deploy:**
+
 - ✅ **Azure App Service** - PaaS simplificado
 - ✅ **Azure VM** - Controle total
 - ✅ **AWS Elastic Beanstalk** - Auto-scaling fácil
@@ -718,6 +732,7 @@ client_manager/
 ### Collections MongoDB
 
 #### **admins**
+
 ```json
 {
   "_id": ObjectId,
@@ -730,6 +745,7 @@ client_manager/
 ```
 
 #### **clients**
+
 ```json
 {
   "_id": ObjectId,
@@ -746,6 +762,7 @@ client_manager/
 ```
 
 #### **plans**
+
 ```json
 {
   "_id": ObjectId,
@@ -759,6 +776,7 @@ client_manager/
 ```
 
 #### **templates**
+
 ```json
 {
   "_id": ObjectId,
@@ -772,6 +790,7 @@ client_manager/
 ```
 
 #### **domains**
+
 ```json
 {
   "_id": ObjectId,
@@ -788,6 +807,7 @@ client_manager/
 ```
 
 #### **infos**
+
 ```json
 {
   "_id": ObjectId,
@@ -808,6 +828,7 @@ client_manager/
 ```
 
 #### **client_domains**
+
 ```json
 {
   "_id": ObjectId,
@@ -819,6 +840,7 @@ client_manager/
 ```
 
 #### **login_logs**
+
 ```json
 {
   "_id": ObjectId,
@@ -937,6 +959,7 @@ client_manager/
 O projeto inclui scripts Python para automação de tarefas:
 
 #### Setup e Configuração
+
 ```bash
 # Setup automatizado do projeto
 python scripts/setup.py
@@ -946,6 +969,7 @@ python scripts/create_superadmin.py <username> <password>
 ```
 
 #### Deploy em Nuvem
+
 ```bash
 # Deploy no Azure
 python scripts/azure_deploy.py
@@ -958,6 +982,7 @@ python scripts/aws_ec2_deploy.py
 ```
 
 #### Testes de Workflows
+
 ```bash
 # Testar todos os workflows GitHub Actions
 python scripts/test_all_workflows.py
@@ -967,6 +992,7 @@ python scripts/test_workflows.py
 ```
 
 #### Startup (Produção)
+
 ```bash
 # Script de inicialização para Azure App Service
 python scripts/startup.py
@@ -1252,6 +1278,7 @@ git commit -m "fix: corrige bug Y"
 ```
 
 Padrões de commit (Conventional Commits):
+
 - `feat:` - Nova funcionalidade
 - `fix:` - Correção de bug
 - `docs:` - Documentação
@@ -1292,6 +1319,7 @@ Vá ao GitHub e clique em "New Pull Request".
 - ✅ **Logs informativos** - Feedback visual com emojis
 
 **Scripts Convertidos**:
+
 - `startup.sh` → `startup.py`
 - `test-workflows.sh` → `test_workflows.py`
 - `test-all-workflows.sh` → `test_all_workflows.py`
@@ -1310,6 +1338,7 @@ O projeto agora implementa uma **camada de serviços** para separar a lógica de
 - **AuditService**: Sistema de auditoria para registrar operações sensíveis
 
 **Benefícios**:
+
 - ✅ Separação clara de responsabilidades
 - ✅ Código mais testável e reutilizável
 - ✅ Facilita manutenção e evolução do código
@@ -1325,6 +1354,7 @@ Schemas de validação para garantir integridade dos dados:
 - **DomainCreateSchema**: Validação de domínios
 
 **Benefícios**:
+
 - ✅ Validação robusta e centralizada
 - ✅ Type safety com hints
 - ✅ Mensagens de erro descritivas
@@ -1354,6 +1384,7 @@ Registro automático de operações sensíveis na collection `audit_logs`:
 - ✅ Tentativas de login (sucesso e falha)
 
 **Informações registradas**:
+
 - Ação realizada
 - Tipo de entidade
 - ID da entidade afetada
@@ -1365,6 +1396,7 @@ Registro automático de operações sensíveis na collection `audit_logs`:
 ### Type Hints
 
 Todas as funções principais agora possuem **type hints** para melhor:
+
 - IDE autocomplete
 - Detecção de erros em tempo de desenvolvimento
 - Documentação automática
@@ -1450,6 +1482,7 @@ Este projeto está licenciado sob a **Licença ISC**.
 ### 🔄 Changelog Recente
 
 **v2.1.0 - Dezembro 2024**
+
 - 🐍 **Migração completa**: Shell scripts → Python scripts
 - 📚 **Documentação expandida**: 12+ documentos técnicos
 - 🚀 **Deploy melhorado**: Scripts mais robustos e portáveis

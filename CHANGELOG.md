@@ -10,6 +10,7 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 ## [2.1.0] - 2024-12-19
 
 ### 🆕 Adicionado
+
 - **Scripts Python**: Conversão completa de 6 scripts shell para Python
   - `scripts/startup.py` - Script de inicialização para produção
   - `scripts/test_workflows.py` - Teste de workflows essenciais
@@ -24,7 +25,8 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
   - `CHANGELOG.md` - Este arquivo de changelog
 
 ### 🔄 Modificado
-- **README.md**: 
+
+- **README.md**:
   - Atualização dos comandos de deploy para Python
   - Nova seção de modernização
   - Documentação adicional expandida
@@ -32,6 +34,7 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
   - Estrutura do projeto atualizada
 
 ### 🗑️ Removido
+
 - **Scripts Shell Legacy**:
   - `startup.sh` → Convertido para `scripts/startup.py`
   - `test-workflows.sh` → Convertido para `scripts/test_workflows.py`
@@ -41,6 +44,7 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
   - `scripts/azure_deploy.sh` → Convertido para `scripts/azure_deploy.py`
 
 ### 🔧 Melhorias Técnicas
+
 - **Portabilidade**: Scripts agora funcionam em Windows, Linux e macOS
 - **Tratamento de Erros**: Exception handling robusto em Python
 - **Estrutura OOP**: Classes organizadas para melhor manutenibilidade
@@ -52,6 +56,7 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 ## [2.0.0] - 2024-11-XX
 
 ### 🆕 Adicionado
+
 - **Camada de Serviços**: Implementação de services layer
   - `AuthService` - Gerenciamento de autenticação
   - `ClientService` - Lógica de negócio para clientes
@@ -68,6 +73,7 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - **Testes Automatizados**: Suite completa com pytest
 
 ### 🔄 Modificado
+
 - **Arquitetura MVC**: Separação clara de responsabilidades
 - **Documentação API**: Swagger/OpenAPI 3.0.3 implementado
 - **Segurança**: Melhorias em autenticação e autorização
@@ -77,11 +83,13 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 ## [1.5.0] - 2024-10-XX
 
 ### 🆕 Adicionado
+
 - **API Documentation**: Swagger UI em `/api/docs`
 - **63+ Endpoints**: Documentação completa da API
 - **OpenAPI 3.0.3**: Especificação padronizada
 
 ### 🔄 Modificado
+
 - **Interface**: Melhorias no dashboard
 - **Performance**: Otimizações de consultas MongoDB
 
@@ -90,6 +98,7 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 ## [1.0.0] - 2024-09-XX
 
 ### 🆕 Adicionado
+
 - **Sistema Base**: Implementação inicial do Client Manager
 - **Autenticação**: Sistema completo de login/logout
 - **RBAC**: Controle de acesso baseado em funções
@@ -101,6 +110,7 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - **Auditoria**: Logs de acesso e operações
 
 ### 🛠️ Tecnologias
+
 - **Backend**: Flask 2.3.3, PyMongo 4.6.0
 - **Frontend**: Bootstrap 5, Jinja2
 - **Database**: MongoDB 4.6+

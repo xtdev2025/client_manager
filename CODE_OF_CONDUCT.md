@@ -41,7 +41,7 @@ Mantenedores do projeto que não seguirem ou aplicarem o Código de Conduta de b
 ## Atribuição
 
 Este Código de Conduta é adaptado do [Contributor Covenant](https://www.contributor-covenant.org), versão 1.4,
-disponível em https://www.contributor-covenant.org/version/1/4/code-of-conduct.html
+disponível em <https://www.contributor-covenant.org/version/1/4/code-of-conduct.html>
 
 Para respostas a perguntas comuns sobre este código de conduta, consulte
-https://www.contributor-covenant.org/faq
+<https://www.contributor-covenant.org/faq>

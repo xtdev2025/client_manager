@@ -87,6 +87,7 @@ Camada de lógica de negócio, separada dos controllers.
 **Serviços Disponíveis:**
 
 #### AuthService
+
 - Autenticação de usuários
 - Validação de credenciais
 - Registro de tentativas de login
@@ -102,6 +103,7 @@ valid, error = AuthService.validate_registration_data(username, password)
 ```
 
 #### ClientService
+
 - Validação de dados de clientes
 - Enriquecimento de dados (com planos, templates)
 - Verificação de expiração de planos
@@ -119,6 +121,7 @@ client = ClientService.get_client_with_details(client_id)
 ```
 
 #### AuditService
+
 - Registro de operações sensíveis
 - Rastreabilidade de ações
 - Logs de auditoria
@@ -138,6 +141,7 @@ logs = AuditService.get_recent_logs(limit=50, entity_type='admin')
 Validação de dados usando Pydantic.
 
 **Schemas Disponíveis:**
+
 - `UserCreateSchema` - Criação de usuários
 - `AdminCreateSchema` - Criação de admins
 - `ClientCreateSchema` - Criação de clientes
@@ -638,12 +642,14 @@ def test_login_invalid_credentials(client):
 ### Controllers
 
 ✅ **Fazer:**
+
 - Manter lógica mínima
 - Delegar para services
 - Validar entrada com schemas
 - Registrar ações sensíveis
 
 ❌ **Evitar:**
+
 - Lógica de negócio complexa
 - Acesso direto ao banco
 - Validações complexas inline
@@ -651,12 +657,14 @@ def test_login_invalid_credentials(client):
 ### Services
 
 ✅ **Fazer:**
+
 - Implementar lógica de negócio
 - Reutilizar entre controllers
 - Retornar tuplas (success, result/error)
 - Usar type hints
 
 ❌ **Evitar:**
+
 - Acesso direto ao request
 - Renderização de templates
 - Lógica de apresentação
@@ -664,12 +672,14 @@ def test_login_invalid_credentials(client):
 ### Models
 
 ✅ **Fazer:**
+
 - Operações CRUD básicas
 - Validações de dados
 - Conversões de tipos
 - Type hints
 
 ❌ **Evitar:**
+
 - Lógica de negócio complexa
 - Validações de formulários
 - Processamento de requisições

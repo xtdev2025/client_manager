@@ -1,18 +1,31 @@
 #!/bin/sh
 
-# Rodar flake8 em arquivos Python
-echo "Executando flake8 para verificar o estilo de código Python..."
-flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+echo "🔍 Executando verificações de pré-commit..."
 
-# Verificar se há arquivos Python com erros de formatação
-if [ $? -ne 0 ]; then
-  echo "Erros de estilo de código encontrados. Corrija antes de commitar."
+# Verificar se há arquivos Python modificados
+PYTHON_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.py$')
+
+if [ -n "$PYTHON_FILES" ]; then
+  echo "📝 Verificando código Python com flake8..."
+  echo "$PYTHON_FILES" | xargs flake8 --count --select=E9,F63,F7,F82 --show-source --statistics
+  
+  if [ $? -ne 0 ]; then
+    echo "❌ Erros de código encontrados. Corrija antes de commitar."
+    exit 1
+  fi
+  
+  echo "🔒 Verificando por credenciais expostas..."
+  echo "$PYTHON_FILES" | xargs grep -l "API_KEY\|SECRET\|PASSWORD\|TOKEN" | grep -v "\.env\.example\|\.env\.production\.example" && {
+    echo "❌ Possível exposição de credenciais detectada!"
+    exit 1
+  }
+fi
+
+# Verificar se há arquivos .env sendo commitados
+ENV_FILES=$(git diff --cached --name-only | grep '\.env$')
+if [ -n "$ENV_FILES" ]; then
+  echo "❌ Arquivo .env detectado no commit. Remova antes de commitar."
   exit 1
 fi
 
-# Verificar se há senhas ou chaves API expostas - ignorando arquivos de configuração e exemplos
-echo "Verificando por senhas ou chaves expostas..."
-! git diff --cached --name-only | xargs grep -l "API_KEY\|SECRET\|PASSWORD\|TOKEN" | grep -v "README.md\|\.env\.example\|\.env\.production\.example\|\.flake8\|pre-commit\|config\.py\|scripts/\|ARCHITECTURE.md\|\.md$\|\.github/workflows\|startup\.sh" || 
-{ echo "Possível exposição de credenciais detectada! Revise seu código."; exit 1; }
-
-echo "Pré-commit passou com sucesso!"
+echo "✅ Pré-commit passou com sucesso!"

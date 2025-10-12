@@ -4,9 +4,13 @@
   "description": "This is a Flask application for managing clients with authentication, RBAC, and CRUD operations using MongoDB.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "prepare": "husky"
-  },
+    "test": "python -m pytest tests/ -v",
+    "lint": "flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics",
+    "lint:fix": "autopep8 --in-place --aggressive --aggressive -r .",
+    "prepare": "husky",
+    "pre-commit": "npm run lint",
+    "pre-push": "npm run lint && npm run test"
+  }
   "keywords": [],
   "author": "",
   "license": "ISC",

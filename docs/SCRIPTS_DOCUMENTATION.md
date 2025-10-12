@@ -46,11 +46,13 @@ scripts/
 **Descrição**: Deploy automatizado no Azure App Service
 
 **Uso**:
+
 ```bash
 python scripts/azure_deploy.py
 ```
 
 **Funcionalidades**:
+
 - ✅ Verifica instalação do Azure CLI
 - ✅ Autentica no Azure automaticamente
 - ✅ Cria Resource Group
@@ -61,11 +63,13 @@ python scripts/azure_deploy.py
 - ✅ Configura deploy via Git
 
 **Recursos Criados**:
+
 - Resource Group: `rg-clientmanager`
 - App Service Plan: `plan-clientmanager` (SKU: B1)
 - Web App: `clientmanager-rootkit`
 
 **Próximos Passos Após Deploy**:
+
 1. Configurar variáveis de ambiente no Portal Azure
 2. Fazer push do código: `git push azure main`
 3. Criar super admin via SSH
@@ -78,11 +82,13 @@ python scripts/azure_deploy.py
 **Descrição**: Deploy automatizado no AWS Elastic Beanstalk
 
 **Uso**:
+
 ```bash
 python scripts/aws_eb_deploy.py
 ```
 
 **Funcionalidades**:
+
 - ✅ Instala AWS CLI e EB CLI automaticamente
 - ✅ Verifica credenciais AWS
 - ✅ Cria Procfile para Gunicorn
@@ -91,6 +97,7 @@ python scripts/aws_eb_deploy.py
 - ✅ Cria ou atualiza ambiente
 
 **Configurações**:
+
 - Aplicação: `client-manager`
 - Ambiente: `client-manager-prod`
 - Plataforma: `python-3.10`
@@ -106,11 +113,13 @@ python scripts/aws_eb_deploy.py
 **Descrição**: Deploy automatizado em instância EC2
 
 **Uso**:
+
 ```bash
 python scripts/aws_ec2_deploy.py
 ```
 
 **Funcionalidades**:
+
 - ✅ Cria chave SSH automaticamente
 - ✅ Configura Security Group
 - ✅ Lança instância EC2 (t2.micro - Free tier)
@@ -119,6 +128,7 @@ python scripts/aws_ec2_deploy.py
 - ✅ Cria serviço systemd
 
 **Configurações**:
+
 - Instância: `t2.micro` (Free tier eligible)
 - AMI: Ubuntu 22.04 LTS
 - Região: `us-east-1`
@@ -135,11 +145,13 @@ python scripts/aws_ec2_deploy.py
 **Descrição**: Testa todos os workflows GitHub Actions com Act
 
 **Uso**:
+
 ```bash
 python scripts/test_all_workflows.py
 ```
 
 **Workflows Testados**:
+
 - ✅ `ci.yml` - Lint e validação
 - ✅ `test.yml` - Testes unitários e integração
 - ✅ `deploy.yml` - Deploy (dry-run)
@@ -148,6 +160,7 @@ python scripts/test_all_workflows.py
 - ✅ `dependency-review.yml` - Análise de dependências
 
 **Pré-requisitos**:
+
 - Act instalado: `curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash`
 - Arquivos `.secrets` e `.env.act` configurados
 
@@ -158,11 +171,13 @@ python scripts/test_all_workflows.py
 **Descrição**: Testa workflows essenciais (versão simplificada)
 
 **Uso**:
+
 ```bash
 python scripts/test_workflows.py
 ```
 
 **Diferenças do `test_all_workflows.py`**:
+
 - ❌ Não executa em dry-run por padrão
 - ✅ Foco nos workflows mais importantes
 - ✅ Execução mais rápida
@@ -177,17 +192,20 @@ python scripts/test_workflows.py
 **Descrição**: Script de inicialização para Azure App Service
 
 **Uso**:
+
 ```bash
 python scripts/startup.py
 ```
 
 **Funcionalidades**:
+
 - ✅ Ativa ambiente virtual (se existir)
 - ✅ Inicializa banco de dados
 - ✅ Inicia aplicação com Gunicorn
 - ✅ Configurações otimizadas para produção
 
 **Configurações Gunicorn**:
+
 - Bind: `0.0.0.0:8000`
 - Workers: 4
 - Timeout: 600 segundos
@@ -201,13 +219,15 @@ O script é automaticamente executado pelo Azure App Service quando configurado 
 
 ### Variáveis de Ambiente Necessárias
 
-#### Para Deploy Azure:
+#### Para Deploy Azure
+
 ```env
 # Não são necessárias variáveis específicas
 # O script usa Azure CLI authentication
 ```
 
-#### Para Deploy AWS:
+#### Para Deploy AWS
+
 ```env
 # Configuradas via 'aws configure' ou:
 AWS_ACCESS_KEY_ID=your_access_key
@@ -215,7 +235,8 @@ AWS_SECRET_ACCESS_KEY=your_secret_key
 AWS_DEFAULT_REGION=us-east-1
 ```
 
-#### Para Testes de Workflow:
+#### Para Testes de Workflow
+
 ```env
 # Arquivo .env.act
 FLASK_CONFIG=testing
@@ -230,7 +251,8 @@ GITHUB_TOKEN=your_github_token
 
 ### Dependências dos Scripts
 
-#### Python Packages:
+#### Python Packages
+
 ```bash
 # Já incluídas no requirements.txt
 subprocess  # Built-in
@@ -240,7 +262,8 @@ sys         # Built-in
 os          # Built-in
 ```
 
-#### Ferramentas Externas:
+#### Ferramentas Externas
+
 ```bash
 # Azure
 az          # Azure CLI (instalado automaticamente)
@@ -261,30 +284,35 @@ git         # Git (para deploy)
 ### Problemas Comuns
 
 #### 1. "Azure CLI not found"
+
 ```bash
 # Solução: Instalar Azure CLI
 curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 ```
 
 #### 2. "Act not found"
+
 ```bash
 # Solução: Instalar Act
 curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash
 ```
 
 #### 3. "AWS credentials not configured"
+
 ```bash
 # Solução: Configurar AWS CLI
 aws configure
 ```
 
 #### 4. "Permission denied" ao executar scripts
+
 ```bash
 # Solução: Tornar executável
 chmod +x scripts/*.py
 ```
 
 #### 5. "Module not found" em scripts Python
+
 ```bash
 # Solução: Executar da raiz do projeto
 cd /path/to/client_manager
@@ -293,22 +321,25 @@ python scripts/script_name.py
 
 ### Logs e Debug
 
-#### Habilitar Debug nos Scripts:
+#### Habilitar Debug nos Scripts
+
 ```python
 # Adicionar no início do script
 import logging
 logging.basicConfig(level=logging.DEBUG)
 ```
 
-#### Verificar Status dos Serviços:
+#### Verificar Status dos Serviços
 
 **Azure**:
+
 ```bash
 az webapp show --name clientmanager-rootkit --resource-group rg-clientmanager
 az webapp log tail --name clientmanager-rootkit --resource-group rg-clientmanager
 ```
 
 **AWS EB**:
+
 ```bash
 eb status
 eb logs --stream
@@ -316,6 +347,7 @@ eb health
 ```
 
 **AWS EC2**:
+
 ```bash
 aws ec2 describe-instances --instance-ids i-1234567890abcdef0
 ssh -i clientmanager-key.pem ubuntu@<public-ip>
@@ -324,12 +356,14 @@ sudo journalctl -u clientmanager -f
 
 ### Performance e Otimização
 
-#### Melhorar Velocidade de Deploy:
+#### Melhorar Velocidade de Deploy
+
 1. **Cache de dependências**: Use cache do pip
 2. **Deploy incremental**: Apenas arquivos modificados
 3. **Paralelização**: Execute testes em paralelo
 
-#### Monitoramento:
+#### Monitoramento
+
 ```bash
 # Azure
 az monitor metrics list --resource clientmanager-rootkit
@@ -356,7 +390,8 @@ aws cloudwatch get-metric-statistics --namespace AWS/ElasticBeanstalk
 
 ## 🚀 Próximos Passos
 
-### Melhorias Planejadas:
+### Melhorias Planejadas
+
 1. **Testes automatizados** para os scripts
 2. **Configuração via arquivo** (YAML/JSON)
 3. **Interface CLI** com argumentos
@@ -366,8 +401,10 @@ aws cloudwatch get-metric-statistics --namespace AWS/ElasticBeanstalk
 7. **Multi-região** deploy
 8. **Blue-green deployment**
 
-### Contribuição:
+### Contribuição
+
 Para contribuir com melhorias nos scripts:
+
 1. Fork o repositório
 2. Crie branch: `git checkout -b feature/script-improvement`
 3. Faça alterações nos scripts em `scripts/`

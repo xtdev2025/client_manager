@@ -58,6 +58,7 @@ curl -X GET http://localhost:5000/auth/logout \
 ## Common Operations
 
 ### List Resources
+
 ```
 GET /clients/          # List all clients
 GET /admins/           # List all admins
@@ -68,6 +69,7 @@ GET /infos/            # List all banking info
 ```
 
 ### View Details
+
 ```
 GET /clients/view/<id>
 GET /plans/view/<id>
@@ -77,6 +79,7 @@ GET /infos/view/<id>
 ```
 
 ### Create Resource
+
 ```
 POST /clients/create
 POST /plans/create
@@ -86,6 +89,7 @@ POST /infos/create/<client_id>
 ```
 
 ### Update Resource
+
 ```
 POST /clients/edit/<id>
 POST /plans/edit/<id>
@@ -95,6 +99,7 @@ POST /infos/edit/<id>
 ```
 
 ### Delete Resource
+
 ```
 POST /clients/delete/<id>
 POST /plans/delete/<id>
@@ -116,6 +121,7 @@ POST /client/my-change-password    # Change password
 ## Response Formats
 
 ### Success
+
 ```json
 {
   "message": "Operation successful",
@@ -124,6 +130,7 @@ POST /client/my-change-password    # Change password
 ```
 
 ### Error
+
 ```json
 {
   "error": "Error message",
@@ -132,6 +139,7 @@ POST /client/my-change-password    # Change password
 ```
 
 ### Validation Error
+
 ```json
 {
   "error": "Validation failed",

@@ -125,6 +125,7 @@ http://127.0.0.1:5000/template/<slug>/<page_id>
 ```
 
 Substitua:
+
 - `<slug>` pelo slug do template
 - `<page_id>` pelo ID da página
 
@@ -227,16 +228,19 @@ Após submissão, o usuário é redirecionado para uma página de sucesso.
 ### Testar o Sistema Completo
 
 1. **Criar template:**
+
    ```
    http://127.0.0.1:5000/templates/create
    ```
 
 2. **Editar páginas:**
+
    ```
    http://127.0.0.1:5000/templates/edit/<id>
    ```
 
 3. **Acessar página pública:**
+
    ```
    http://127.0.0.1:5000/template/<slug>/<page_id>
    ```
@@ -272,4 +276,3 @@ Para questões ou problemas:
 1. Verifique os logs da aplicação
 2. Consulte o `README.md` principal
 3. Verifique a documentação de arquitetura em `ARCHITECTURE.md`
-

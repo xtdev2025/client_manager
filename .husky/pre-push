@@ -1,18 +1,25 @@
 #!/bin/sh
 
-echo "Verificando código antes de enviar..."
+echo "🚀 Executando verificações de pré-push..."
 
 # Verificar estilo de código com flake8
-echo "Executando flake8 para verificar todo o código..."
+echo "📝 Verificando todo o código Python..."
 flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
 
-# Verificar se há erros
 if [ $? -ne 0 ]; then
-  echo "Há problemas no código. Corrija antes de enviar."
+  echo "❌ Problemas no código encontrados. Corrija antes de enviar."
   exit 1
 fi
 
-# No futuro, podemos adicionar testes unitários aqui
-# python -m unittest discover
+# Executar testes se existirem
+if [ -f "pytest.ini" ] || [ -d "tests" ]; then
+  echo "🧪 Executando testes..."
+  python -m pytest tests/ -v --tb=short
+  
+  if [ $? -ne 0 ]; then
+    echo "❌ Testes falharam. Corrija antes de enviar."
+    exit 1
+  fi
+fi
 
-echo "Pré-push passou com sucesso!"
+echo "✅ Pré-push passou com sucesso!"

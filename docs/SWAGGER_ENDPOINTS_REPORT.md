@@ -6,8 +6,8 @@
 
 ## 📍 URLs de Acesso
 
-- **Swagger UI (Interativo):** http://localhost:5000/api/docs
-- **OpenAPI JSON Spec:** http://localhost:5000/api/swagger.json
+- **Swagger UI (Interativo):** <http://localhost:5000/api/docs>
+- **OpenAPI JSON Spec:** <http://localhost:5000/api/swagger.json>
 - **Documentação Markdown:** [API_DOCUMENTATION.md](./API_DOCUMENTATION.md)
 - **Referência Rápida:** [API_QUICK_REFERENCE.md](./API_QUICK_REFERENCE.md)
 
@@ -18,7 +18,7 @@
 | **Total de Endpoints** | 63 |
 | **Total de Categorias** | 10 |
 | **Schemas Pydantic** | 22 |
-| **Servidor** | http://localhost:5000 |
+| **Servidor** | <http://localhost:5000> |
 
 ---
 

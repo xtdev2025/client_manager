@@ -11,7 +11,8 @@
 
 ## 🎯 Opção 1: Azure App Service (Recomendado)
 
-### Vantagens:
+### Vantagens
+
 - ✅ Mais rápido e fácil
 - ✅ Auto-scaling
 - ✅ SSL/HTTPS automático
@@ -133,7 +134,8 @@ https://clientmanager-rootkit.azurewebsites.net
 
 ## 🖥️ Opção 2: Azure Virtual Machine (Mais Controle - IaaS)
 
-### Vantagens:
+### Vantagens
+
 - ✅ Controle total do servidor
 - ✅ Pode instalar qualquer software
 - ✅ Mais barato para apps grandes
@@ -224,6 +226,7 @@ nano .env
 ```
 
 Adicionar:
+
 ```ini
 SECRET_KEY=sua-chave-secreta-super-segura
 MONGO_URI=mongodb+srv://user:pass@cluster.mongodb.net/clientmanager
@@ -237,6 +240,7 @@ sudo nano /etc/systemd/system/clientmanager.service
 ```
 
 Conteúdo:
+
 ```ini
 [Unit]
 Description=Client Manager Flask Application
@@ -264,6 +268,7 @@ sudo nano /etc/nginx/sites-available/clientmanager
 ```
 
 Conteúdo:
+
 ```nginx
 server {
     listen 80;
@@ -301,7 +306,7 @@ sudo systemctl status clientmanager
 
 ### 1️⃣1️⃣ Configurar MongoDB Atlas
 
-1. Acesse https://cloud.mongodb.com
+1. Acesse <https://cloud.mongodb.com>
 2. Crie um cluster gratuito
 3. Adicione IP da VM Azure no Whitelist: `0.0.0.0/0` (ou IP específico)
 4. Crie usuário de banco de dados
@@ -335,17 +340,20 @@ sudo certbot renew --dry-run
 ## 📊 Monitoramento
 
 ### Ver logs da aplicação
+
 ```bash
 sudo journalctl -u clientmanager -f
 ```
 
 ### Ver logs do Nginx
+
 ```bash
 sudo tail -f /var/log/nginx/error.log
 sudo tail -f /var/log/nginx/access.log
 ```
 
 ### Reiniciar aplicação
+
 ```bash
 sudo systemctl restart clientmanager
 ```
@@ -354,16 +362,19 @@ sudo systemctl restart clientmanager
 
 ## 💰 Custos Estimados
 
-### App Service:
+### App Service
+
 - **Free (F1)**: $0/mês (limitações)
 - **Basic (B1)**: ~$13/mês
 - **Standard (S1)**: ~$70/mês
 
-### Virtual Machine:
+### Virtual Machine
+
 - **B1s (1 vCPU, 1GB RAM)**: ~$8/mês
 - **B2s (2 vCPU, 4GB RAM)**: ~$30/mês
 
-### MongoDB Atlas:
+### MongoDB Atlas
+
 - **Free (M0)**: $0/mês (512MB)
 - **Shared (M2)**: ~$9/mês (2GB)
 
@@ -372,12 +383,14 @@ sudo systemctl restart clientmanager
 ## 🎯 Recomendação
 
 **Para começar:** Use **Azure App Service** com **MongoDB Atlas Free**
+
 - Total: $0-13/mês
 - Fácil de configurar
 - Escalável
 - SSL gratuito
 
 **Para produção:** Use **VM B1s** com **MongoDB Atlas M2**
+
 - Total: ~$17/mês
 - Mais controle
 - Melhor performance
@@ -406,16 +419,19 @@ az group delete --name rg-clientmanager --yes
 ## 🆘 Troubleshooting
 
 ### App não inicia
+
 1. Verificar logs: `az webapp log tail`
 2. Verificar variáveis de ambiente
 3. Verificar requirements.txt completo
 
 ### Erro 502 Bad Gateway
+
 1. Verificar gunicorn está rodando: `sudo systemctl status clientmanager`
 2. Verificar socket file existe: `ls -l clientmanager.sock`
 3. Verificar logs: `sudo journalctl -u clientmanager -n 50`
 
 ### Banco de dados não conecta
+
 1. Verificar MONGO_URI está correto
 2. Verificar IP está whitelisted no Atlas
 3. Testar conexão: `mongosh "mongodb+srv://..."`
