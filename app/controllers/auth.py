@@ -89,6 +89,8 @@ def login():
         )
 
         next_page = request.args.get("next")
+        if next_page and not next_page.startswith('/'):
+            next_page = None
         flash("Login successful!", "success")
         return redirect(next_page if next_page else url_for("main.dashboard"))
 

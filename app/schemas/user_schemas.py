@@ -79,9 +79,11 @@ class UserUpdateSchema(BaseModel):
     @classmethod
     def validate_username(cls, v: Optional[str]) -> Optional[str]:
         """Validate username format"""
-        if v and (not v.isalnum() and "_" not in v):
-            raise ValueError("Username must contain only alphanumeric characters and underscores")
-        return v.lower() if v else None
+        if v:
+            if not (v.replace('_', '').isalnum()):
+                raise ValueError("Username must contain only alphanumeric characters and underscores")
+            return v.lower()
+        return None
 
 
 class LoginSchema(BaseModel):
@@ -103,16 +105,12 @@ class PlanCreateSchema(BaseModel):
     @classmethod
     def validate_price(cls, v: float) -> float:
         """Validate price is positive"""
-        if v <= 0:
-            raise ValueError("Price must be greater than 0")
         return round(v, 2)
 
     @field_validator("duration_days")
     @classmethod
     def validate_duration(cls, v: int) -> int:
         """Validate duration is positive"""
-        if v <= 0:
-            raise ValueError("Duration must be greater than 0")
         return v
 
 

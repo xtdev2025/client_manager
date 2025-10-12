@@ -60,6 +60,15 @@
                 </div>
             </div>
         </div>
+        <div class="col-md-3">
+            <div class="stat-card info">
+                <div class="stat-number">{{ stats.total_clicks }}</div>
+                <div class="stat-label">Total de Clicks</div>
+                <div class="growth-indicator">
+                    Últimos 30 dias
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="row">
@@ -76,6 +85,13 @@
                 <h5 class="mb-3">Status dos Clientes</h5>
                 <div class="chart-container">
                     <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="dashboard-card">
+                <h5 class="mb-3">Clicks nos Últimos 30 Dias</h5>
+                <div class="chart-container">
+                    <canvas id="adminClicksChart"></canvas>
                 </div>
             </div>
         </div>

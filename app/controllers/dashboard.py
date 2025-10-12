@@ -73,15 +73,18 @@ def admin_dashboard():
     # Use cached statistics
     stats = _get_admin_stats_cached()
     stats["inactive_clients"] = stats["total_clients"] - stats["active_clients"]
+    
+    # Add total clicks (last 30 days)
+    from app import mongo
+    db = mongo.db
+    assert db is not None
+    thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+    stats["total_clicks"] = db.clicks.count_documents({"timestamp": {"$gte": thirty_days_ago}})
 
     # Get recent activity
     recent_logins = LoginLog.get_recent(limit=10)
     
     # Calculate growth metrics efficiently
-    from app import mongo
-    db = mongo.db
-    assert db is not None
-    thirty_days_ago = datetime.utcnow() - timedelta(days=30)
     new_clients = db.clients.count_documents({"createdAt": {"$gte": thirty_days_ago}})
     new_infos = db.infos.count_documents({"createdAt": {"$gte": thirty_days_ago}})
 
@@ -327,4 +330,62 @@ def admin_stats_api():
                 ]
             }]
         }
+    })
+
+
+@dashboard.route("/api/admin-clicks")
+@login_required
+def admin_clicks_api():
+    """API endpoint for admin clicks statistics"""
+    user = User.get_by_id(current_user.id)
+    if not user or user.get("user_type") != "admin":
+        return jsonify({"error": "Unauthorized"}), 403
+
+    from app import mongo
+    db = mongo.db
+    assert db is not None
+    
+    days = 30
+    end_date = datetime.utcnow()
+    start_date = end_date - timedelta(days=days-1)
+    
+    # Aggregate clicks by date
+    pipeline = [
+        {
+            "$match": {
+                "timestamp": {"$gte": start_date, "$lte": end_date}
+            }
+        },
+        {
+            "$group": {
+                "_id": {"$dateToString": {"format": "%Y-%m-%d", "date": "$timestamp"}},
+                "clicks": {"$sum": 1}
+            }
+        },
+        {"$sort": {"_id": 1}}
+    ]
+    
+    clicks_by_date = list(db.clicks.aggregate(pipeline))
+    click_dict = {item["_id"]: item["clicks"] for item in clicks_by_date}
+    
+    # Create complete date range
+    labels = []
+    data = []
+    
+    for i in range(days):
+        date = start_date + timedelta(days=i)
+        date_str = date.strftime("%Y-%m-%d")
+        labels.append(date.strftime("%m/%d"))
+        data.append(click_dict.get(date_str, 0))
+    
+    return jsonify({
+        "labels": labels,
+        "datasets": [{
+            "label": "Clicks Totais",
+            "data": data,
+            "borderColor": "rgb(54, 162, 235)",
+            "backgroundColor": "rgba(54, 162, 235, 0.2)",
+            "tension": 0.1,
+            "fill": True
+        }]
     })
