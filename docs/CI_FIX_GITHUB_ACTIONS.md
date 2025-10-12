@@ -30,14 +30,35 @@ O workflow de testes estava falhando por vários motivos:
 
 ## ✅ Solução Aplicada
 
+### 🎯 Decisão Arquitetural: Rede Interna do Docker
+
+**Por que não expor portas no host?**
+
+Em vez de fazer `ports: - 27017:27017` (que expõe MongoDB no host), os services do GitHub Actions usam **rede interna do Docker**:
+
+- ✅ **Sem conflito com serviços locais**: Não interfere com MongoDB/Redis rodando no desenvolvedor
+- ✅ **Isolamento**: Containers se comunicam via hostnames (`mongodb`, `redis`) na rede privada
+- ✅ **Segurança**: Serviços não ficam expostos no host
+- ✅ **Portabilidade**: Funciona igualmente no GitHub Actions e com `act` localmente (sem precisar parar serviços)
+
+**Como funciona:**
+```
+Container do Job (ubuntu-latest)
+  ↓ conexão via rede interna
+Container MongoDB (mongo:5.0)
+  hostname: mongodb
+  porta interna: 27017
+  NÃO exposto no host
+```
+
 ### 1. MongoDB Service Corrigido
 
 ```yaml
 services:
   mongodb:
     image: mongo:5.0
-    ports:
-      - 27017:27017
+    # Não expõe porta no host - usa rede interna do Docker
+    # Acessível via hostname 'mongodb' dentro dos containers
     options: >-
       --health-cmd "mongosh --eval 'db.runCommand({ping: 1})' || mongo --eval 'db.runCommand({ping: 1})'"
       --health-interval 10s
@@ -48,6 +69,8 @@ services:
 **Mudanças**:
 - ✅ Health check com fallback (`mongosh` ou `mongo`)
 - ✅ Retries aumentado para 10 (100 segundos)
+- ✅ **SEM exposição de porta no host** (evita conflito com MongoDB local)
+- ✅ Usa hostname `mongodb` na rede interna do Docker
 - ❌ Redis removido (não usado)
 
 ### 2. Verificação Explícita de Conexão
@@ -55,11 +78,11 @@ services:
 ```yaml
 - name: Verify MongoDB connection
   run: |
-    echo "Waiting for MongoDB..."
+    echo "Waiting for MongoDB on internal network..."
     for i in {1..30}; do
-      if mongosh --eval "db.runCommand({ping: 1})" localhost:27017 2>/dev/null || \
-         mongo --eval "db.runCommand({ping: 1})" localhost:27017 2>/dev/null; then
-        echo "MongoDB is ready!"
+      if mongosh --eval "db.runCommand({ping: 1})" mongodb:27017 2>/dev/null || \
+         mongo --eval "db.runCommand({ping: 1})" mongodb:27017 2>/dev/null; then
+        echo "✅ MongoDB is ready on mongodb:27017!"
         break
       fi
       echo "Waiting for MongoDB... ($i/30)"
@@ -72,6 +95,7 @@ services:
 - ✅ Tenta `mongosh` e `mongo` (compatibilidade)
 - ✅ Feedback visual do progresso
 - ✅ Falha clara se MongoDB não iniciar
+- ✅ **Usa hostname `mongodb:27017` (rede interna do Docker)**
 
 ### 3. Arquivo .env Criado Dinamicamente
 
@@ -82,17 +106,18 @@ services:
     FLASK_ENV=testing
     FLASK_DEBUG=False
     SECRET_KEY=test_secret_key_for_github_actions_only
-    MONGO_URI=mongodb://localhost:27017/test_clientmanager
-    MONGODB_URI=mongodb://localhost:27017/test_clientmanager
+    MONGO_URI=mongodb://mongodb:27017/test_clientmanager
+    MONGODB_URI=mongodb://mongodb:27017/test_clientmanager
     DATABASE_NAME=test_clientmanager
     EOF
-    echo "✅ .env created for tests"
+    echo "✅ .env created for tests (using internal network: mongodb:27017)"
 ```
 
 **Vantagens**:
 - ✅ Não depende de `.env.example`
 - ✅ Valores específicos para CI/CD
 - ✅ Banco de testes isolado (`test_clientmanager`)
+- ✅ **Usa `mongodb:27017` (hostname interno) ao invés de `localhost:27017`**
 
 ### 4. Inicialização do Banco de Testes
 
@@ -272,16 +297,22 @@ steps:
 
 ## 🚀 Como Testar Localmente
 
-### 1. Simular CI/CD Localmente (act)
+### 1. Simular CI/CD Localmente (act) - AGORA SEM CONFLITOS! ✅
+
+⚠️ **RESOLVIDO**: Com a mudança para rede interna do Docker, o `act` não precisa mais da porta 27017 no host!
 
 ```bash
-# Instalar act (se não tiver)
-curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash
-
-# Rodar workflow localmente
+# Rodar workflow localmente SEM parar MongoDB
 cd /home/rootkit/Apps/xPages/client_manager
 act -j test --container-architecture linux/amd64
+
+# MongoDB local (porta 27017) e MongoDB do container (rede interna) coexistem!
 ```
+
+**Por que funciona agora:**
+- MongoDB do CI roda na rede interna do Docker (hostname `mongodb`)
+- Não tenta usar `localhost:27017` (que está ocupado pelo seu MongoDB)
+- Sem conflitos de porta! 🎉
 
 ### 2. Rodar Testes Manualmente
 
