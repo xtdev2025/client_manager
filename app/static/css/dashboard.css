@@ -353,6 +353,91 @@
     color: var(--text-primary);
 }
 
+/* ===== DOMAIN CARD (NEW IMPROVED VERSION) ===== */
+.domain-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: var(--spacing-md);
+    transition: all var(--transition-base);
+}
+
+.domain-card:hover {
+    border-color: var(--gh-blue);
+    box-shadow: 0 2px 8px rgba(9, 105, 218, 0.1);
+    transform: translateY(-2px);
+}
+
+.domain-card .domain-header {
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+}
+
+.domain-card .domain-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.domain-card .domain-name i {
+    font-size: 0.85rem;
+    opacity: 0.6;
+}
+
+.domain-card .domain-url {
+    padding-left: 1.2rem;
+}
+
+.domain-card .domain-url a {
+    font-size: 0.85rem;
+    transition: color var(--transition-fast);
+}
+
+.domain-card .domain-url a:hover {
+    color: var(--gh-blue);
+    text-decoration: underline;
+}
+
+.domain-card .domain-stats {
+    padding-top: var(--spacing-sm);
+}
+
+.domain-card .stat-mini {
+    padding: var(--spacing-xs);
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+}
+
+.domain-card .stat-mini:hover {
+    background-color: var(--dashboard-bg);
+}
+
+.domain-card .stat-mini i {
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+}
+
+.domain-card .stat-mini strong {
+    font-size: 1.1rem;
+    color: var(--text-primary);
+}
+
+.domain-card .stat-mini small {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.domain-card .badge-sm {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+}
+
+/* Empty state for domains */
+.dashboard-card .opacity-50 {
+    opacity: 0.5;
+}
+
 /* ===== GROWTH INDICATORS ===== */
 .growth-indicator {
     display: inline-flex;
