@@ -66,9 +66,12 @@ class Domain:
                 return True, "Domain updated successfully"
             return False, "No changes made or domain not found"
 
+        except ValueError as e:
+            current_app.logger.error(f"Invalid data type in domain update: {e}")
+            return False, "Invalid data format provided"
         except Exception as e:
             current_app.logger.error(f"Error updating domain: {e}")
-            return False, str(e)
+            return False, "Database operation failed"
 
     @staticmethod
     def delete(domain_id):
@@ -111,6 +114,9 @@ class Domain:
 
             domain = mongo.db.domains.find_one({"_id": domain_id})
             return domain
+        except ValueError as e:
+            current_app.logger.error(f"Invalid domain ID format: {e}")
+            return None
         except Exception as e:
             current_app.logger.error(f"Error getting domain by ID: {e}")
             return None
@@ -175,9 +181,12 @@ class Domain:
                 return True, str(result.inserted_id)
             return False, "Database error"
 
+        except ValueError as e:
+            current_app.logger.error(f"Invalid ID format in domain assignment: {e}")
+            return False, "Invalid client or domain ID format"
         except Exception as e:
             current_app.logger.error(f"Error assigning domain to client: {e}")
-            return False, str(e)
+            return False, "Failed to assign domain to client"
 
     @staticmethod
     def remove_from_client(client_id, client_domain_id):

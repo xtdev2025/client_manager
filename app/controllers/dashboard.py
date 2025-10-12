@@ -246,64 +246,6 @@ def domain_stats_api():
     })
 
 
-@dashboard.route("/simple")
-@login_required
-def simple_dashboard():
-    """Simple dashboard route"""
-    user = User.get_by_id(current_user.id)
-    user_type = user.get("user_type", "client") if user else "client"
-
-    if user_type == "admin":
-        # Optimized: Use count queries instead of loading all data
-        from app import mongo
-        recent_logins = LoginLog.get_recent(limit=5)
-        
-        stats = {
-            "total_clients": mongo.db.clients.count_documents({}),
-            "active_clients": mongo.db.clients.count_documents({"status": "active"}),
-            "total_infos": mongo.db.infos.count_documents({}),
-            "total_domains": mongo.db.domains.count_documents({}),
-        }
-        
-        return DashboardView.render_simple_dashboard(
-            user=user,
-            stats=stats,
-            recent_logins=recent_logins
-        )
-    else:
-        # Get basic client stats
-        client_domains = Domain.get_client_domains(user["_id"])
-        client_infos = Info.get_by_client(user["_id"])
-        total_clicks = Click.get_total_clicks(user["_id"], days=30)
-        
-        stats = {
-            "total_domains": len(client_domains),
-            "total_infos": len(client_infos),
-            "total_clicks": total_clicks,
-            "total_balance": sum(float(i.get("saldo", 0)) for i in client_infos),
-        }
-        
-        # Plan info
-        plan_info = None
-        if user.get("plan_id"):
-            plan = Plan.get_by_id(user.get("plan_id"))
-            if plan and user.get("expiredAt"):
-                days_remaining = (user["expiredAt"] - datetime.utcnow()).days
-                plan_info = {
-                    "name": plan["name"],
-                    "expires_at": user["expiredAt"],
-                    "days_remaining": max(0, days_remaining),
-                    "is_expired": days_remaining < 0
-                }
-        
-        return DashboardView.render_simple_dashboard(
-            user=user,
-            stats=stats,
-            plan_info=plan_info,
-            client_domains=client_domains
-        )
-
-
 @dashboard.route("/api/admin-stats")
 @login_required
 def admin_stats_api():

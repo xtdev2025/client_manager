@@ -2,7 +2,7 @@
 
 {% block title %}Meu Dashboard{% endblock %}
 
-{% block head %}
+{% block styles %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
@@ -17,11 +17,6 @@
                 <div>
                     <h1 class="h3 mb-0">Meu Dashboard</h1>
                     <p class="text-muted mb-0">Visão geral da sua conta e atividades</p>
-                </div>
-                <div>
-                    <a href="/dashboard/simple" class="btn btn-outline-secondary btn-sm">
-                        <i class="fas fa-th-list"></i> Versão Simplificada
-                    </a>
                 </div>
             </div>
         </div>

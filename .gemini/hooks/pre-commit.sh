@@ -5,7 +5,15 @@
 # https://docs.gemini.com/cli/hooks
 
 # Run the linter.
-flake8 .
+if ! flake8 .; then
+    echo "❌ Linting failed. Please fix the issues before committing."
+    exit 1
+fi
 
 # Run the tests.
-pytest
+if ! pytest; then
+    echo "❌ Tests failed. Please fix the failing tests before committing."
+    exit 1
+fi
+
+echo "✅ All checks passed. Proceeding with commit."

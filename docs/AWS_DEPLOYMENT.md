@@ -406,7 +406,7 @@ sudo systemctl status clientmanager
 ```bash
 cd /home/ubuntu/client_manager
 source venv/bin/activate
-python scripts/create_superadmin.py rootkit 13rafael
+python scripts/create_superadmin.py $ADMIN_USERNAME $ADMIN_PASSWORD
 ```
 
 ### 10. Acessar Aplicação
@@ -672,8 +672,8 @@ Responder perguntas:
             "FLASK_CONFIG": "production"
         },
         "aws_environment_variables": {
-            "SECRET_KEY": "sua-chave-secreta",
-            "MONGO_URI": "mongodb+srv://..."
+            "SECRET_KEY": "${SECRET_KEY}",
+            "MONGO_URI": "${MONGO_URI}"
         }
     }
 }
@@ -717,7 +717,7 @@ aws docdb create-db-cluster \
   --db-cluster-identifier client-manager-db \
   --engine docdb \
   --master-username admin \
-  --master-user-password SenhaSegura123 \
+  --master-user-password "$DB_PASSWORD" \
   --vpc-security-group-ids sg-xxx
 
 # Criar instância
@@ -744,8 +744,8 @@ sudo systemctl enable mongod
 mongosh
 use clientmanager
 db.createUser({
-  user: "admin",
-  pwd: "senha123",
+  user: process.env.DB_USER || "admin",
+  pwd: process.env.DB_PASSWORD,
   roles: [{role: "readWrite", db: "clientmanager"}]
 })
 ```
