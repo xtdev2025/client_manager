@@ -31,7 +31,10 @@ class DashboardView(BaseView):
             "recent_clicks": recent_clicks or []
         }
         
-        return MainView.render_dashboard(user, **context)
+        return BaseView.render(
+            "dashboard/admin_enterprise.html",
+            **context
+        )
 
     @staticmethod
     def render_client_dashboard(user, stats, plan_info, client_domains, 
