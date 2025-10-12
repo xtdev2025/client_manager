@@ -32,29 +32,59 @@
                         <th>Nome</th>
                         <th>Cloudflare</th>
                         <th>SSL</th>
+                        <th>Subdomínios</th>
                         <th>Limite</th>
+                        <th>Disponível</th>
                         <th class="text-end">Ações</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for domain in domains %}
                     <tr>
-                        <td>{{ domain.name }}</td>
+                        <td>
+                            <strong>{{ domain.name }}</strong>
+                        </td>
                         <td>
                             {% if domain.cloudflare_status %}
-                            <span class="badge bg-success">Ativo</span>
+                            <span class="badge bg-success">
+                                <i class="fas fa-check"></i> Ativo
+                            </span>
                             {% else %}
-                            <span class="badge bg-secondary">Inativo</span>
+                            <span class="badge bg-secondary">
+                                <i class="fas fa-times"></i> Inativo
+                            </span>
                             {% endif %}
                         </td>
                         <td>
                             {% if domain.ssl %}
-                            <span class="badge bg-success">Ativo</span>
+                            <span class="badge bg-success">
+                                <i class="fas fa-lock"></i> SSL
+                            </span>
                             {% else %}
-                            <span class="badge bg-secondary">Inativo</span>
+                            <span class="badge bg-secondary">
+                                <i class="fas fa-lock-open"></i> Sem SSL
+                            </span>
                             {% endif %}
                         </td>
-                        <td>{{ domain.domain_limit }}</td>
+                        <td>
+                            <span class="badge bg-info">
+                                {{ domain.subdomain_count }}
+                            </span>
+                        </td>
+                        <td>
+                            {{ domain.domain_limit }}
+                        </td>
+                        <td>
+                            {% if domain.available_slots > 0 %}
+                            <span class="badge bg-success">
+                                {{ domain.available_slots }} disponível
+                            </span>
+                            {% else %}
+                            <span class="badge bg-danger">
+                                <i class="fas fa-exclamation-triangle"></i> Cheio
+                            </span>
+                            {% endif %}
+                        </td>
                         <td class="text-end">
                             <div class="btn-group btn-group-sm" role="group">
                                 <a href="{{ url_for('domain.view_domain', domain_id=domain._id) }}" class="btn btn-info" title="Visualizar">

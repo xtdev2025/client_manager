@@ -59,23 +59,58 @@
                             </option>
                             {% endfor %}
                         </select>
-                        <div class="form-text">Selecione um template para criar o domínio</div>
+                        <div class="form-text">Selecione um template para habilitar a criação de domínio</div>
                     </div>
                     
-                    <!-- Domain field (hidden by default) -->
+                    <!-- Domain Selection (hidden by default) -->
+                    <div class="mb-3" id="domainSelectionField" style="display: none;">
+                        <label for="domain_id" class="form-label">
+                            <i class="fas fa-globe me-2"></i>Domínio Principal
+                        </label>
+                        <select class="form-select" id="domain_id" name="domain_id">
+                            <option value="">Selecione um domínio</option>
+                            {% for domain in domains %}
+                            {% set selected_domain = form_data.get('domain_id') if form_data else '' %}
+                            {% set subdomain_count = domain.subdomain_count if domain.subdomain_count is defined else 0 %}
+                            {% set domain_limit = domain.domain_limit if domain.domain_limit else 5 %}
+                            {% set available = domain_limit - subdomain_count %}
+                            <option value="{{ domain._id }}" 
+                                data-name="{{ domain.name }}"
+                                data-limit="{{ domain_limit }}"
+                                data-used="{{ subdomain_count }}"
+                                data-available="{{ available }}"
+                                {% if available <= 0 %}disabled{% endif %}
+                                {% if selected_domain and selected_domain|string == domain._id|string %}selected{% endif %}>
+                                {{ domain.name }} 
+                                ({{ subdomain_count }}/{{ domain_limit }} usado{% if subdomain_count != 1 %}s{% endif %})
+                                {% if available <= 0 %}
+                                - CHEIO
+                                {% elif available <= 2 %}
+                                - {{ available }} disponível
+                                {% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Selecione o domínio principal onde o subdomínio será criado
+                        </div>
+                    </div>
+                    
+                    <!-- Subdomain field (hidden by default) -->
                     <div class="mb-3" id="domainField" style="display: none;">
                         <label for="domain" class="form-label">
-                            <i class="fas fa-globe me-2"></i>Domínio
+                            <i class="fas fa-tag me-2"></i>Subdomínio
                         </label>
                         <div class="input-group">
                             <input type="text" class="form-control" id="domain" name="domain" 
                                    placeholder="exemplo" 
                                    value="{{ form_data.get('domain') if form_data else '' }}">
-                            <span class="input-group-text">.seusite.com</span>
+                            <span class="input-group-text" id="domainSuffix">.seusite.com</span>
                         </div>
                         <div class="form-text">
                             <i class="fas fa-info-circle me-1"></i>
-                            Digite apenas o subdomínio (ex: "empresa" para empresa.seusite.com)
+                            Digite apenas o subdomínio. Se já existir, será gerado um nome único automaticamente.
                         </div>
                     </div>
                     <div class="mb-3">
@@ -105,10 +140,13 @@
 document.addEventListener('DOMContentLoaded', function() {
     const planSelect = document.getElementById('plan_id');
     const templateSelect = document.getElementById('template_id');
+    const domainSelectField = document.getElementById('domainSelectionField');
+    const domainSelect = document.getElementById('domain_id');
     const activationDateInput = document.getElementById('plan_activation_date');
     const expirationDateInput = document.getElementById('plan_expiration_date');
     const domainField = document.getElementById('domainField');
     const domainInput = document.getElementById('domain');
+    const domainSuffix = document.getElementById('domainSuffix');
     const usernameInput = document.getElementById('username');
     
     // Function to format date as YYYY-MM-DD
@@ -150,10 +188,35 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Function to show/hide domain field
-    function toggleDomainField() {
+    // Function to show/hide domain selection
+    function toggleDomainSelection() {
         if (templateSelect.value) {
+            domainSelectField.style.display = 'block';
+            
+            // Smooth animation
+            domainSelectField.style.opacity = '0';
+            domainSelectField.style.transition = 'opacity 0.3s ease-in';
+            setTimeout(() => {
+                domainSelectField.style.opacity = '1';
+            }, 10);
+        } else {
+            domainSelectField.style.display = 'none';
+            domainField.style.display = 'none';
+            domainSelect.value = '';
+            domainInput.value = '';
+        }
+    }
+    
+    // Function to show/hide subdomain field and update suffix
+    function toggleSubdomainField() {
+        const selectedOption = domainSelect.options[domainSelect.selectedIndex];
+        
+        if (domainSelect.value) {
             domainField.style.display = 'block';
+            
+            // Update the suffix with selected domain name
+            const domainName = selectedOption.dataset.name || 'seusite.com';
+            domainSuffix.textContent = '.' + domainName;
             
             // Auto-fill domain based on username if not already filled
             if (!domainInput.value && usernameInput.value) {
@@ -178,11 +241,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Event listeners
     planSelect.addEventListener('change', updateDates);
-    templateSelect.addEventListener('change', toggleDomainField);
+    templateSelect.addEventListener('change', toggleDomainSelection);
+    domainSelect.addEventListener('change', toggleSubdomainField);
     
     // Auto-suggest domain when username changes
     usernameInput.addEventListener('input', function() {
-        if (templateSelect.value && !domainInput.value) {
+        if (domainSelect.value && !domainInput.value) {
             const suggestedDomain = this.value
                 .toLowerCase()
                 .trim()
@@ -196,10 +260,13 @@ document.addEventListener('DOMContentLoaded', function() {
         updateDates();
     }
     if (templateSelect.value) {
-        toggleDomainField();
+        toggleDomainSelection();
+        if (domainSelect.value) {
+            toggleSubdomainField();
+        }
     }
     
-    console.log('✓ Client creation form initialized with auto-fill features');
+    console.log('✓ Client creation form initialized with domain selection');
 });
 </script>
 {% endblock %}

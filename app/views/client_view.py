@@ -56,13 +56,14 @@ class ClientView(BaseView):
         return BaseView.render("clients/list.html", clients=clients)
 
     @staticmethod
-    def render_create_form(plans, templates=None, form_data=None, errors=None):
+    def render_create_form(plans, templates=None, domains=None, form_data=None, errors=None):
         """
         Render the client creation form.
 
         Args:
             plans (list): List of available plans
             templates (list): List of available templates
+            domains (list): List of available domains
             form_data (dict, optional): Form data in case of validation error
             errors (list, optional): Validation errors
 
@@ -73,6 +74,7 @@ class ClientView(BaseView):
             "clients/create.html",
             plans=plans,
             templates=templates or [],
+            domains=domains or [],
             form_data=form_data,
             errors=errors,
         )

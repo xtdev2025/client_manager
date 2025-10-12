@@ -1,3 +1,6 @@
+import random
+import string
+
 from bson import ObjectId
 from flask import Blueprint, abort, flash, redirect, request, url_for
 from flask_login import current_user, login_required
@@ -13,6 +16,46 @@ from app.services.audit_service import AuditService
 from app.views.client_view import ClientView
 
 client = Blueprint("client", __name__, url_prefix="/clients")
+
+
+def generate_unique_subdomain(domain_id, base_subdomain="", max_attempts=10):
+    """
+    Generate a unique subdomain for a given domain.
+
+    Args:
+        domain_id: The domain ID to check against
+        base_subdomain: Base name to use (optional)
+        max_attempts: Maximum number of attempts to generate unique subdomain
+
+    Returns:
+        Unique subdomain string or None if failed
+    """
+    for attempt in range(max_attempts):
+        if attempt == 0 and base_subdomain:
+            # First try: use the base subdomain as-is
+            subdomain = base_subdomain.lower().strip()
+        elif base_subdomain:
+            # Subsequent tries: append random suffix
+            suffix = "".join(random.choices(string.digits, k=3))
+            subdomain = f"{base_subdomain}{suffix}"
+        else:
+            # No base provided: generate completely random
+            subdomain = "".join(random.choices(string.ascii_lowercase, k=6)) + "".join(
+                random.choices(string.digits, k=3)
+            )
+
+        # Sanitize subdomain (only alphanumeric and hyphens)
+        subdomain = "".join(c for c in subdomain if c.isalnum() or c == "-")
+
+        # Check if subdomain already exists
+        existing = mongo.db.client_domains.find_one(
+            {"domain_id": ObjectId(domain_id), "subdomain": subdomain}
+        )
+
+        if not existing:
+            return subdomain
+
+    return None
 
 
 @client.route("/")
@@ -33,21 +76,32 @@ def create_client():
     """Create a new client"""
     plans = Plan.get_all()
     templates = Template.get_all()
+    domains = Domain.get_all()  # Get all available domains
+
+    # Enrich domains with subdomain counts
+    enriched_domains = []
+    for domain in domains:
+        domain_id = domain["_id"]
+        subdomain_count = mongo.db.client_domains.count_documents({"domain_id": domain_id})
+        domain["subdomain_count"] = subdomain_count
+        enriched_domains.append(domain)
 
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
         plan_id = request.form.get("plan_id") or None
         template_id = request.form.get("template_id") or None
+        domain_id = request.form.get("domain_id") or None  # Selected domain ID
         status = request.form.get("status", "active")
         plan_activation_date = request.form.get("plan_activation_date") or None
         plan_expiration_date = request.form.get("plan_expiration_date") or None
-        domain = request.form.get("domain", "").strip()
+        domain = request.form.get("domain", "").strip()  # Subdomain
 
         form_payload = {
             "username": username,
             "plan_id": plan_id,
             "template_id": template_id,
+            "domain_id": domain_id,
             "status": status,
             "plan_activation_date": plan_activation_date,
             "plan_expiration_date": plan_expiration_date,
@@ -56,7 +110,9 @@ def create_client():
 
         if not username or not password:
             flash("Please provide username and password", "danger")
-            return ClientView.render_create_form(plans, templates, form_data=form_payload)
+            return ClientView.render_create_form(
+                plans, templates, enriched_domains, form_data=form_payload
+            )
 
         # Create client
         success, message = Client.create(
@@ -72,46 +128,53 @@ def create_client():
         if success:
             client_id = message  # message contains the client_id on success
 
-            # Create domain association if provided and template is selected
-            if domain and template_id:
-                # First, check if main domain exists (seusite.com)
-                main_domain = mongo.db.domains.find_one({"name": "seusite.com"})
+            # Create domain association if domain_id, subdomain and template are provided
+            if domain_id and domain and template_id:
+                # Get the selected domain
+                selected_domain = Domain.get_by_id(domain_id)
 
-                if main_domain:
-                    domain_id = str(main_domain["_id"])
-                    # Assign subdomain to client
-                    domain_success, domain_message = Domain.assign_to_client(
-                        client_id=client_id, domain_id=domain_id, subdomain=domain
-                    )
+                if selected_domain:
+                    domain_name = selected_domain.get("name", "seusite.com")
 
-                    if domain_success:
-                        flash(f"Client created with domain {domain}.seusite.com", "success")
+                    # Generate unique subdomain (try user input first, then add random suffix if needed)
+                    unique_subdomain = generate_unique_subdomain(domain_id, domain)
+
+                    if not unique_subdomain:
+                        flash("Client created but failed to generate unique subdomain", "warning")
                     else:
-                        flash(
-                            f"Client created but domain assignment failed: {domain_message}",
-                            "warning",
+                        # Check if domain has reached its limit
+                        current_count = mongo.db.client_domains.count_documents(
+                            {"domain_id": ObjectId(domain_id)}
                         )
-                else:
-                    # Create main domain if it doesn't exist
-                    domain_created, domain_id = Domain.create(
-                        name="seusite.com", ssl=True, domain_limit=999
-                    )
+                        domain_limit = selected_domain.get("domain_limit", 5)
 
-                    if domain_created:
-                        # Now assign subdomain
-                        domain_success, domain_message = Domain.assign_to_client(
-                            client_id=client_id, domain_id=domain_id, subdomain=domain
-                        )
-
-                        if domain_success:
-                            flash(f"Client created with domain {domain}.seusite.com", "success")
-                        else:
+                        if current_count >= domain_limit:
                             flash(
-                                f"Client created but domain assignment failed: {domain_message}",
+                                f"Client created but domain has reached its limit ({domain_limit} subdomains)",
                                 "warning",
                             )
-                    else:
-                        flash("Client created but main domain creation failed", "warning")
+                        else:
+                            # Assign subdomain to client
+                            domain_success, domain_message = Domain.assign_to_client(
+                                client_id=client_id, domain_id=domain_id, subdomain=unique_subdomain
+                            )
+
+                            if domain_success:
+                                actual_domain = f"{unique_subdomain}.{domain_name}"
+                                if unique_subdomain != domain:
+                                    flash(
+                                        f"Client created with domain {actual_domain} ('{domain}' já estava em uso)",
+                                        "success",
+                                    )
+                                else:
+                                    flash(f"Client created with domain {actual_domain}", "success")
+                            else:
+                                flash(
+                                    f"Client created but domain assignment failed: {domain_message}",
+                                    "warning",
+                                )
+                else:
+                    flash("Client created but selected domain not found", "warning")
             else:
                 flash("Client created successfully", "success")
 
@@ -131,9 +194,11 @@ def create_client():
             return redirect(url_for("client.list_clients"))
         else:
             flash(f"Error creating client: {message}", "danger")
-            return ClientView.render_create_form(plans, templates, form_data=form_payload)
+            return ClientView.render_create_form(
+                plans, templates, enriched_domains, form_data=form_payload
+            )
 
-    return ClientView.render_create_form(plans, templates)
+    return ClientView.render_create_form(plans, templates, enriched_domains)
 
 
 @client.route("/edit/<client_id>", methods=["GET", "POST"])

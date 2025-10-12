@@ -15,9 +15,19 @@ domain = Blueprint("domain", __name__, url_prefix="/domains")
 @login_required
 @admin_required
 def list_domains():
-    """List all domains"""
+    """List all domains with subdomain counts"""
     domains = Domain.get_all()
-    return DomainView.render_list(domains)
+
+    # Enrich domains with subdomain counts
+    enriched_domains = []
+    for domain in domains:
+        domain_id = domain["_id"]
+        subdomain_count = mongo.db.client_domains.count_documents({"domain_id": domain_id})
+        domain["subdomain_count"] = subdomain_count
+        domain["available_slots"] = domain.get("domain_limit", 5) - subdomain_count
+        enriched_domains.append(domain)
+
+    return DomainView.render_list(enriched_domains)
 
 
 @domain.route("/create", methods=["GET", "POST"])
