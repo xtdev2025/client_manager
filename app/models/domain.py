@@ -10,28 +10,25 @@ class Domain:
     """Domain model for managing client domains"""
 
     @staticmethod
-    def create(
-        name,
-        cloudflare_api=None,
-        cloudflare_email=None,
-        cloudflare_password=None,
-        cloudflare_status=False,
-        ssl=False,
-        domain_limit=5,
-    ):
+    def create(name, **kwargs):
         """Create a new domain"""
         try:
+            # Default values
+            defaults = {
+                "cloudflare_api": None,
+                "cloudflare_email": None,
+                "cloudflare_password": None,
+                "cloudflare_status": False,
+                "ssl": False,
+                "domain_limit": 5,
+            }
+            
             # Create domain object
             new_domain = {
                 "name": name,
-                "cloudflare_api": cloudflare_api,
-                "cloudflare_email": cloudflare_email,
-                "cloudflare_password": cloudflare_password,
-                "cloudflare_status": cloudflare_status,
-                "ssl": ssl,
-                "domain_limit": domain_limit,
                 "createdAt": datetime.utcnow(),
                 "updatedAt": datetime.utcnow(),
+                **{**defaults, **kwargs}
             }
 
             # Insert into database

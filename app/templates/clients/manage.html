@@ -1,0 +1,500 @@
+{% extends "layout.html" %}
+
+{% block title %}Manage Client - Client Manager{% endblock %}
+
+{% block page_title %}Manage Client: {{ client.username }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-tabs mb-4" id="clientTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#info" type="button" role="tab">
+                    <i class="fas fa-info-circle"></i> Information
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="edit-tab" data-bs-toggle="tab" data-bs-target="#edit" type="button" role="tab">
+                    <i class="fas fa-edit"></i> Edit Details
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="domains-tab" data-bs-toggle="tab" data-bs-target="#domains" type="button" role="tab">
+                    <i class="fas fa-globe"></i> Domains ({{ client_domains|length }})
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="info-entries-tab" data-bs-toggle="tab" data-bs-target="#info-entries" type="button" role="tab">
+                    <i class="fas fa-database"></i> Info Entries ({{ client.info_count|default(0) }})
+                </button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="clientTabsContent">
+            <!-- Information Tab -->
+            <div class="tab-pane fade show active" id="info" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card shadow mb-4">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Client Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <dl class="row">
+                                    <dt class="col-sm-4">Username</dt>
+                                    <dd class="col-sm-8">{{ client.username }}</dd>
+                                    
+                                    <dt class="col-sm-4">Status</dt>
+                                    <dd class="col-sm-8">
+                                        {% if client.status == 'active' %}
+                                        <span class="badge bg-success">Active</span>
+                                        {% elif client.status == 'inactive' %}
+                                        <span class="badge bg-warning">Inactive</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">{{ client.status }}</span>
+                                        {% endif %}
+                                    </dd>
+                                    
+                                    <dt class="col-sm-4">Created At</dt>
+                                    <dd class="col-sm-8">{{ client.createdAt.strftime('%Y-%m-%d %H:%M:%S') }}</dd>
+                                    
+                                    <dt class="col-sm-4">Last Updated</dt>
+                                    <dd class="col-sm-8">{{ client.updatedAt.strftime('%Y-%m-%d %H:%M:%S') }}</dd>
+                                    
+                                    {% if client.planActivatedAt %}
+                                    <dt class="col-sm-4">Plan Activated</dt>
+                                    <dd class="col-sm-8">{{ client.planActivatedAt.strftime('%Y-%m-%d %H:%M:%S') }}</dd>
+                                    {% endif %}
+
+                                    {% if client.expiredAt %}
+                                    <dt class="col-sm-4">Expires At</dt>
+                                    <dd class="col-sm-8">{{ client.expiredAt.strftime('%Y-%m-%d %H:%M:%S') }}</dd>
+                                    {% endif %}
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card shadow mb-4">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Plan Details</h5>
+                            </div>
+                            <div class="card-body">
+                                {% if client.plan %}
+                                <dl class="row">
+                                    <dt class="col-sm-4">Plan Name</dt>
+                                    <dd class="col-sm-8">{{ client.plan.name }}</dd>
+                                    
+                                    <dt class="col-sm-4">Description</dt>
+                                    <dd class="col-sm-8">{{ client.plan.description or 'N/A' }}</dd>
+                                    
+                                    <dt class="col-sm-4">Price</dt>
+                                    <dd class="col-sm-8">${{ client.plan.price }}</dd>
+                                    
+                                    <dt class="col-sm-4">Duration</dt>
+                                    <dd class="col-sm-8">{{ client.plan.duration_days }} days</dd>
+                                </dl>
+                                {% else %}
+                                <p class="text-center">No plan assigned to this client.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="card shadow mb-4">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Template Details</h5>
+                            </div>
+                            <div class="card-body">
+                                {% if client.template %}
+                                <dl class="row">
+                                    <dt class="col-sm-4">Template Name</dt>
+                                    <dd class="col-sm-8">{{ client.template.name }}</dd>
+                                    
+                                    <dt class="col-sm-4">Description</dt>
+                                    <dd class="col-sm-8">{{ client.template.description or 'N/A' }}</dd>
+                                    
+                                    <dt class="col-sm-4">Status</dt>
+                                    <dd class="col-sm-8">
+                                        {% if client.template.status == 'active' %}
+                                        <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">Inactive</span>
+                                        {% endif %}
+                                    </dd>
+                                </dl>
+                                {% else %}
+                                <p class="text-center">No template assigned to this client.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit Tab -->
+            <div class="tab-pane fade" id="edit" role="tabpanel">
+                <div class="row justify-content-center">
+                    <div class="col-md-10">
+                        <div class="card shadow">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Edit Client Details</h5>
+                            </div>
+                            <div class="card-body p-4">
+                                <form method="POST" action="{{ url_for('client.view_client', client_id=client._id) }}" id="editClientForm">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="username" class="form-label">Username</label>
+                                                <input type="text" class="form-control" id="username" name="username"
+                                                       value="{{ form_data.get('username') if form_data and form_data.get('username') is not none else client.username }}" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="password" class="form-label">Password</label>
+                                                <input type="password" class="form-control" id="password" name="password" placeholder="Leave blank to keep current password">
+                                                <div class="form-text">Leave blank to keep the current password</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="plan_id" class="form-label">Plan</label>
+                                                <select class="form-select" id="plan_id" name="plan_id" onchange="updateDates()">
+                                                    <option value="">No Plan</option>
+                                                    {% for plan in plans %}
+                                                    {% set selected_plan = form_data.get('plan_id') if form_data and form_data.get('plan_id') is not none else client.plan_id %}
+                                                    <option value="{{ plan._id }}" 
+                                                            data-duration="{{ plan.duration_days }}"
+                                                            {% if selected_plan and selected_plan|string == plan._id|string %}selected{% endif %}>
+                                                        {{ plan.name }} (${{ plan.price }})
+                                                    </option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="template_id" class="form-label">Template</label>
+                                                <select class="form-select" id="template_id" name="template_id">
+                                                    <option value="">No Template</option>
+                                                    {% for template in templates %}
+                                                    {% set selected_template = form_data.get('template_id') if form_data and form_data.get('template_id') is not none else client.template_id %}
+                                                    <option value="{{ template._id }}" {% if selected_template and selected_template|string == template._id|string %}selected{% endif %}>
+                                                        {{ template.name }}
+                                                    </option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="plan_activation_date" class="form-label">Plan Activation Date</label>
+                                                {% set activation_value = '' %}
+                                                {% if form_data and form_data.get('plan_activation_date') %}
+                                                    {% set activation_value = form_data.get('plan_activation_date') %}
+                                                {% elif client.planActivatedAt %}
+                                                    {% set activation_value = client.planActivatedAt.strftime('%Y-%m-%d') %}
+                                                {% endif %}
+                                                <input type="date" class="form-control" id="plan_activation_date" name="plan_activation_date"
+                                                       value="{{ activation_value }}">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="plan_expiration_date" class="form-label">Plan Expiration Date</label>
+                                                {% set expiration_value = '' %}
+                                                {% if form_data and form_data.get('plan_expiration_date') %}
+                                                    {% set expiration_value = form_data.get('plan_expiration_date') %}
+                                                {% elif client.expiredAt %}
+                                                    {% set expiration_value = client.expiredAt.strftime('%Y-%m-%d') %}
+                                                {% endif %}
+                                                <input type="date" class="form-control" id="plan_expiration_date" name="plan_expiration_date"
+                                                       value="{{ expiration_value }}">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="status" class="form-label">Status</label>
+                                                <select class="form-select" id="status" name="status" required>
+                                                    {% set selected_status = form_data.get('status') if form_data and form_data.get('status') is not none else client.status %}
+                                                    <option value="active" {% if selected_status == 'active' %}selected{% endif %}>Active</option>
+                                                    <option value="inactive" {% if selected_status == 'inactive' %}selected{% endif %}>Inactive</option>
+                                                    <option value="suspended" {% if selected_status == 'suspended' %}selected{% endif %}>Suspended</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-grid gap-2 mt-3">
+                                        <button type="submit" class="btn btn-primary btn-lg">
+                                            <i class="fas fa-save"></i> Save Changes
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Domains Tab -->
+            <div class="tab-pane fade" id="domains" role="tabpanel">
+                <div class="card shadow">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Domain Management</h5>
+                    </div>
+                    <div class="card-body">
+                        <h6 class="mb-3">Current Domains</h6>
+                        
+                        {% if client_domains|length == 0 %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> This client doesn't have any domains assigned yet.
+                        </div>
+                        {% else %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Subdomain</th>
+                                        <th>Domain</th>
+                                        <th>Full Domain</th>
+                                        <th>Created At</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for cd in client_domains %}
+                                    <tr>
+                                        <td><span class="badge bg-primary">{{ cd.subdomain }}</span></td>
+                                        <td>{{ cd.domain.name if cd.domain else 'Unknown domain' }}</td>
+                                        <td><a href="http://{{ cd.full_domain }}" target="_blank">{{ cd.full_domain }}</a></td>
+                                        <td>{{ cd.createdAt.strftime('%d/%m/%Y %H:%M') if cd.createdAt else 'N/A' }}</td>
+                                        <td>
+                                            <form method="POST" action="{{ url_for('client.remove_domain', client_id=client._id, client_domain_id=cd._id) }}" 
+                                                  class="d-inline" onsubmit="return confirm('Are you sure you want to remove this domain?');">
+                                                <button type="submit" class="btn btn-sm btn-danger">
+                                                    <i class="fas fa-trash"></i> Remove
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="domain-usage mt-3 mb-3">
+                            <div class="progress" style="height: 25px;">
+                                {% set usage_percent = (client_domains|length / domain_limit) * 100 %}
+                                <div class="progress-bar {% if usage_percent >= 90 %}bg-danger{% elif usage_percent >= 70 %}bg-warning{% else %}bg-success{% endif %}" 
+                                     role="progressbar" 
+                                     style="width: {{ usage_percent }}%;" 
+                                     aria-valuenow="{{ client_domains|length }}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="{{ domain_limit }}">
+                                    {{ client_domains|length }} / {{ domain_limit }}
+                                </div>
+                            </div>
+                            <small class="text-muted">Domain usage: {{ client_domains|length }} of {{ domain_limit }} available domains</small>
+                        </div>
+                        {% endif %}
+                        
+                        {% if client_domains|length < domain_limit %}
+                        <hr>
+                        <h6 class="mb-3">Add New Domain</h6>
+                        <form method="POST" action="{{ url_for('client.add_domain', client_id=client._id) }}" class="row g-3">
+                            <div class="col-md-5">
+                                <label for="domain_id" class="form-label">Domain*</label>
+                                <select class="form-select" id="domain_id" name="domain_id" required onchange="updateDomainSuffix()">
+                                    <option value="">Select a domain</option>
+                                    {% for domain in available_domains %}
+                                    <option value="{{ domain._id }}" data-name="{{ domain.name }}">
+                                        {{ domain.name }} ({{ domain.subdomain_count|default(0) }}/{{ domain.domain_limit }} used)
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-5">
+                                <label for="subdomain" class="form-label">Subdomain*</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="subdomain" name="subdomain" required 
+                                           placeholder="e.g., client1">
+                                    <span class="input-group-text" id="domainSuffixDisplay">Select domain first</span>
+                                </div>
+                                <small class="form-text text-muted">Enter only the subdomain part</small>
+                            </div>
+                            
+                            <div class="col-md-2 align-self-end">
+                                <button type="submit" class="btn btn-success w-100">
+                                    <i class="fas fa-plus"></i> Add
+                                </button>
+                            </div>
+                        </form>
+                        {% else %}
+                        <div class="alert alert-warning mt-3">
+                            <i class="fas fa-exclamation-triangle"></i> This client has reached the maximum number of domains.
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Info Entries Tab -->
+            <div class="tab-pane fade" id="info-entries" role="tabpanel">
+                <div class="card shadow">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">Client Information Entries ({{ client.info_count|default(0) }})</h5>
+                        <a href="{{ url_for('info.create_info', client_id=client._id) }}" class="btn btn-sm btn-success">
+                            <i class="fas fa-plus"></i> Add Information
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        {% set client_infos = client.get('infos', []) %}
+                        {% if client_infos|length == 0 %}
+                        <div class="alert alert-info text-center">
+                            <i class="fas fa-info-circle"></i> No information entries for this client yet.
+                        </div>
+                        <div class="text-center">
+                            <a href="{{ url_for('info.create_info', client_id=client._id) }}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Add First Information Entry
+                            </a>
+                        </div>
+                        {% else %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Agency</th>
+                                        <th>Account</th>
+                                        <th>Balance</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for info in client_infos %}
+                                    <tr>
+                                        <td>{{ info.agencia }}</td>
+                                        <td>{{ info.conta }}</td>
+                                        <td>R$ {{ "%.2f"|format(info.saldo) }}</td>
+                                        <td>
+                                            {% if info.status == 'active' %}
+                                            <span class="badge bg-success">Active</span>
+                                            {% elif info.status == 'inactive' %}
+                                            <span class="badge bg-warning">Inactive</span>
+                                            {% else %}
+                                            <span class="badge bg-secondary">{{ info.status }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a href="{{ url_for('info.view_info', info_id=info._id) }}" class="btn btn-sm btn-info">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{{ url_for('info.edit_info', info_id=info._id) }}" class="btn btn-sm btn-warning">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        {% if client_infos|length > 5 %}
+                        <div class="text-center mt-3">
+                            <a href="{{ url_for('info.list_client_infos', client_id=client._id) }}" class="btn btn-outline-primary">
+                                <i class="fas fa-list"></i> View All Information Entries
+                            </a>
+                        </div>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="d-flex mt-4 gap-2">
+            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteClientModal">
+                <i class="fas fa-trash"></i> Delete Client
+            </button>
+            <a href="{{ url_for('client.list_clients') }}" class="btn btn-secondary ms-auto">
+                <i class="fas fa-arrow-left"></i> Back to Clients
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteClientModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete client <strong>{{ client.username }}</strong>?
+                This action cannot be undone and will remove all associated domains and information entries.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form action="{{ url_for('client.delete_client', client_id=client._id) }}" method="POST">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateDates() {
+    const planSelect = document.getElementById('plan_id');
+    const selectedOption = planSelect.options[planSelect.selectedIndex];
+    const durationDays = selectedOption.getAttribute('data-duration');
+    
+    if (durationDays) {
+        const today = new Date();
+        const activationDate = today.toISOString().split('T')[0];
+        document.getElementById('plan_activation_date').value = activationDate;
+        
+        const expirationDate = new Date(today);
+        expirationDate.setDate(expirationDate.getDate() + parseInt(durationDays));
+        document.getElementById('plan_expiration_date').value = expirationDate.toISOString().split('T')[0];
+    }
+}
+
+function updateDomainSuffix() {
+    const domainSelect = document.getElementById('domain_id');
+    const selectedOption = domainSelect.options[domainSelect.selectedIndex];
+    const domainName = selectedOption.getAttribute('data-name');
+    const suffixDisplay = document.getElementById('domainSuffixDisplay');
+    
+    if (domainName) {
+        suffixDisplay.textContent = '.' + domainName;
+    } else {
+        suffixDisplay.textContent = 'Select domain first';
+    }
+}
+
+// Auto-switch to edit tab if there are form errors
+{% if form_data or errors %}
+document.addEventListener('DOMContentLoaded', function() {
+    const editTab = new bootstrap.Tab(document.getElementById('edit-tab'));
+    editTab.show();
+});
+{% endif %}
+</script>
+{% endblock %}

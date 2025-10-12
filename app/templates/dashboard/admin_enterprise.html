@@ -1,0 +1,182 @@
+{% extends "layout.html" %}
+
+{% block title %}Dashboard Enterprise - Admin{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<!-- Styles moved to external CSS file for better performance -->
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-0">Dashboard Enterprise</h1>
+                    <p class="text-muted mb-0">Visão geral completa do sistema</p>
+                </div>
+                <div>
+                    <a href="/dashboard/simple" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-th-list"></i> Versão Simplificada
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-number">{{ stats.total_clients }}</div>
+                <div class="stat-label">Total de Clientes</div>
+                <div class="growth-indicator growth-up">
+                    ↗ +{{ new_clients }} este mês
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card success">
+                <div class="stat-number">{{ stats.active_clients }}</div>
+                <div class="stat-label">Clientes Ativos</div>
+                <div class="growth-indicator">
+                    {{ "%.1f"|format((stats.active_clients / stats.total_clients * 100) if stats.total_clients > 0 else 0) }}% do total
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card info">
+                <div class="stat-number">{{ stats.total_infos }}</div>
+                <div class="stat-label">Total de Infos</div>
+                <div class="growth-indicator growth-up">
+                    ↗ +{{ new_infos }} este mês
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card warning">
+                <div class="stat-number">{{ stats.total_domains }}</div>
+                <div class="stat-label">Domínios Ativos</div>
+                <div class="growth-indicator">
+                    {{ stats.total_plans }} planos disponíveis
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Charts Section -->
+        <div class="col-md-8">
+            <div class="dashboard-card">
+                <h5 class="mb-3">Distribuição de Planos</h5>
+                <div class="chart-container">
+                    <canvas id="planChart"></canvas>
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <h5 class="mb-3">Status dos Clientes</h5>
+                <div class="chart-container">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity Section -->
+        <div class="col-md-4">
+            <div class="dashboard-card">
+                <h5 class="mb-3">Atividade Recente</h5>
+                <div class="recent-activity">
+                    {% for login in recent_logins %}
+                    <div class="activity-item">
+                        <div>
+                            <strong>{{ login.username or 'Usuário' }}</strong>
+                            <br>
+                            <small class="text-muted">Login realizado</small>
+                        </div>
+                        <div class="text-muted">
+                            <small>{{ login.timestamp.strftime('%d/%m %H:%M') if login.timestamp else 'N/A' }}</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% if not recent_logins %}
+                    <div class="text-center text-muted py-3">
+                        Nenhuma atividade recente
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <h5 class="mb-3">Resumo do Sistema</h5>
+                <div class="row text-center">
+                    <div class="col-6 mb-3">
+                        <div class="h4 text-primary">{{ stats.total_templates }}</div>
+                        <small class="text-muted">Templates</small>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="h4 text-success">{{ stats.total_admins }}</div>
+                        <small class="text-muted">Administradores</small>
+                    </div>
+                    <div class="col-6">
+                        <div class="h4 text-info">{{ stats.active_infos }}</div>
+                        <small class="text-muted">Infos Ativas</small>
+                    </div>
+                    <div class="col-6">
+                        <div class="h4 text-warning">{{ stats.inactive_clients }}</div>
+                        <small class="text-muted">Clientes Inativos</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="dashboard-card">
+                <h5 class="mb-3">Ações Rápidas</h5>
+                <div class="row quick-actions">
+                    <div class="col-md-2">
+                        <a href="{{ url_for('client.create_client') }}" class="btn btn-primary btn-block">
+                            <i class="fas fa-user-plus"></i> Novo Cliente
+                        </a>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="{{ url_for('plan.create_plan') }}" class="btn btn-success btn-block">
+                            <i class="fas fa-plus"></i> Novo Plano
+                        </a>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="{{ url_for('domain.create_domain') }}" class="btn btn-info btn-block">
+                            <i class="fas fa-globe"></i> Novo Domínio
+                        </a>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="{{ url_for('template.create_template') }}" class="btn btn-warning btn-block">
+                            <i class="fas fa-file-alt"></i> Novo Template
+                        </a>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="{{ url_for('client.list_clients') }}" class="btn btn-secondary btn-block">
+                            <i class="fas fa-list"></i> Ver Clientes
+                        </a>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-dark btn-block">
+                            <i class="fas fa-history"></i> Logs de Auditoria
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- Dashboard JavaScript is loaded from external file -->
+{% endblock %}

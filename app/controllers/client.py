@@ -205,7 +205,37 @@ def create_client():
 @login_required
 @admin_required
 def edit_client(client_id):
-    """Edit client information"""
+    """Edit client information - redirect to unified management page"""
+    return redirect(url_for("client.view_client", client_id=client_id))
+
+
+@client.route("/delete/<client_id>", methods=["POST"])
+@login_required
+@admin_required
+def delete_client(client_id):
+    """Delete a client"""
+    if request.method == "POST":
+        # Get client data before deletion for audit log
+        client_data = Client.get_by_id(client_id)
+        username = client_data.get("username", "unknown") if client_data else "unknown"
+
+        success, message = Client.delete(client_id)
+
+        if success:
+            # Log client deletion in audit trail
+            AuditService.log_client_action("delete", client_id, {"username": username})
+            flash("Client deleted successfully", "success")
+        else:
+            flash(f"Error deleting client: {message}", "danger")
+
+    return redirect(url_for("client.list_clients"))
+
+
+@client.route("/view/<client_id>", methods=["GET", "POST"])
+@login_required
+@admin_required
+def view_client(client_id):
+    """View and manage client details (unified view/edit/domains page)"""
     client_data = Client.get_by_id(client_id)
     if not client_data:
         flash("Client not found", "danger")
@@ -214,6 +244,26 @@ def edit_client(client_id):
     plans = Plan.get_all()
     templates = Template.get_all()
 
+    # Get client domains
+    client_domains = Domain.get_client_domains(client_id)
+
+    # Get all available domains for assignment
+    available_domains = Domain.get_all()
+
+    # Enrich domains with subdomain counts
+    enriched_domains = []
+    for domain in available_domains:
+        domain_id = domain["_id"]
+        subdomain_count = mongo.db.client_domains.count_documents({"domain_id": domain_id})
+        domain["subdomain_count"] = subdomain_count
+        enriched_domains.append(domain)
+
+    # Get domain limit (using the first domain's limit as default)
+    domain_limit = 5  # Default
+    if available_domains:
+        domain_limit = available_domains[0].get("domain_limit", 5)
+
+    # Handle POST request (edit form submission)
     if request.method == "POST":
         plan_activation_date = request.form.get("plan_activation_date") or None
         plan_expiration_date = request.form.get("plan_expiration_date") or None
@@ -250,7 +300,7 @@ def edit_client(client_id):
                 },
             )
             flash("Client updated successfully", "success")
-            return redirect(url_for("client.list_clients"))
+            return redirect(url_for("client.view_client", client_id=client_id))
         else:
             flash(f"Error updating client: {message}", "danger")
             form_payload = {
@@ -261,71 +311,28 @@ def edit_client(client_id):
                 "plan_activation_date": plan_activation_date,
                 "plan_expiration_date": plan_expiration_date,
             }
-            return ClientView.render_edit_form(
-                client_data, plans, templates, form_data=form_payload
+            return ClientView.render_manage(
+                client_data,
+                plans,
+                templates,
+                client_domains,
+                enriched_domains,
+                domain_limit,
+                form_data=form_payload,
             )
 
-    return ClientView.render_edit_form(client_data, plans, templates)
-
-
-@client.route("/delete/<client_id>", methods=["POST"])
-@login_required
-@admin_required
-def delete_client(client_id):
-    """Delete a client"""
-    if request.method == "POST":
-        # Get client data before deletion for audit log
-        client_data = Client.get_by_id(client_id)
-        username = client_data.get("username", "unknown") if client_data else "unknown"
-
-        success, message = Client.delete(client_id)
-
-        if success:
-            # Log client deletion in audit trail
-            AuditService.log_client_action("delete", client_id, {"username": username})
-            flash("Client deleted successfully", "success")
-        else:
-            flash(f"Error deleting client: {message}", "danger")
-
-    return redirect(url_for("client.list_clients"))
-
-
-@client.route("/view/<client_id>")
-@login_required
-@admin_required
-def view_client(client_id):
-    """View client details"""
-    client_data = Client.get_by_id(client_id)
-    if not client_data:
-        flash("Client not found", "danger")
-        return redirect(url_for("client.list_clients"))
-
-    # ClientView handles enriching client data with plan information
-    return ClientView.render_view(client_data)
+    # GET request - render the unified management page
+    return ClientView.render_manage(
+        client_data, plans, templates, client_domains, enriched_domains, domain_limit
+    )
 
 
 @client.route("/<client_id>/domains")
 @login_required
 @admin_required
 def manage_domains(client_id):
-    """Manage domains for a client"""
-    client_data = Client.get_by_id(client_id)
-    if not client_data:
-        flash("Client not found", "danger")
-        return redirect(url_for("client.list_clients"))
-
-    # Get client domains
-    client_domains = Domain.get_client_domains(client_id)
-
-    # Get all available domains for assignment
-    available_domains = Domain.get_all()
-
-    # Get domain limit (using the first domain's limit as default)
-    domain_limit = 5  # Default
-    if available_domains:
-        domain_limit = available_domains[0].get("domain_limit", 5)
-
-    return ClientView.render_domains(client_data, client_domains, available_domains, domain_limit)
+    """Manage domains for a client - redirect to unified management page"""
+    return redirect(url_for("client.view_client", client_id=client_id))
 
 
 @client.route("/<client_id>/domains/add", methods=["POST"])

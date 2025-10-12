@@ -11,6 +11,15 @@ O Client Manager segue uma arquitetura **MVC (Model-View-Controller)** aprimorad
 - **Testabilidade**: Componentes isolados facilitam testes
 - **Type Safety**: Type hints em todo o código Python
 - **Validação Centralizada**: Schemas Pydantic para validação consistente
+- **Segurança de Credenciais**: Uso de variáveis de ambiente para todas as credenciais
+
+### Nota Importante sobre Credenciais
+
+⚠️ **NUNCA** use credenciais hardcoded no código. Todos os exemplos neste documento usam `os.getenv()` para variáveis de ambiente. Configure suas credenciais em:
+
+- Arquivo `.env` para desenvolvimento
+- Variáveis de ambiente do sistema para produção
+- Secrets do CI/CD para testes automatizados
 
 ## Camadas da Aplicação
 
@@ -118,7 +127,7 @@ client = ClientService.get_client_with_details(client_id)
 from app.services.audit_service import AuditService
 
 # Registrar ação de admin
-AuditService.log_admin_action('create', admin_id, {'username': 'newadmin'})
+AuditService.log_admin_action('create', admin_id, {'username': os.getenv('ADMIN_USERNAME', 'admin_user')})
 
 # Obter logs recentes
 logs = AuditService.get_recent_logs(limit=50, entity_type='admin')
@@ -142,7 +151,7 @@ from pydantic import ValidationError
 try:
     validated = ClientCreateSchema(
         username='testuser',
-        password='securepass123',
+        password=os.getenv('DEFAULT_PASSWORD', 'secure_password'),
         plan_id='507f1f77bcf86cd799439011',
         status='active'
     )
@@ -584,8 +593,8 @@ from app.services.auth_service import AuthService
 def test_validate_registration_data_valid():
     """Test validation with valid data"""
     valid, error = AuthService.validate_registration_data(
-        username='testuser',
-        password='SecurePass123!'
+        username=os.getenv('TEST_USERNAME', 'test_user'),
+        password=os.getenv('TEST_SECURE_PASSWORD', 'SecurePass123!')
     )
     assert valid is True
     assert error is None
@@ -593,7 +602,7 @@ def test_validate_registration_data_valid():
 def test_validate_registration_data_short_password():
     """Test validation with short password"""
     valid, error = AuthService.validate_registration_data(
-        username='testuser',
+        username=os.getenv('TEST_USERNAME', 'test_user'),
         password='123'
     )
     assert valid is False
@@ -606,8 +615,8 @@ def test_validate_registration_data_short_password():
 def test_login_success(client):
     """Test successful login"""
     response = client.post('/auth/login', data={
-        'username': 'testuser',
-        'password': 'testpass'
+        'username': os.getenv('TEST_USERNAME', 'test_user'),
+        'password': os.getenv('TEST_PASSWORD', 'test_pass')
     }, follow_redirects=True)
     
     assert response.status_code == 200
@@ -616,8 +625,8 @@ def test_login_success(client):
 def test_login_invalid_credentials(client):
     """Test login with invalid credentials"""
     response = client.post('/auth/login', data={
-        'username': 'testuser',
-        'password': 'wrongpass'
+        'username': os.getenv('TEST_USERNAME', 'test_user'),
+        'password': 'invalid_password'
     }, follow_redirects=True)
     
     assert response.status_code == 200

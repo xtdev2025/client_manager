@@ -1,0 +1,661 @@
+/* ============================================
+   DASHBOARD ENTERPRISE - GitHub Inspired Design
+   Clean, professional dashboard with GitHub aesthetics
+   ============================================ */
+
+/* ===== CSS VARIABLES - GITHUB STYLE ===== */
+:root {
+    /* GitHub Colors */
+    --dashboard-bg: #f6f8fa;
+    --card-bg: #ffffff;
+    --card-shadow: 0 1px 3px rgba(27, 31, 36, 0.12), 0 8px 24px rgba(66, 74, 83, 0.12);
+    --card-shadow-hover: 0 3px 8px rgba(27, 31, 36, 0.15), 0 12px 32px rgba(66, 74, 83, 0.15);
+    --card-border: #d0d7de;
+    --border-color: #d0d7de;
+    
+    /* Text Colors */
+    --text-primary: #24292f;
+    --text-secondary: #57606a;
+    --text-muted: #656d76;
+    --text-link: #0969da;
+    
+    /* GitHub Brand Colors */
+    --gh-blue: #0969da;
+    --gh-green: #1a7f37;
+    --gh-orange: #bf8700;
+    --gh-red: #cf222e;
+    --gh-purple: #8250df;
+    
+    /* Stat Card Colors (GitHub inspired) */
+    --stat-blue: #0969da;
+    --stat-green: #1a7f37;
+    --stat-orange: #bf8700;
+    --stat-purple: #8250df;
+    
+    /* Spacing */
+    --spacing-xs: 0.5rem;
+    --spacing-sm: 0.75rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    
+    /* Border Radius - GitHub style (subtle) */
+    --radius-sm: 6px;
+    --radius-md: 6px;
+    --radius-lg: 6px;
+    
+    /* Typography */
+    --font-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+    
+    /* Transitions */
+    --transition-fast: 0.2s cubic-bezier(0.3, 0, 0.5, 1);
+    --transition-medium: 0.3s cubic-bezier(0.3, 0, 0.5, 1);
+}
+
+/* Dark Mode Support - GitHub Dark */
+[data-theme="dark"] {
+    --dashboard-bg: #0d1117;
+    --card-bg: #161b22;
+    --card-shadow: 0 0 0 1px rgba(240, 246, 252, 0.1);
+    --card-shadow-hover: 0 0 0 1px rgba(240, 246, 252, 0.2);
+    --card-border: #30363d;
+    --border-color: #30363d;
+    
+    --text-primary: #c9d1d9;
+    --text-secondary: #8b949e;
+    --text-muted: #6e7681;
+    --text-link: #58a6ff;
+    
+    --gh-blue: #58a6ff;
+    --gh-green: #3fb950;
+    --gh-orange: #d29922;
+    --gh-red: #f85149;
+    --gh-purple: #a371f7;
+}
+
+/* ===== LAYOUT ===== */
+.dashboard-container {
+    background-color: var(--dashboard-bg);
+    min-height: 100vh;
+    padding: var(--spacing-xl) 0;
+    font-family: var(--font-base);
+}
+
+/* ===== DASHBOARD CARDS ===== */
+.dashboard-card {
+    background: var(--card-bg);
+    border-radius: var(--radius-md);
+    box-shadow: var(--card-shadow);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+    border: 1px solid var(--border-color);
+    transition: box-shadow var(--transition-fast), border-color var(--transition-fast);
+}
+
+.dashboard-card:hover {
+    border-color: var(--text-secondary);
+    box-shadow: var(--card-shadow-hover);
+}
+
+.dashboard-card h5 {
+    font-weight: 600;
+    margin-bottom: var(--spacing-md);
+    color: var(--text-primary);
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+/* ===== STAT CARDS - GITHUB STYLE ===== */
+.stat-card {
+    background: var(--card-bg);
+    color: var(--text-primary);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-lg);
+    text-align: center;
+    margin-bottom: var(--spacing-md);
+    border: 1px solid var(--border-color);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    box-shadow: var(--card-shadow);
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--accent-color, var(--stat-blue));
+}
+
+.stat-card:hover {
+    border-color: var(--accent-color, var(--stat-blue));
+    box-shadow: var(--card-shadow-hover);
+}
+
+/* Stat Card Variants - GitHub Colors */
+.stat-card.success,
+.stat-card.success::before { 
+    --accent-color: var(--gh-green);
+}
+
+.stat-card.warning,
+.stat-card.warning::before { 
+    --accent-color: var(--gh-orange);
+}
+
+.stat-card.info,
+.stat-card.info::before { 
+    --accent-color: var(--gh-blue);
+}
+
+.stat-card.danger,
+.stat-card.danger::before { 
+    --accent-color: var(--gh-red);
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: var(--spacing-xs);
+    line-height: 1;
+    color: var(--text-primary);
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ===== CHART CONTAINERS ===== */
+.chart-container {
+    position: relative;
+    height: 300px;
+    margin: var(--spacing-md) 0;
+    padding: var(--spacing-md);
+    background: transparent;
+    border-radius: var(--radius-sm);
+}
+
+/* Canvas sizing for Chart.js */
+.chart-container canvas {
+    max-width: 100% !important;
+    max-height: 100% !important;
+}
+
+/* Loading state */
+.chart-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 300px;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.chart-loading::before {
+    content: "";
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    margin-right: var(--spacing-sm);
+    border: 3px solid rgba(0, 123, 255, 0.3);
+    border-top-color: #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.chart-loading::after {
+    content: "Carregando gráfico...";
+}
+
+/* Error state */
+.chart-error {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 300px;
+    color: #dc3545;
+    font-weight: 500;
+}
+
+/* ===== PLAN STATUS CARDS - GITHUB STYLE ===== */
+.plan-status {
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-lg);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--card-shadow);
+    background: var(--card-bg);
+    position: relative;
+    transition: border-color var(--transition-fast);
+}
+
+.plan-status::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 4px;
+    border-radius: var(--radius-md) 0 0 var(--radius-md);
+}
+
+.plan-status:hover {
+    border-color: var(--text-secondary);
+}
+
+.plan-active::before { 
+    background: var(--gh-green); 
+}
+
+.plan-expired::before { 
+    background: var(--gh-red); 
+}
+
+.plan-warning::before { 
+    background: var(--gh-orange); 
+}
+
+.plan-status h5 {
+    margin-bottom: var(--spacing-md);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.plan-status .h2 {
+    font-weight: 600;
+    margin: var(--spacing-sm) 0;
+    color: var(--text-primary);
+}
+
+/* ===== ACTIVITY SECTION ===== */
+.recent-activity {
+    max-height: 400px;
+    overflow-y: auto;
+    border-radius: var(--radius-sm);
+}
+
+.activity-item {
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color var(--transition-fast);
+}
+
+.activity-item:hover {
+    background-color: var(--dashboard-bg);
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-item strong {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.activity-item small {
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+}
+
+/* Custom scrollbar */
+.recent-activity::-webkit-scrollbar {
+    width: 6px;
+}
+
+.recent-activity::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.recent-activity::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.recent-activity::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* ===== DOMAIN & INFO ITEMS ===== */
+.domain-item,
+.info-item {
+    padding: var(--spacing-md);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    margin-bottom: var(--spacing-sm);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all var(--transition-fast);
+    background: var(--card-bg);
+}
+
+.domain-item:hover,
+.info-item:hover {
+    border-color: var(--gh-blue);
+    background-color: var(--dashboard-bg);
+}
+
+.domain-item strong,
+.info-item strong {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* ===== GROWTH INDICATORS ===== */
+.growth-indicator {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.85rem;
+    margin-top: var(--spacing-xs);
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+.growth-up { 
+    color: #10b981; 
+}
+
+.growth-up::before {
+    content: "↑ ";
+    font-size: 1.2em;
+}
+
+.growth-down { 
+    color: #ef4444; 
+}
+
+.growth-down::before {
+    content: "↓ ";
+    font-size: 1.2em;
+}
+
+/* ===== BALANCE INDICATORS ===== */
+.balance-positive { 
+    color: #10b981; 
+    font-weight: 600;
+}
+
+.balance-negative { 
+    color: #ef4444; 
+    font-weight: 600;
+}
+
+.balance-zero { 
+    color: #6b7280; 
+    font-weight: 500;
+}
+
+/* ===== QUICK ACTIONS - GITHUB STYLE ===== */
+.quick-actions {
+    margin-top: var(--spacing-lg);
+}
+
+.quick-actions .btn {
+    border-radius: var(--radius-sm);
+    font-weight: 500;
+    padding: 0.625rem 1rem;
+    transition: all var(--transition-fast);
+    border: 1px solid var(--border-color);
+    font-size: 0.875rem;
+}
+
+.quick-actions .btn-primary {
+    background-color: var(--gh-blue);
+    border-color: var(--gh-blue);
+}
+
+.quick-actions .btn-primary:hover {
+    background-color: #0860ca;
+    border-color: #0860ca;
+}
+
+.quick-actions .btn-success {
+    background-color: var(--gh-green);
+    border-color: var(--gh-green);
+}
+
+.quick-actions .btn-success:hover {
+    background-color: #1a7f37;
+    border-color: #1a7f37;
+}
+
+.quick-actions .btn-warning {
+    background-color: var(--gh-orange);
+    border-color: var(--gh-orange);
+    color: white;
+}
+
+.quick-actions .btn-warning:hover {
+    background-color: #9a6700;
+    border-color: #9a6700;
+}
+
+.quick-actions .btn i {
+    margin-right: var(--spacing-xs);
+}
+
+/* ===== BADGES - GITHUB STYLE ===== */
+.badge {
+    font-weight: 500;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    border-radius: 2rem;
+}
+
+.badge-lg {
+    font-size: 0.875rem;
+    padding: 0.375rem 0.75rem;
+}
+
+.badge-dashboard {
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 0.75rem;
+}
+
+.badge-primary {
+    background-color: var(--gh-blue);
+}
+
+.badge-success {
+    background-color: var(--gh-green);
+}
+
+.badge-warning {
+    background-color: var(--gh-orange);
+}
+
+.badge-danger {
+    background-color: var(--gh-red);
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Subtle fade-in for cards */
+.dashboard-card,
+.stat-card {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 1200px) {
+    .stat-number {
+        font-size: 1.75rem;
+    }
+    
+    .chart-container {
+        height: 280px;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-container {
+        padding: var(--spacing-md) 0;
+    }
+    
+    .stat-number {
+        font-size: 1.5rem;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem;
+    }
+    
+    .chart-container {
+        height: 250px;
+        padding: var(--spacing-sm);
+    }
+    
+    .dashboard-card {
+        padding: var(--spacing-md);
+        margin-bottom: var(--spacing-md);
+    }
+    
+    .stat-card {
+        padding: var(--spacing-md);
+        margin-bottom: var(--spacing-sm);
+    }
+    
+    .activity-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .activity-item > div:last-child {
+        margin-top: var(--spacing-xs);
+    }
+    
+    .quick-actions .btn {
+        margin-bottom: var(--spacing-xs);
+        width: 100%;
+    }
+}
+
+@media (max-width: 576px) {
+    .stat-number {
+        font-size: 1.5rem;
+    }
+    
+    .chart-container {
+        height: 220px;
+    }
+    
+    .recent-activity {
+        max-height: 300px;
+    }
+}
+
+/* ===== PRINT STYLES ===== */
+@media print {
+    .dashboard-container {
+        background: white;
+    }
+    
+    .dashboard-card,
+    .stat-card {
+        box-shadow: none;
+        border: 1px solid #dee2e6;
+        page-break-inside: avoid;
+    }
+    
+    .quick-actions {
+        display: none;
+    }
+}
+
+/* ===== ACCESSIBILITY ===== */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Focus styles for keyboard navigation */
+.dashboard-card:focus,
+.stat-card:focus,
+.btn:focus {
+    outline: 2px solid var(--gh-blue);
+    outline-offset: 2px;
+}
+
+a:focus {
+    outline: 2px solid var(--gh-blue);
+    outline-offset: 2px;
+}
+
+/* ===== SYSTEM SUMMARY ===== */
+.system-summary {
+    padding: var(--spacing-md) 0;
+}
+
+.system-summary .h4 {
+    font-weight: 600;
+    margin-bottom: var(--spacing-xs);
+    color: var(--text-primary);
+}
+
+.system-summary small {
+    color: var(--text-secondary);
+}
+
+/* ===== EMPTY STATES ===== */
+.empty-state {
+    text-align: center;
+    padding: var(--spacing-xl);
+    color: var(--text-secondary);
+}
+
+.empty-state i {
+    font-size: 2.5rem;
+    margin-bottom: var(--spacing-md);
+    opacity: 0.4;
+    color: var(--text-muted);
+}
+
+/* ===== UTILITY CLASSES ===== */
+.text-muted {
+    color: var(--text-muted) !important;
+}
+
+.text-secondary {
+    color: var(--text-secondary) !important;
+}
+
+.border-top {
+    border-top: 1px solid var(--border-color) !important;
+}
+
+.border-bottom {
+    border-bottom: 1px solid var(--border-color) !important;
+}

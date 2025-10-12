@@ -165,7 +165,7 @@ eb ssh
 cd /var/app/current
 
 # Criar super admin
-python scripts/create_superadmin.py rootkit 13rafael
+python scripts/create_superadmin.py $ADMIN_USERNAME $ADMIN_PASSWORD
 
 # Sair
 exit

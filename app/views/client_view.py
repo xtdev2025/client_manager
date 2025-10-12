@@ -158,3 +158,58 @@ class ClientView(BaseView):
             available_domains=available_domains,
             domain_limit=domain_limit,
         )
+
+    @staticmethod
+    def render_manage(
+        client_data,
+        plans,
+        templates,
+        client_domains,
+        available_domains,
+        domain_limit,
+        form_data=None,
+        errors=None,
+    ):
+        """
+        Render the unified client management page (view + edit + domains).
+
+        Args:
+            client_data (dict): Client data
+            plans (list): List of available plans
+            templates (list): List of available templates
+            client_domains (list): List of domains assigned to the client
+            available_domains (list): List of all available domains
+            domain_limit (int): Maximum number of domains allowed for this client
+            form_data (dict, optional): Form data in case of validation error
+            errors (list, optional): Validation errors
+
+        Returns:
+            str: Rendered unified client management template
+        """
+        # Enrich client data with plan information
+        ClientView._enrich_plan_metadata(client_data)
+
+        # Enrich client data with template information
+        if "template_id" in client_data and client_data["template_id"]:
+            template = Template.get_by_id(client_data["template_id"])
+            client_data["template_name"] = template["name"] if template else "No Template"
+            client_data["template"] = template
+        else:
+            client_data["template_name"] = "No Template"
+
+        # Get client infos
+        client_infos = Info.get_by_client(client_data["_id"])
+        client_data["infos"] = client_infos
+        client_data["info_count"] = len(client_infos)
+
+        return BaseView.render(
+            "clients/manage.html",
+            client=client_data,
+            plans=plans,
+            templates=templates,
+            client_domains=client_domains,
+            available_domains=available_domains,
+            domain_limit=domain_limit,
+            form_data=form_data,
+            errors=errors,
+        )

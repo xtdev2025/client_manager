@@ -1,0 +1,204 @@
+{% extends "client_layout.html" %}
+
+{% block title %}Meu Dashboard{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-0">Meu Dashboard</h1>
+                    <p class="text-muted mb-0">Visão geral da sua conta e atividades</p>
+                </div>
+                <div>
+                    <a href="/dashboard/simple" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-th-list"></i> Versão Simplificada
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Plan Status -->
+    {% if plan_info %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="plan-status {{ 'plan-expired' if plan_info.is_expired else ('plan-warning' if plan_info.days_remaining < 7 else 'plan-active') }}">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h5 class="mb-1">Plano: {{ plan_info.name }}</h5>
+                        <p class="mb-0">
+                            {% if plan_info.is_expired %}
+                                Plano expirado em {{ plan_info.expires_at.strftime('%d/%m/%Y') }}
+                            {% else %}
+                                Expira em {{ plan_info.expires_at.strftime('%d/%m/%Y') }} ({{ plan_info.days_remaining }} dias restantes)
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-right">
+                        {% if plan_info.is_expired %}
+                            <span class="badge badge-light badge-lg">EXPIRADO</span>
+                        {% elif plan_info.days_remaining < 7 %}
+                            <span class="badge badge-light badge-lg">EXPIRA EM BREVE</span>
+                        {% else %}
+                            <span class="badge badge-light badge-lg">ATIVO</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-number">{{ stats.total_domains }}</div>
+                <div class="stat-label">Domínios</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card success">
+                <div class="stat-number">{{ stats.total_infos }}</div>
+                <div class="stat-label">Total de Infos</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card info">
+                <div class="stat-number">{{ stats.total_clicks }}</div>
+                <div class="stat-label">Clicks (30 dias)</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card warning">
+                <div class="stat-number">R$ {{ "%.2f"|format(stats.total_balance) }}</div>
+                <div class="stat-label">Saldo Total</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Charts Section -->
+        <div class="col-md-8">
+            <div class="dashboard-card">
+                <h5 class="mb-3">Clicks nos Últimos 30 Dias</h5>
+                <div class="chart-container">
+                    <canvas id="clicksChart"></canvas>
+                </div>
+                <div class="text-center mt-2">
+                    <button class="btn btn-sm btn-outline-primary" onclick="DashboardJS.changeClicksPeriod(7, this)">7 dias</button>
+                    <button class="btn btn-sm btn-primary" onclick="DashboardJS.changeClicksPeriod(30, this)">30 dias</button>
+                    <button class="btn btn-sm btn-outline-primary" onclick="DashboardJS.changeClicksPeriod(90, this)">90 dias</button>
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <h5 class="mb-3">Clicks por Domínio</h5>
+                <div class="chart-container">
+                    <canvas id="domainChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Section -->
+        <div class="col-md-4">
+            <div class="dashboard-card">
+                <h5 class="mb-3">Meus Domínios</h5>
+                {% for domain in client_domains %}
+                <div class="domain-item">
+                    <div>
+                        <strong>{{ domain.name }}</strong>
+                        <br>
+                        <small class="text-muted">{{ domain.subdomain or 'Sem subdomínio' }}</small>
+                    </div>
+                    <span class="badge badge-{{ 'success' if domain.status == 'active' else 'secondary' }}">
+                        {{ domain.status }}
+                    </span>
+                </div>
+                {% endfor %}
+                {% if not client_domains %}
+                <div class="text-center text-muted py-3">
+                    Nenhum domínio configurado
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="dashboard-card">
+                <h5 class="mb-3">Minhas Infos Recentes</h5>
+                {% for info in client_infos[:5] %}
+                <div class="info-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ info.agencia }}-{{ info.conta }}</strong>
+                            <br>
+                            <small class="text-muted">Atualizado: {{ info.updatedAt.strftime('%d/%m/%Y') if info.updatedAt else 'N/A' }}</small>
+                        </div>
+                        <div class="text-right">
+                            <div class="h6 mb-0 {{ 'balance-positive' if info.saldo > 0 else ('balance-negative' if info.saldo < 0 else 'balance-zero') }}">
+                                R$ {{ "%.2f"|format(info.saldo) }}
+                            </div>
+                            <span class="badge badge-{{ 'success' if info.status == 'active' else 'secondary' }} badge-sm">
+                                {{ info.status }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% if not client_infos %}
+                <div class="text-center text-muted py-3">
+                    Nenhuma info cadastrada
+                </div>
+                {% endif %}
+                {% if client_infos|length > 5 %}
+                <div class="text-center mt-2">
+                    <a href="{{ url_for('client_domain.my_infos') }}" class="btn btn-sm btn-outline-primary">Ver todas ({{ client_infos|length }})</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="dashboard-card">
+                <h5 class="mb-3">Ações Rápidas</h5>
+                <div class="row quick-actions">
+                    <div class="col-md-3">
+                        <a href="{{ url_for('client_domain.my_infos') }}" class="btn btn-primary btn-block">
+                            <i class="fas fa-list"></i> Minhas Infos
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ url_for('client_domain.my_domains') }}" class="btn btn-success btn-block">
+                            <i class="fas fa-globe"></i> Meus Domínios
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ url_for('client_domain.click_stats') }}" class="btn btn-info btn-block">
+                            <i class="fas fa-chart-bar"></i> Estatísticas
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ url_for('client_domain.change_password') }}" class="btn btn-warning btn-block">
+                            <i class="fas fa-key"></i> Alterar Senha
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- Dashboard JavaScript is loaded from external file -->
+{% endblock %}

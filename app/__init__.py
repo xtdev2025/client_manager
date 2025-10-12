@@ -126,6 +126,10 @@ def create_app(config_name=None):
 
     app.register_blueprint(public_template_bp)
 
+    from app.controllers.dashboard import dashboard as dashboard_blueprint
+
+    app.register_blueprint(dashboard_blueprint)
+
     # Initialize database with default data if needed
     with app.app_context():
         from app.db_init import initialize_db
