@@ -242,7 +242,7 @@
                 <div class="row g-2 mb-2">
                     <div class="col-md-5">
                         <label class="form-label small mb-1">Nome</label>
-                        <input type="text" class="form-control form-control-sm" 
+                        <input type="text" class="form-control form-control-sm page-name-input" 
                             name="" placeholder="Nome da página" required>
                     </div>
                     <div class="col-md-4">
@@ -259,7 +259,7 @@
                     </div>
                 </div>
                 
-                <input type="hidden" name="" value="">
+                <input type="hidden" class="page-id-input" name="" value="">
                 <input type="hidden" class="page-content-input" name="" value="">
                 
                 <div class="d-flex gap-2 mt-2">
@@ -329,23 +329,27 @@ document.getElementById('addPageBtn').addEventListener('click', function() {
     
     pageItem.setAttribute('data-page-index', pageCounter);
     
-    // Update all name attributes
-    pageItem.querySelectorAll('[name]').forEach(input => {
-        const nameAttr = input.getAttribute('name') || input.tagName.toLowerCase();
-        if (nameAttr.includes('name')) {
-            input.setAttribute('name', `pages[${pageCounter}][name]`);
-        } else if (nameAttr.includes('type') || input.classList.contains('page-type-select')) {
-            input.setAttribute('name', `pages[${pageCounter}][type]`);
-        } else if (nameAttr.includes('order') || input.classList.contains('page-order')) {
-            input.setAttribute('name', `pages[${pageCounter}][order]`);
-            input.value = pageCounter + 1;
-        } else if (nameAttr.includes('id') && input.type === 'hidden' && !input.classList.contains('page-content-input')) {
-            input.setAttribute('name', `pages[${pageCounter}][id]`);
-            input.value = `page_${Date.now()}`;
-        } else if (input.classList.contains('page-content-input')) {
-            input.setAttribute('name', `pages[${pageCounter}][content]`);
-        }
-    });
+    // Update all name attributes with proper detection
+    const nameInput = pageItem.querySelector('.page-name-input');
+    if (nameInput) nameInput.setAttribute('name', `pages[${pageCounter}][name]`);
+    
+    const typeSelect = pageItem.querySelector('.page-type-select');
+    if (typeSelect) typeSelect.setAttribute('name', `pages[${pageCounter}][type]`);
+    
+    const orderInput = pageItem.querySelector('.page-order');
+    if (orderInput) {
+        orderInput.setAttribute('name', `pages[${pageCounter}][order]`);
+        orderInput.value = pageCounter + 1;
+    }
+    
+    const idInput = pageItem.querySelector('.page-id-input');
+    if (idInput) {
+        idInput.setAttribute('name', `pages[${pageCounter}][id]`);
+        idInput.value = `page_${Date.now()}`;
+    }
+    
+    const contentInput = pageItem.querySelector('.page-content-input');
+    if (contentInput) contentInput.setAttribute('name', `pages[${pageCounter}][content]`);
     
     // Update edit button
     const editBtn = pageItem.querySelector('.edit-html-btn');
