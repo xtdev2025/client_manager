@@ -240,15 +240,32 @@ O projeto segue o padrão **MVC (Model-View-Controller)** com separação clara 
 
 ### 📦 Deploy em Produção
 
-**Quer fazer deploy no Azure?** Veja nossos guias:
+**Quer fazer deploy na nuvem?** Veja nossos guias completos:
 
-- 📘 **[Guia Completo de Deploy Azure](docs/AZURE_DEPLOYMENT.md)** - Instruções detalhadas
+#### Azure
+- 📘 **[Guia Completo Azure](docs/AZURE_DEPLOYMENT.md)** - App Service + VM
 - ⚡ **[Quick Start Azure](DEPLOY_AZURE.md)** - Deploy em 5 minutos
 
 ```bash
-# Deploy automático para Azure App Service
-./scripts/azure_deploy.sh
+./scripts/azure_deploy.sh  # Deploy automático
 ```
+
+#### AWS (Amazon Web Services)
+- 📕 **[Guia Completo AWS](docs/AWS_DEPLOYMENT.md)** - 4 opções (EB, EC2, ECS, Lambda)
+- ⚡ **[Quick Start AWS](DEPLOY_AWS.md)** - Deploy em 10 minutos
+
+```bash
+./scripts/aws_eb_deploy.sh   # Elastic Beanstalk (Recomendado)
+./scripts/aws_ec2_deploy.sh  # EC2 (Mais barato)
+```
+
+**Opções de Deploy:**
+- ✅ **Azure App Service** - PaaS simplificado
+- ✅ **Azure VM** - Controle total
+- ✅ **AWS Elastic Beanstalk** - Auto-scaling fácil
+- ✅ **AWS EC2** - $8/mês (Free tier: $0/ano)
+- ✅ **AWS ECS** - Containerizado com Docker
+- ✅ **AWS Lambda** - Serverless ~$2-5/mês
 
 ---
 
