@@ -126,10 +126,6 @@ def create_app(config_name=None):
 
     app.register_blueprint(public_template_bp)
 
-    # Swagger/OpenAPI documentation disabled - not needed
-    # from app.api import init_swagger
-    # init_swagger(app)
-
     # Initialize database with default data if needed
     with app.app_context():
         from app.db_init import initialize_db

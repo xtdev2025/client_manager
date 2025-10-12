@@ -247,7 +247,7 @@ O projeto segue o padrão **MVC (Model-View-Controller)** com separação clara 
 - ⚡ **[Quick Start Azure](DEPLOY_AZURE.md)** - Deploy em 5 minutos
 
 ```bash
-./scripts/azure_deploy.sh  # Deploy automático
+python scripts/azure_deploy.py  # Deploy automático
 ```
 
 #### AWS (Amazon Web Services)
@@ -255,8 +255,8 @@ O projeto segue o padrão **MVC (Model-View-Controller)** com separação clara 
 - ⚡ **[Quick Start AWS](DEPLOY_AWS.md)** - Deploy em 10 minutos
 
 ```bash
-./scripts/aws_eb_deploy.sh   # Elastic Beanstalk (Recomendado)
-./scripts/aws_ec2_deploy.sh  # EC2 (Mais barato)
+python scripts/aws_eb_deploy.py   # Elastic Beanstalk (Recomendado)
+python scripts/aws_ec2_deploy.py  # EC2 (Mais barato)
 ```
 
 **Opções de Deploy:**
@@ -662,9 +662,15 @@ client_manager/
 │       ├── __init__.py
 │       └── user_loader.py      # Flask-Login user loader
 │
-├── scripts/                     # Scripts utilitários
+├── scripts/                     # Scripts utilitários (Python)
 │   ├── create_superadmin.py    # Criar super admin manualmente
-│   └── setup.py                # Setup automatizado do projeto
+│   ├── setup.py                # Setup automatizado do projeto
+│   ├── startup.py              # Script de inicialização (produção)
+│   ├── aws_eb_deploy.py        # Deploy AWS Elastic Beanstalk
+│   ├── aws_ec2_deploy.py       # Deploy AWS EC2
+│   ├── azure_deploy.py         # Deploy Azure App Service
+│   ├── test_workflows.py       # Testar workflows essenciais
+│   └── test_all_workflows.py   # Testar todos os workflows
 │
 ├── tests/                       # Testes automatizados
 │   ├── __init__.py
@@ -914,13 +920,44 @@ client_manager/
 
 ## 👨‍💻 Desenvolvimento
 
-### Script de Configuração Rápida
+### Scripts de Automação
 
-Execute o script automatizado de setup:
+O projeto inclui scripts Python para automação de tarefas:
 
+#### Setup e Configuração
 ```bash
-# Todas as plataformas (Linux/macOS/Windows)
+# Setup automatizado do projeto
 python scripts/setup.py
+
+# Criar super admin manualmente
+python scripts/create_superadmin.py <username> <password>
+```
+
+#### Deploy em Nuvem
+```bash
+# Deploy no Azure
+python scripts/azure_deploy.py
+
+# Deploy no AWS Elastic Beanstalk
+python scripts/aws_eb_deploy.py
+
+# Deploy no AWS EC2
+python scripts/aws_ec2_deploy.py
+```
+
+#### Testes de Workflows
+```bash
+# Testar todos os workflows GitHub Actions
+python scripts/test_all_workflows.py
+
+# Testar workflows essenciais
+python scripts/test_workflows.py
+```
+
+#### Startup (Produção)
+```bash
+# Script de inicialização para Azure App Service
+python scripts/startup.py
 ```
 
 O script irá:
@@ -1230,7 +1267,27 @@ Vá ao GitHub e clique em "New Pull Request".
 
 ---
 
-## 🚀 Melhorias Arquiteturais Recentes
+## 🚀 Modernização e Melhorias Recentes
+
+### 🐍 Migração Shell → Python (Dezembro 2024)
+
+**Todos os scripts foram convertidos de Bash (.sh) para Python (.py)**:
+
+- ✅ **6 scripts convertidos** com sucesso
+- ✅ **Melhor portabilidade** - Funciona em Windows, Linux e macOS
+- ✅ **Tratamento de erros robusto** - Exception handling adequado
+- ✅ **Código estruturado** - Classes e métodos organizados
+- ✅ **Logs informativos** - Feedback visual com emojis
+
+**Scripts Convertidos**:
+- `startup.sh` → `startup.py`
+- `test-workflows.sh` → `test_workflows.py`
+- `test-all-workflows.sh` → `test_all_workflows.py`
+- `aws_eb_deploy.sh` → `aws_eb_deploy.py`
+- `aws_ec2_deploy.sh` → `aws_ec2_deploy.py`
+- `azure_deploy.sh` → `azure_deploy.py`
+
+📚 **Documentação**: [Migração Shell → Python](docs/MIGRATION_SHELL_TO_PYTHON.md) | [Scripts Documentation](docs/SCRIPTS_DOCUMENTATION.md)
 
 ### Camada de Serviços (`app/services/`)
 
@@ -1318,6 +1375,35 @@ tests/
 
 ---
 
+## 📚 Documentação Adicional
+
+### Documentos Técnicos
+
+- 📘 **[Arquitetura do Sistema](docs/ARCHITECTURE.md)** - Visão geral da arquitetura
+- 🔧 **[Scripts Python](docs/SCRIPTS_DOCUMENTATION.md)** - Documentação completa dos scripts
+- 🔄 **[Migração Shell→Python](docs/MIGRATION_SHELL_TO_PYTHON.md)** - Detalhes da conversão
+- 🚀 **[Deploy AWS](docs/AWS_DEPLOYMENT.md)** - Guia completo AWS
+- ☁️ **[Deploy Azure](docs/AZURE_DEPLOYMENT.md)** - Guia completo Azure
+- 🔐 **[Configuração AWS](docs/AWS_CREDENTIALS_SETUP.md)** - Setup de credenciais
+- 📋 **[Sistema de Templates](docs/TEMPLATE_FIELDS_SYSTEM.md)** - Campos de templates
+- 🔍 **[API Documentation](docs/API_DOCUMENTATION.md)** - Documentação da API
+- ⚡ **[API Quick Reference](docs/API_QUICK_REFERENCE.md)** - Referência rápida
+- 📊 **[Swagger Implementation](docs/SWAGGER_IMPLEMENTATION.md)** - Implementação Swagger
+- 📈 **[Swagger Endpoints Report](docs/SWAGGER_ENDPOINTS_REPORT.md)** - Relatório de endpoints
+
+### Guias de Deploy Rápido
+
+- ⚡ **[Quick Start AWS](DEPLOY_AWS.md)** - Deploy AWS em 10 minutos
+- ⚡ **[Quick Start Azure](DEPLOY_AZURE.md)** - Deploy Azure em 5 minutos
+
+### Código de Conduta e Contribuição
+
+- 🤝 **[Contributing Guidelines](.github/CONTRIBUTING.md)** - Como contribuir
+- 📜 **[Code of Conduct](CODE_OF_CONDUCT.md)** - Código de conduta
+- 🔧 **[Copilot Instructions](.github/copilot-instructions.md)** - Instruções para AI
+
+---
+
 ## 📄 Licença
 
 Este projeto está licenciado sob a **Licença ISC**.
@@ -1345,6 +1431,17 @@ Este projeto está licenciado sob a **Licença ISC**.
 
 **⭐ Se este projeto foi útil, considere dar uma estrela no GitHub! ⭐**
 
-[Reportar Bug](https://github.com/rootkitoriginal/client_manager/issues) · [Solicitar Feature](https://github.com/rootkitoriginal/client_manager/issues) · [Documentação](https://github.com/rootkitoriginal/client_manager/wiki)
+[Reportar Bug](https://github.com/rootkitoriginal/client_manager/issues) · [Solicitar Feature](https://github.com/rootkitoriginal/client_manager/issues) · [Documentação](docs/) · [Scripts Python](docs/SCRIPTS_DOCUMENTATION.md)
+
+---
+
+### 🔄 Changelog Recente
+
+**v2.1.0 - Dezembro 2024**
+- 🐍 **Migração completa**: Shell scripts → Python scripts
+- 📚 **Documentação expandida**: 12+ documentos técnicos
+- 🚀 **Deploy melhorado**: Scripts mais robustos e portáveis
+- ✅ **Compatibilidade**: Windows, Linux, macOS
+- 🔧 **Manutenibilidade**: Código estruturado e testável
 
 </div>

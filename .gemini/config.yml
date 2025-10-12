@@ -1,0 +1,34 @@
+# This is a sample Gemini configuration file.
+# You can find more information about the available options here:
+# https://docs.gemini.com/cli/config
+
+# The version of the Gemini configuration file format.
+version: 1
+
+# The project name.
+project_name: client_manager
+
+# The default model to use for Gemini commands.
+model: gemini-pro
+
+# The default temperature to use for Gemini commands.
+temperature: 0.7
+
+# The default top-p to use for Gemini commands.
+top_p: 1
+
+# The default top-k to use for Gemini commands.
+top_k: 1
+
+# The default max-output-tokens to use for Gemini commands.
+max_output_tokens: 2048
+
+# The default stop-sequences to use for Gemini commands.
+stop_sequences: []
+
+# The default context to use for Gemini commands.
+context: []
+
+# The default hooks to use for Gemini commands.
+hooks:
+  pre-commit: .gemini/hooks/pre-commit.sh
