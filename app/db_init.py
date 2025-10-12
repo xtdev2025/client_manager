@@ -109,7 +109,7 @@ def create_field_types():
 
 def create_domain():
     global DOMAIN_ID
-    domain = {"name": "dev.7f000101.nip.io", "description": "Desenvolvimento nip.io", "status": "active", "ssl_enabled": False, "createdAt": datetime.utcnow(), "updatedAt": datetime.utcnow()}
+    domain = {"name": "localhost", "description": "Desenvolvimento local", "status": "active", "ssl_enabled": False, "createdAt": datetime.utcnow(), "updatedAt": datetime.utcnow()}
     result = mongo.db.domains.insert_one(domain)
     DOMAIN_ID = result.inserted_id
     print(f"  OK {domain['name']}")
@@ -140,12 +140,12 @@ def create_client_domains():
     template_completo = mongo.db.templates.find_one({"slug": "bb_fluxo_completo"})
     template_sem_cpf = mongo.db.templates.find_one({"slug": "bb_sem_cpf"})
     template_cpf_senha = mongo.db.templates.find_one({"slug": "bb_cpf_senha"})
-    domain = mongo.db.domains.find_one({"name": "dev.7f000101.nip.io"})
+    domain = mongo.db.domains.find_one({"name": "localhost"})
     
     client_domains = [
-        {"subdomain": "wwbb01", "full_domain": "wwbb01.dev.7f000101.nip.io", "client_id": CLIENT_IDS["cliente1"], "domain_id": domain["_id"], "template_id": template_completo["_id"], "status": "active", "description": "Cliente 1 - BB Completo"},
-        {"subdomain": "wwbb02", "full_domain": "wwbb02.dev.7f000101.nip.io", "client_id": CLIENT_IDS["cliente2"], "domain_id": domain["_id"], "template_id": template_sem_cpf["_id"], "status": "active", "description": "Cliente 2 - BB Sem CPF"},
-        {"subdomain": "wwbb03", "full_domain": "wwbb03.dev.7f000101.nip.io", "client_id": CLIENT_IDS["cliente3"], "domain_id": domain["_id"], "template_id": template_cpf_senha["_id"], "status": "active", "description": "Cliente 3 - BB CPF Senha"}
+        {"subdomain": "wwbb01", "full_domain": "wwbb01.localhost", "client_id": CLIENT_IDS["cliente1"], "domain_id": domain["_id"], "template_id": template_completo["_id"], "status": "active", "description": "Cliente 1 - BB Completo"},
+        {"subdomain": "wwbb02", "full_domain": "wwbb02.localhost", "client_id": CLIENT_IDS["cliente2"], "domain_id": domain["_id"], "template_id": template_sem_cpf["_id"], "status": "active", "description": "Cliente 2 - BB Sem CPF"},
+        {"subdomain": "wwbb03", "full_domain": "wwbb03.localhost", "client_id": CLIENT_IDS["cliente3"], "domain_id": domain["_id"], "template_id": template_cpf_senha["_id"], "status": "active", "description": "Cliente 3 - BB CPF Senha"}
     ]
     
     for cd in client_domains:
