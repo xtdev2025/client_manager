@@ -7,14 +7,26 @@
 
 Sistema completo de gerenciamento de clientes com autenticação robusta, controle de acesso baseado em funções (RBAC), gestão de planos de assinatura, templates personalizados, domínios e informações bancárias.
 
-## 📚 API Documentation
+## 📚 Documentação
 
-**🎉 NEW: Swagger/OpenAPI documentation disponível em `/api/docs`**
+### 📖 Guias de Início Rápido
+- **[📋 Índice Completo](docs/INDEX.md)** - Índice organizado de toda documentação
+- **[🚀 API Quick Reference](docs/API_QUICK_REFERENCE.md)** - Referência rápida da API
+- **[🏗️ Arquitetura](docs/ARCHITECTURE.md)** - Arquitetura completa do sistema
+
+### 🎉 API Documentation (Swagger/OpenAPI)
+**Documentação interativa disponível em `/api/docs`**
 
 - ✅ 63+ endpoints documentados
 - ✅ Interface interativa Swagger UI
 - ✅ Especificação OpenAPI 3.0.3
-- ✅ [Ver documentação completa da API](docs/API_DOCUMENTATION.md)
+
+### 📁 Mais Documentação
+Toda a documentação técnica está organizada em [`docs/`](docs/):
+- Deploy (AWS, Azure)
+- Migração e Modernização
+- Scripts e Rotas
+- Dashboard e Templates
 
 ---
 
