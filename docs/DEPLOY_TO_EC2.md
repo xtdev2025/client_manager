@@ -62,3 +62,36 @@ Security notes
 Further customization
 
 - If you need to run database migrations, seed steps, or other build steps, add them to the `deploy_to_ec2.sh` script or create a separate remote hook script that the deploy script calls after pulling.
+
+
+sudo nano /etc/systemd/system/xpages.service
+
+# Cole o conteúdo acima, salve e saia
+
+# Recarregue o systemd
+sudo systemctl daemon-reload
+
+# Reinicie o serviço
+sudo systemctl restart xpages.service
+
+# Verifique o status
+sudo systemctl status xpages.service
+
+
+[Unit]
+Description=Client Manager Application
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/client_manager
+ExecStart=/usr/bin/python3 run.py
+Restart=always
+RestartSec=10
+Environment=PYTHONPATH=/home/ubuntu/client_manager
+
+[Install]
+WantedBy=multi-user.target

@@ -7,6 +7,7 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_login import LoginManager
 from flask_pymongo import PyMongo
+from flask_wtf.csrf import CSRFProtect, generate_csrf
 
 from config import config
 
@@ -16,6 +17,7 @@ bcrypt = Bcrypt()
 login_manager = LoginManager()
 login_manager.login_view = "auth.login"
 login_manager.login_message_category = "info"
+csrf = CSRFProtect()
 
 # Initialize rate limiter
 limiter = Limiter(
@@ -40,6 +42,7 @@ def create_app(config_name=None):
     bcrypt.init_app(app)
     login_manager.init_app(app)
     limiter.init_app(app)
+    csrf.init_app(app)
 
     # Initialize user loader
     from app.utils.user_loader import init_user_loader
@@ -54,6 +57,11 @@ def create_app(config_name=None):
             return ''
         from markupsafe import Markup
         return Markup(str(text).replace('\n', '<br>'))
+
+    @app.context_processor
+    def inject_csrf_token():
+        """Inject CSRF token into all templates."""
+        return dict(csrf_token=generate_csrf)
 
     @app.context_processor
     def inject_plan_metadata():
