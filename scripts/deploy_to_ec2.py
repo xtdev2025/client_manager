@@ -36,16 +36,29 @@ def main():
     # Set sensible defaults that depend on other arguments
     app_dir = args.app_dir or f"/home/{args.user}/client_manager"
     
+    # Process repository URL based on token presence
     if args.token:
+        print("🔑 Using GitHub token for authentication")
         # If a token is provided, force HTTPS URL format
         repo_url = args.repo
+        
+        # Convert SSH URL to HTTPS if needed
         if repo_url.startswith("git@"):
-            # Convert SSH URL to HTTPS
-            repo_url = repo_url.replace("git@github.com:", "https://github.com/").replace(".git", "") + ".git"
+            repo_url = repo_url.replace("git@github.com:", "https://github.com/")
+            if not repo_url.endswith(".git"):
+                repo_url += ".git"
         
-        # Inject the token into the URL
-        repo_url = repo_url.replace("https://", f"https://{args.token}@")
-        
+        # Ensure it's HTTPS and inject token
+        if repo_url.startswith("https://"):
+            # Extract the part after https://
+            repo_without_protocol = repo_url[8:]
+            repo_url = f"https://{args.token}@{repo_without_protocol}"
+        else:
+            print(f"❌ Error: Unsupported repository URL format: {repo_url}", file=sys.stderr)
+            sys.exit(1)
+            
+        print(f"🔒 Using authenticated repo URL: {repo_url.split('@')[0]}@***")
+
         # Remote script for HTTPS with token
         remote_script = f"""
 set -euo pipefail
@@ -54,66 +67,119 @@ echo "🚀 --- Starting Deployment on {args.host} (using HTTPS with token) ---"
     else:
         # Default to SSH URL if no token
         repo_url = args.repo
-        if not repo_url.startswith("git@"):
+        if repo_url.startswith("https://"):
             # Convert HTTPS URL to SSH
-            repo_url = repo_url.replace("https://github.com/", "git@github.com:").replace(".git", "") + ".git"
+            repo_url = repo_url.replace("https://github.com/", "git@github.com:")
+            if not repo_url.endswith(".git"):
+                repo_url += ".git"
 
+        print(f"🔑 Using SSH authentication for repository")
+        
         # Remote script for SSH
         remote_script = f"""
 set -euo pipefail
 echo "🚀 --- Starting Deployment on {args.host} (using SSH) ---"
 echo "🔎 Ensuring GitHub is in known_hosts..."
 mkdir -p ~/.ssh
-ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts 2>/dev/null
+ssh-keyscan -t ecdsa github.com >> ~/.ssh/known_hosts 2>/dev/null
+ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null
 sort -u ~/.ssh/known_hosts -o ~/.ssh/known_hosts
+chmod 600 ~/.ssh/known_hosts
 """
 
     # --- Remote Script (common part) ---
     remote_script += f"""
-echo "Ensuring app directory exists: {app_dir}"
-if [ ! -d "{app_dir}" ]; then
-  echo "Creating directory {app_dir}..."
-  sudo mkdir -p "{app_dir}"
-  sudo chown {args.user}:{args.user} "{app_dir}"
-fi
+echo "📁 Ensuring app directory exists: {app_dir}"
+sudo mkdir -p "{app_dir}"
+sudo chown {args.user}:{args.user} "{app_dir}"
 
 cd "{app_dir}"
 
+# Configure git safe directory
+git config --global --add safe.directory "{app_dir}" || true
+
 if [ -d .git ]; then
   echo "✅ Git repo exists — fetching and checking out '{args.branch}'"
-  # Add the repository directory to the list of safe directories
-  git config --global --add safe.directory {app_dir}
+  # Check if we need to switch remote URL (if token changed)
+  CURRENT_REMOTE=$(git remote get-url origin 2>/dev/null || echo "")
+  EXPECTED_REMOTE="{repo_url}"
+  if [ "$CURRENT_REMOTE" != "$EXPECTED_REMOTE" ]; then
+    echo "🔄 Updating remote URL from origin"
+    git remote set-url origin "$EXPECTED_REMOTE" || git remote add origin "$EXPECTED_REMOTE"
+  fi
+  
   git fetch --all --prune
-  git checkout {args.branch}
+  git checkout {args.branch} 2>/dev/null || git checkout -b {args.branch} --track origin/{args.branch}
   git reset --hard origin/{args.branch}
+  echo "🔄 Pulling latest changes..."
   git pull origin {args.branch}
 else
-  echo "Cloning {repo_url} into {app_dir}"
-  git clone --branch {args.branch} {repo_url} .
+  echo "🔨 Cloning repository into {app_dir}"
+  # Remove any existing files in case of failed previous clone
+  sudo rm -rf "{app_dir}"/*
+  sudo rm -rf "{app_dir}"/.* 2>/dev/null || true
+  
+  # Clone the repository
+  if git clone --branch {args.branch} "{repo_url}" .; then
+    echo "✅ Repository cloned successfully"
+  else
+    echo "❌ Failed to clone repository"
+    echo "💡 Troubleshooting tips:"
+    echo "   - Check if the token has repository access"
+    echo "   - Verify the repository URL: {repo_url.split('@')[0] + '@***' if args.token else repo_url}"
+    echo "   - Check network connectivity to GitHub"
+    exit 1
+  fi
 fi
 
 echo "🐍 Setting up Python virtualenv..."
 if [ ! -d venv ]; then
   python3 -m venv venv
+  echo "✅ Virtual environment created"
 fi
+
 source venv/bin/activate
+
+echo "📦 Upgrading pip and installing dependencies..."
 pip install --upgrade pip
+
 if [ -f requirements.txt ]; then
-  echo "Installing dependencies from requirements.txt..."
+  echo "📋 Installing dependencies from requirements.txt..."
   pip install -r requirements.txt
+  echo "✅ Dependencies installed"
+else
+  echo "⚠️  No requirements.txt found"
 fi
 
 echo "🔄 Restarting systemd service: {args.service}"
-sudo systemctl daemon-reload || true
-sudo systemctl restart {args.service}
+sudo systemctl daemon-reload 2>/dev/null || true
+
+# Stop service gracefully
+echo "⏹️  Stopping service..."
+sudo systemctl stop {args.service} 2>/dev/null || true
+
+# Wait a moment
+sleep 2
+
+echo "▶️  Starting service..."
+sudo systemctl start {args.service}
 
 echo "📊 Checking service status..."
-sudo systemctl status {args.service} --no-pager
+if sudo systemctl is-active --quiet {args.service}; then
+  echo "✅ Service {args.service} is running"
+  sudo systemctl status {args.service} --no-pager -l
+else
+  echo "❌ Service {args.service} failed to start"
+  sudo systemctl status {args.service} --no-pager -l
+  exit 1
+fi
 
-echo "📜 Tailing last 100 lines of cloud-init-output.log..."
-sudo tail -n 100 /var/log/cloud-init-output.log || echo "Could not read cloud-init-output.log"
+echo "📜 Checking application logs..."
+# Try to get recent journal logs for the service
+sudo journalctl -u {args.service} -n 50 --no-pager 2>/dev/null || echo "Could not retrieve journal logs"
 
-echo "🎉 --- Deployment script finished. ---"
+echo "🎉 --- Deployment finished successfully! ---"
 """
 
     ssh_command = [
@@ -121,11 +187,16 @@ echo "🎉 --- Deployment script finished. ---"
         "-i", str(key_path),
         "-o", "StrictHostKeyChecking=no",
         "-o", "UserKnownHostsFile=/dev/null",
+        "-o", "ConnectTimeout=30",
         f"{args.user}@{args.host}",
         "bash -s"
     ]
 
     print(f"🛰️  Deploying to {args.host} as {args.user}...")
+    print(f"📦 Repository: {args.repo}")
+    print(f"🌿 Branch: {args.branch}")
+    print(f"📁 App directory: {app_dir}")
+    print(f"⚙️  Service: {args.service}")
 
     try:
         # We pipe the output directly to the user's terminal
@@ -138,14 +209,13 @@ echo "🎉 --- Deployment script finished. ---"
         print("\n✅ Deploy successful!")
     except subprocess.CalledProcessError as e:
         print(f"\n❌ Deploy failed with exit code {e.returncode}", file=sys.stderr)
-        # stderr is already piped, so no need to print e.stderr
         sys.exit(1)
     except FileNotFoundError:
         print("\n❌ Error: 'ssh' command not found. Is OpenSSH client installed?", file=sys.stderr)
         sys.exit(1)
-    finally:
-        print(f"\n💡 If the service failed, SSH into the host and run:")
-        print(f"  sudo journalctl -u {args.service} -b --no-pager | tail -n 200")
+    except Exception as e:
+        print(f"\n❌ Unexpected error: {e}", file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

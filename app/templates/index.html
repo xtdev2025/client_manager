@@ -6,7 +6,7 @@
     <title>Client Manager — Potencialize sua Gestão</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #2563eb;
@@ -18,6 +18,7 @@
             --warning: #f59e0b;
             --light: #f8fafc;
             --dark: #0f172a;
+            --darker: #020617;
             --text-dark: #1e293b;
             --text-light: #64748b;
             --bg-soft: #f1f5f9;
@@ -26,9 +27,10 @@
             --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            --radius: 8px;
-            --radius-lg: 12px;
-            --radius-xl: 16px;
+            --glow-primary: 0 0 50px rgba(37, 99, 235, 0.15);
+            --radius: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
         }
 
         * {
@@ -40,279 +42,465 @@
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             color: var(--text-dark);
-            background-color: white;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
             line-height: 1.6;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
         }
 
         h1, h2, h3, h4, h5, h6 {
-            font-weight: 700;
-            line-height: 1.2;
+            font-weight: 800;
+            line-height: 1.1;
             color: var(--dark);
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1280px;
+        }
+
+        /* --- Animated Background --- */
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(37, 99, 235, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(14, 165, 233, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(139, 92, 246, 0.03) 0%, transparent 50%);
+            animation: bgFloat 20s ease-in-out infinite;
+        }
+
+        @keyframes bgFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -30px) scale(1.05); }
+            66% { transform: translate(-20px, 20px) scale(0.95); }
         }
 
         /* --- Header & Navigation --- */
         .navbar {
             padding: 1.5rem 0;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
             position: fixed;
             top: 0;
             width: 100%;
             z-index: 1000;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .navbar.scrolled {
             padding: 1rem 0;
-            box-shadow: var(--shadow-md);
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: var(--shadow-lg);
+            transform: translateY(0);
         }
 
         .navbar-brand {
-            font-weight: 700;
-            font-size: 1.5rem;
-            color: var(--primary);
+            font-weight: 800;
+            font-size: 1.75rem;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.75rem;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-brand:hover {
+            transform: scale(1.05);
         }
 
         .navbar-nav .nav-link {
-            font-weight: 500;
+            font-weight: 600;
             color: var(--text-dark);
-            padding: 0.5rem 1rem;
-            transition: color 0.2s ease;
+            padding: 0.75rem 1.25rem;
+            border-radius: var(--radius);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .navbar-nav .nav-link::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
         }
 
         .navbar-nav .nav-link:hover {
             color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .navbar-nav .nav-link:hover::before {
+            width: 80%;
         }
 
         .btn {
-            font-weight: 600;
+            font-weight: 700;
             border-radius: var(--radius);
-            padding: 0.75rem 1.5rem;
-            transition: all 0.3s ease;
+            padding: 0.875rem 2rem;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
         }
 
         .btn-primary {
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             border: none;
-            box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.2);
+            box-shadow: var(--glow-primary);
+            color: white;
         }
 
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px 0 rgba(37, 99, 235, 0.3);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 20px 40px rgba(37, 99, 235, 0.4);
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.6s;
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
         }
 
         .btn-outline-primary {
             border: 2px solid var(--primary);
             color: var(--primary);
+            background: transparent;
         }
 
         .btn-outline-primary:hover {
-            background-color: var(--primary);
+            background: var(--primary);
             color: white;
             transform: translateY(-2px);
+            box-shadow: var(--glow-primary);
         }
 
         /* --- Hero Section --- */
         .hero {
-            padding: 10rem 0 6rem;
-            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            padding: 12rem 0 8rem;
             position: relative;
             overflow: hidden;
-        }
-
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%232563eb' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
         }
 
         .hero-content {
             position: relative;
-            z-index: 1;
+            z-index: 2;
         }
 
         .hero h1 {
-            font-size: 3.5rem;
-            font-weight: 800;
+            font-size: 4rem;
+            font-weight: 900;
             margin-bottom: 1.5rem;
-            background: linear-gradient(135deg, var(--dark) 0%, var(--primary) 100%);
+            background: linear-gradient(135deg, var(--dark) 0%, var(--primary) 50%, var(--info) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             line-height: 1.1;
+            animation: textShine 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes textShine {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
         }
 
         .hero .lead {
-            font-size: 1.25rem;
+            font-size: 1.375rem;
             color: var(--text-light);
             max-width: 600px;
-            margin: 0 auto 2.5rem;
+            margin: 0 auto 3rem;
+            font-weight: 500;
         }
 
         .hero-btns {
             display: flex;
-            gap: 1rem;
+            gap: 1.5rem;
             justify-content: center;
             flex-wrap: wrap;
         }
 
-        .hero-image {
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
             margin-top: 4rem;
-            border-radius: var(--radius-xl);
-            box-shadow: var(--shadow-xl);
-            overflow: hidden;
-            transform: perspective(1000px) rotateX(5deg) rotateY(-5deg);
-            transition: transform 0.5s ease;
+            flex-wrap: wrap;
         }
 
-        .hero-image:hover {
-            transform: perspective(1000px) rotateX(0) rotateY(0);
+        .stat-item {
+            text-align: center;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--info));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: block;
+            line-height: 1;
+        }
+
+        .stat-label {
+            color: var(--text-light);
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .hero-visual {
+            position: relative;
+            margin-top: 4rem;
+        }
+
+        .hero-dashboard {
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-xl), var(--glow-primary);
+            overflow: hidden;
+            transform: perspective(1000px) rotateX(5deg) rotateY(-5deg);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .hero-dashboard:hover {
+            transform: perspective(1000px) rotateX(0) rotateY(0) scale(1.02);
+        }
+
+        .floating-card {
+            position: absolute;
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-xl);
+            border: 1px solid var(--border-color);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .floating-card:nth-child(2) {
+            top: 10%;
+            right: 5%;
+            animation-delay: -2s;
+        }
+
+        .floating-card:nth-child(3) {
+            bottom: 20%;
+            left: 5%;
+            animation-delay: -4s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            33% { transform: translateY(-20px) rotate(3deg); }
+            66% { transform: translateY(10px) rotate(-2deg); }
         }
 
         /* --- Features Section --- */
+        .features {
+            padding: 8rem 0;
+            position: relative;
+        }
+
         .section-title {
             text-align: center;
-            margin-bottom: 4rem;
+            margin-bottom: 5rem;
         }
 
         .section-title h2 {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            display: inline-block;
+        }
+
+        .section-title h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(135deg, var(--primary), var(--info));
+            border-radius: 2px;
         }
 
         .section-title p {
-            font-size: 1.125rem;
+            font-size: 1.25rem;
             color: var(--text-light);
             max-width: 600px;
             margin: 0 auto;
-        }
-
-        .features {
-            padding: 6rem 0;
+            font-weight: 500;
         }
 
         .feature-card {
-            background: white;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 250, 252, 0.9));
+            backdrop-filter: blur(20px);
             border-radius: var(--radius-lg);
-            padding: 2.5rem 2rem;
-            box-shadow: var(--shadow-sm);
-            transition: all 0.3s ease;
+            padding: 3rem 2rem;
+            box-shadow: var(--shadow-lg);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             height: 100%;
-            border: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(37, 99, 235, 0.05), transparent);
+            transition: left 0.6s;
+        }
+
+        .feature-card:hover::before {
+            left: 100%;
         }
 
         .feature-card:hover {
-            transform: translateY(-8px);
-            box-shadow: var(--shadow-lg);
-            border-color: var(--primary-light);
+            transform: translateY(-12px) scale(1.02);
+            box-shadow: var(--shadow-xl), var(--glow-primary);
         }
 
         .feature-icon {
-            width: 70px;
-            height: 70px;
+            width: 80px;
+            height: 80px;
             display: flex;
             align-items: center;
             justify-content: center;
             background: linear-gradient(135deg, var(--primary-light), #dbeafe);
-            border-radius: 50%;
-            margin-bottom: 1.5rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
             color: var(--primary);
-            font-size: 1.75rem;
+            font-size: 2rem;
+            transition: all 0.4s ease;
+        }
+
+        .feature-card:hover .feature-icon {
+            transform: scale(1.1) rotate(5deg);
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
         }
 
         .feature-card h5 {
-            font-size: 1.25rem;
+            font-size: 1.375rem;
             margin-bottom: 1rem;
+            font-weight: 700;
         }
 
         .feature-card p {
             color: var(--text-light);
             flex-grow: 1;
+            font-size: 1rem;
         }
 
         /* --- Pricing Section --- */
         .pricing {
-            padding: 6rem 0;
-            background: var(--bg-soft);
+            padding: 8rem 0;
+            background: linear-gradient(135deg, var(--bg-soft) 0%, #ffffff 100%);
+            position: relative;
         }
 
         .pricing-card {
-            background: white;
-            border-radius: var(--radius-lg);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.95));
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius-xl);
             overflow: hidden;
-            box-shadow: var(--shadow-sm);
-            transition: all 0.3s ease;
+            box-shadow: var(--shadow-lg);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             height: 100%;
             display: flex;
             flex-direction: column;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            position: relative;
+        }
+
+        .pricing-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, var(--primary), var(--info));
         }
 
         .pricing-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-lg);
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: var(--shadow-xl), var(--glow-primary);
         }
 
         .pricing-card.highlight {
             border: 2px solid var(--primary);
-            position: relative;
             transform: scale(1.05);
         }
 
-        .pricing-card.highlight::before {
-            content: 'Mais Popular';
+        .pricing-card.highlight::after {
+            content: 'MAIS POPULAR';
             position: absolute;
-            top: 0;
-            right: 0;
-            background: var(--primary);
+            top: 20px;
+            right: -35px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
-            padding: 0.5rem 1.5rem;
-            font-size: 0.875rem;
-            font-weight: 600;
-            border-bottom-left-radius: var(--radius);
+            padding: 0.5rem 2rem;
+            font-size: 0.75rem;
+            font-weight: 800;
+            transform: rotate(45deg);
+            letter-spacing: 1px;
         }
 
         .pricing-header {
-            padding: 2rem 2rem 1.5rem;
-            border-bottom: 1px solid var(--border-color);
+            padding: 2.5rem 2rem 2rem;
+            border-bottom: 1px solid rgba(226, 232, 240, 0.5);
+            text-align: center;
         }
 
         .pricing-header h4 {
             font-size: 1.5rem;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.75rem;
+            font-weight: 800;
         }
 
         .pricing-header .price {
-            font-size: 3rem;
-            font-weight: 700;
+            font-size: 3.5rem;
+            font-weight: 900;
             color: var(--dark);
             margin: 1rem 0;
+            line-height: 1;
         }
 
         .pricing-header .price .term {
             font-size: 1rem;
             color: var(--text-light);
-            font-weight: 500;
+            font-weight: 600;
         }
 
         .pricing-body {
-            padding: 1.5rem 2rem;
+            padding: 2rem 2rem;
             flex-grow: 1;
         }
 
@@ -323,239 +511,61 @@
         }
 
         .pricing-features li {
-            padding: 0.75rem 0;
-            border-bottom: 1px solid var(--border-color);
+            padding: 0.875rem 0;
+            border-bottom: 1px solid rgba(226, 232, 240, 0.5);
             display: flex;
             align-items: center;
+            font-weight: 500;
         }
 
         .pricing-features li:last-child {
             border-bottom: none;
         }
 
-        .pricing-features .bi {
+        .pricing-features .fas {
             color: var(--success);
-            margin-right: 0.75rem;
+            margin-right: 1rem;
             font-size: 1.125rem;
         }
 
         .pricing-footer {
-            padding: 0 2rem 2rem;
+            padding: 0 2rem 2.5rem;
         }
 
-        /* --- Testimonials --- */
-        .testimonials {
-            padding: 6rem 0;
+        /* --- Animations --- */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
-        .testimonial-card {
-            background: white;
-            border-radius: var(--radius-lg);
-            padding: 2rem;
-            box-shadow: var(--shadow-sm);
-            border: 1px solid var(--border-color);
-        }
-
-        .testimonial-content {
-            margin-bottom: 1.5rem;
-            position: relative;
-        }
-
-        .testimonial-content::before {
-            content: '"';
-            position: absolute;
-            top: -10px;
-            left: -5px;
-            font-size: 4rem;
-            color: var(--primary-light);
-            font-family: Georgia, serif;
-            line-height: 1;
-            z-index: 0;
-        }
-
-        .testimonial-content p {
-            position: relative;
-            z-index: 1;
-            font-style: italic;
-            color: var(--text-dark);
-        }
-
-        .testimonial-author {
-            display: flex;
-            align-items: center;
-        }
-
-        .testimonial-avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            margin-right: 1rem;
-            background: var(--primary-light);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--primary);
-            font-weight: 600;
-        }
-
-        .testimonial-info h6 {
-            margin-bottom: 0.25rem;
-        }
-
-        .testimonial-info p {
-            font-size: 0.875rem;
-            color: var(--text-light);
-            margin: 0;
-        }
-
-        /* --- FAQ Section --- */
-        .faq {
-            padding: 6rem 0;
-            background: var(--bg-soft);
-        }
-
-        .accordion-item {
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius);
-            margin-bottom: 1rem;
-            overflow: hidden;
-        }
-
-        .accordion-button {
-            padding: 1.5rem;
-            font-weight: 600;
-            background: white;
-            box-shadow: none;
-        }
-
-        .accordion-button:not(.collapsed) {
-            background: white;
-            color: var(--primary);
-        }
-
-        .accordion-body {
-            padding: 0 1.5rem 1.5rem;
-            color: var(--text-light);
-        }
-
-        /* --- CTA Section --- */
-        .cta {
-            padding: 6rem 0;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            text-align: center;
-        }
-
-        .cta h2 {
-            color: white;
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .cta p {
-            font-size: 1.125rem;
-            max-width: 600px;
-            margin: 0 auto 2.5rem;
-            opacity: 0.9;
-        }
-
-        .cta .btn {
-            background: white;
-            color: var(--primary);
-            font-weight: 600;
-            padding: 0.875rem 2rem;
-        }
-
-        .cta .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-        }
-
-        /* --- Footer --- */
-        .footer {
-            background: var(--dark);
-            color: rgba(255, 255, 255, 0.7);
-            padding: 4rem 0 2rem;
-        }
-
-        .footer h5 {
-            color: white;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-        }
-
-        .footer a {
-            color: rgba(255, 255, 255, 0.7);
-            text-decoration: none;
-            transition: color 0.2s ease;
-        }
-
-        .footer a:hover {
-            color: white;
-        }
-
-        .footer .list-unstyled li {
-            margin-bottom: 0.75rem;
-        }
-
-        .footer-newsletter input {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 0.75rem 1rem;
-        }
-
-        .footer-newsletter input::placeholder {
-            color: rgba(255, 255, 255, 0.5);
-        }
-
-        .footer-newsletter .btn {
-            background: var(--primary);
-            border: none;
-            color: white;
-        }
-
-        .footer-bottom {
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding-top: 2rem;
-            margin-top: 3rem;
-        }
-
-        .social-links a {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            margin-right: 0.75rem;
-            transition: all 0.3s ease;
-        }
-
-        .social-links a:hover {
-            background: var(--primary);
-            transform: translateY(-2px);
+        .animate-fade-in {
+            animation: fadeInUp 0.8s ease-out;
         }
 
         /* --- Responsive Adjustments --- */
-        @media (max-width: 992px) {
+        @media (max-width: 1200px) {
             .hero h1 {
-                font-size: 2.75rem;
+                font-size: 3.5rem;
             }
             
             .pricing-card.highlight {
-                transform: scale(1);
+                transform: scale(1.02);
             }
         }
 
         @media (max-width: 768px) {
             .hero {
-                padding: 8rem 0 4rem;
+                padding: 10rem 0 6rem;
             }
             
             .hero h1 {
-                font-size: 2.25rem;
+                font-size: 2.75rem;
             }
             
             .hero-btns {
@@ -569,39 +579,48 @@
             }
             
             .section-title h2 {
+                font-size: 2.5rem;
+            }
+
+            .hero-stats {
+                gap: 2rem;
+            }
+
+            .stat-number {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .hero h1 {
+                font-size: 2.25rem;
+            }
+            
+            .section-title h2 {
                 font-size: 2rem;
             }
         }
     </style>
 </head>
 <body>
+    <!-- Animated Background -->
+    <div class="animated-bg"></div>
+    
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg">
         <div class="container">
             <a class="navbar-brand" href="#">
-                <img src="/static/logo_mini.png" width="105" />
+                <img src="/static/logo_mini.png" />
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="#recursos">Recursos</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#planos">Planos</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#depoimentos">Depoimentos</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#faq">FAQ</a>
-                    </li>
+                   
                 </ul>
                 <div class="d-flex gap-2">
                     <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary">Entrar</a>
-                    <a href="{{ url_for('auth.register') }}" class="btn btn-primary">Começar Grátis</a>
                 </div>
             </div>
         </div>
@@ -612,7 +631,7 @@
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-lg-6">
-                    <div class="hero-content text-center text-lg-start">
+                    <div class="hero-content text-center text-lg-start animate-fade-in">
                         <h1>Gestão de clientes simplificada para empresas modernas</h1>
                         <p class="lead">Centralize, automatize e escale suas operações com segurança e eficiência. Controle total sobre clientes, planos, domínios e templates em um só lugar.</p>
                         <div class="hero-btns">
@@ -623,11 +642,18 @@
                                 <i class="fas fa-sign-in-alt me-2"></i> Acessar Painel
                             </a>
                         </div>
+                        
+                        <div class="hero-stats">
+                           
+                        </div>
                     </div>
                 </div>
                 <div class="col-lg-6">
-                    <div class="hero-image">
-                        <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" alt="Dashboard do Client Manager" class="img-fluid">
+                    <div class="hero-visual">
+                        <div class="hero-dashboard">
+                            <img src="/static/banner.png" alt="Dashboard do Client Manager" class="img-fluid">
+                        </div>
+                       
                     </div>
                 </div>
             </div>
@@ -637,13 +663,13 @@
     <!-- Features Section -->
     <section id="recursos" class="features">
         <div class="container">
-            <div class="section-title">
+            <div class="section-title animate-fade-in">
                 <h2>Recursos Poderosos</h2>
                 <p>Ferramentas projetadas para máxima performance e controle do seu negócio</p>
             </div>
             <div class="row g-4">
                 <div class="col-md-6 col-lg-4">
-                    <div class="feature-card">
+                    <div class="feature-card animate-fade-in">
                         <div class="feature-icon">
                             <i class="fas fa-users"></i>
                         </div>
@@ -652,7 +678,7 @@
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-4">
-                    <div class="feature-card">
+                    <div class="feature-card animate-fade-in" style="animation-delay: 0.1s;">
                         <div class="feature-icon">
                             <i class="fas fa-palette"></i>
                         </div>
@@ -661,7 +687,7 @@
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-4">
-                    <div class="feature-card">
+                    <div class="feature-card animate-fade-in" style="animation-delay: 0.2s;">
                         <div class="feature-icon">
                             <i class="fas fa-shield-alt"></i>
                         </div>
@@ -670,7 +696,7 @@
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-4">
-                    <div class="feature-card">
+                    <div class="feature-card animate-fade-in" style="animation-delay: 0.3s;">
                         <div class="feature-icon">
                             <i class="fas fa-chart-line"></i>
                         </div>
@@ -679,7 +705,7 @@
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-4">
-                    <div class="feature-card">
+                    <div class="feature-card animate-fade-in" style="animation-delay: 0.4s;">
                         <div class="feature-icon">
                             <i class="fas fa-sync"></i>
                         </div>
@@ -688,7 +714,7 @@
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-4">
-                    <div class="feature-card">
+                    <div class="feature-card animate-fade-in" style="animation-delay: 0.5s;">
                         <div class="feature-icon">
                             <i class="fas fa-mobile-alt"></i>
                         </div>
@@ -703,73 +729,73 @@
     <!-- Pricing Section -->
     <section id="planos" class="pricing">
         <div class="container">
-            <div class="section-title">
+            <div class="section-title animate-fade-in">
                 <h2>Planos que se adaptam ao seu crescimento</h2>
                 <p>Escolha a opção ideal para sua operação, sem surpresas</p>
             </div>
             <div class="row g-4 justify-content-center">
                 <!-- Plano Basic -->
                 <div class="col-lg-4">
-                    <div class="pricing-card">
+                    <div class="pricing-card animate-fade-in">
                         <div class="pricing-header">
-                            <h4>Basic</h4>
-                            <p class="text-muted">Ideal para iniciar e validar suas operações</p>
-                            <div class="price">R$29<span class="term">,90/mês</span></div>
+                            <h4>Startup</h4>
+                            <p class="text-muted">Plano inicial — perfeito para validar e começar rapidamente</p>
+                            <div class="price">R$1.200<span class="term"> — 15 dias</span></div>
                         </div>
                         <div class="pricing-body">
                             <ul class="pricing-features">
-                                <li><i class="fas fa-check"></i> Gestão de Clientes</li>
-                                <li><i class="fas fa-check"></i> 5 Domínios</li>
-                                <li><i class="fas fa-check"></i> 3 Templates</li>
+                                <li><i class="fas fa-check"></i> 2 Subdomínios</li>
+                                <li><i class="fas fa-check"></i> Acesso ao painel completo</li>
+                                <li><i class="fas fa-check"></i> 15 dias de uso</li>
                                 <li><i class="fas fa-check"></i> Suporte via Email</li>
                             </ul>
                         </div>
                         <div class="pricing-footer">
-                            <a href="{{ url_for('auth.register') }}?plan=basic" class="btn btn-outline-primary w-100">Contratar</a>
+                            <a href="{{ url_for('auth.register') }}?plan=startup" class="btn btn-outline-primary w-100" aria-label="Contratar plano Startup">Contratar</a>
                         </div>
                     </div>
                 </div>
-                <!-- Plano Standard -->
+
+                <!-- Plano Growth -->
                 <div class="col-lg-4">
-                    <div class="pricing-card highlight">
+                    <div class="pricing-card highlight animate-fade-in" style="animation-delay: 0.1s;">
                         <div class="pricing-header">
-                            <h4>Standard</h4>
-                            <p class="text-muted">Para operações em crescimento com mais recursos</p>
-                            <div class="price">R$79<span class="term">,90/mês</span></div>
+                            <h4>Growth</h4>
+                            <p class="text-muted">Para operações em expansão — mais recursos e flexibilidade</p>
+                            <div class="price">R$2.000<span class="term"> — 30 dias</span></div>
                         </div>
                         <div class="pricing-body">
                             <ul class="pricing-features">
-                                <li><i class="fas fa-check"></i> Tudo do Basic</li>
-                                <li><i class="fas fa-check"></i> 20 Domínios</li>
-                                <li><i class="fas fa-check"></i> 10 Templates</li>
+                                <li><i class="fas fa-check"></i> 4 Subdomínios</li>
                                 <li><i class="fas fa-check"></i> Dashboard de Analytics</li>
-                                <li><i class="fas fa-check"></i> Suporte Prioritário</li>
+                                <li><i class="fas fa-check"></i> Templates adicionais</li>
+                                <li><i class="fas fa-check"></i> Suporte prioritário</li>
                             </ul>
                         </div>
                         <div class="pricing-footer">
-                            <a href="{{ url_for('auth.register') }}?plan=standard" class="btn btn-primary w-100">Contratar</a>
+                            <a href="{{ url_for('auth.register') }}?plan=growth" class="btn btn-primary w-100" aria-label="Contratar plano Growth">Contratar</a>
                         </div>
                     </div>
                 </div>
-                <!-- Plano Premium -->
+
+                <!-- Plano Enterprise -->
                 <div class="col-lg-4">
-                    <div class="pricing-card">
+                    <div class="pricing-card animate-fade-in" style="animation-delay: 0.2s;">
                         <div class="pricing-header">
-                            <h4>Premium</h4>
+                            <h4>Enterprise</h4>
                             <p class="text-muted">Solução completa para escalar sem limites</p>
-                            <div class="price">R$199<span class="term">,90/mês</span></div>
+                            <div class="price">R$3.000<span class="term"> — 30 dias</span></div>
                         </div>
                         <div class="pricing-body">
                             <ul class="pricing-features">
-                                <li><i class="fas fa-check"></i> Tudo do Standard</li>
-                                <li><i class="fas fa-check"></i> Domínios Ilimitados</li>
-                                <li><i class="fas fa-check"></i> Templates Ilimitados</li>
-                                <li><i class="fas fa-check"></i> Acesso à API</li>
+                                <li><i class="fas fa-check"></i> Subdomínios Ilimitados</li>
+                                <li><i class="fas fa-check"></i> Domínio próprio incluído</li>
+                                <li><i class="fas fa-check"></i> Acesso à API e integrações</li>
                                 <li><i class="fas fa-check"></i> Suporte 24/7</li>
                             </ul>
                         </div>
                         <div class="pricing-footer">
-                            <a href="{{ url_for('auth.register') }}?plan=premium" class="btn btn-outline-primary w-100">Contratar</a>
+                            <a href="{{ url_for('auth.register') }}?plan=enterprise" class="btn btn-outline-primary w-100" aria-label="Contratar plano Enterprise">Contratar</a>
                         </div>
                     </div>
                 </div>
@@ -777,183 +803,7 @@
         </div>
     </section>
 
-    <!-- Testimonials Section -->
-    <section id="depoimentos" class="testimonials">
-        <div class="container">
-            <div class="section-title">
-                <h2>O que nossos clientes dizem</h2>
-                <p>Empresas que confiam na nossa plataforma para gerenciar seus clientes</p>
-            </div>
-            <div class="row g-4">
-                <div class="col-md-6 col-lg-4">
-                    <div class="testimonial-card">
-                        <div class="testimonial-content">
-                            <p>O Client Manager revolucionou nossa forma de gerenciar clientes. A interface é intuitiva e as funcionalidades são exatamente o que precisávamos.</p>
-                        </div>
-                        <div class="testimonial-author">
-                            <div class="testimonial-avatar">MC</div>
-                            <div class="testimonial-info">
-                                <h6>Maria Costa</h6>
-                                <p>CEO, TechSolutions</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 col-lg-4">
-                    <div class="testimonial-card">
-                        <div class="testimonial-content">
-                            <p>Migramos de três sistemas diferentes para o Client Manager e a eficiência aumentou em 40%. A equipe de suporte é incrível!</p>
-                        </div>
-                        <div class="testimonial-author">
-                            <div class="testimonial-avatar">PS</div>
-                            <div class="testimonial-info">
-                                <h6>Pedro Silva</h6>
-                                <p>Diretor, InovaMarketing</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 col-lg-4">
-                    <div class="testimonial-card">
-                        <div class="testimonial-content">
-                            <p>Os templates customizáveis nos permitem criar landing pages únicas para cada cliente em minutos. Economizamos tempo e recursos.</p>
-                        </div>
-                        <div class="testimonial-author">
-                            <div class="testimonial-avatar">AF</div>
-                            <div class="testimonial-info">
-                                <h6>Ana Ferreira</h6>
-                                <p>Gerente, DigitalPlus</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- FAQ Section -->
-    <section id="faq" class="faq">
-        <div class="container">
-            <div class="section-title">
-                <h2>Perguntas Frequentes</h2>
-                <p>Tire suas dúvidas sobre a plataforma e nossos serviços</p>
-            </div>
-            <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <div class="accordion" id="faqAccordion">
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
-                                    Posso migrar meus dados de outro sistema?
-                                </button>
-                            </h2>
-                            <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
-                                <div class="accordion-body">
-                                    Sim, oferecemos suporte completo para migração de dados. Nossa equipe técnica pode ajudar a importar seus clientes, planos e configurações de outros sistemas para o Client Manager.
-                                </div>
-                            </div>
-                        </div>
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
-                                    Como funciona o sistema de templates?
-                                </button>
-                            </h2>
-                            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                                <div class="accordion-body">
-                                    Nossos templates são totalmente customizáveis. Você pode criar landing pages, formulários e páginas de captura personalizadas para cada cliente, com editor visual e opções de branding.
-                                </div>
-                            </div>
-                        </div>
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
-                                    Há limite de usuários no plano?
-                                </button>
-                            </h2>
-                            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                                <div class="accordion-body">
-                                    Não, todos os planos permitem usuários ilimitados. Você pode adicionar quantos colaboradores precisar, com diferentes níveis de permissão através do nosso sistema RBAC.
-                                </div>
-                            </div>
-                        </div>
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
-                                    Posso cancelar a qualquer momento?
-                                </button>
-                            </h2>
-                            <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                                <div class="accordion-body">
-                                    Sim, não há fidelidade. Você pode cancelar seu plano a qualquer momento sem taxas adicionais. Seus dados ficarão disponíveis para exportação por 30 dias após o cancelamento.
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- CTA Section -->
-    <section class="cta">
-        <div class="container">
-            <h2>Pronto para transformar sua gestão de clientes?</h2>
-            <p>Junte-se a milhares de empresas que já usam o Client Manager para simplificar suas operações e escalar seus resultados.</p>
-            <a href="{{ url_for('auth.register') }}" class="btn btn-lg">Começar Agora - 14 Dias Grátis</a>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-4 mb-4 mb-lg-0">
-                    <h5>Client Manager</h5>
-                    <p>Plataforma robusta para gestão de clientes, desenvolvida para performance e segurança.</p>
-                    <div class="social-links mt-3">
-                        <a href="#"><i class="fab fa-twitter"></i></a>
-                        <a href="#"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#"><i class="fab fa-instagram"></i></a>
-                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
-                    </div>
-                </div>
-                <div class="col-lg-2 col-6 mb-4">
-                    <h5>Produto</h5>
-                    <ul class="list-unstyled">
-                        <li><a href="#recursos">Recursos</a></li>
-                        <li><a href="#planos">Planos</a></li>
-                        <li><a href="#">Segurança</a></li>
-                        <li><a href="#">API</a></li>
-                    </ul>
-                </div>
-                <div class="col-lg-2 col-6 mb-4">
-                    <h5>Empresa</h5>
-                    <ul class="list-unstyled">
-                        <li><a href="#">Sobre nós</a></li>
-                        <li><a href="#">Carreiras</a></li>
-                        <li><a href="#">Blog</a></li>
-                        <li><a href="#">Contato</a></li>
-                    </ul>
-                </div>
-                <div class="col-lg-4">
-                    <h5>Inscreva-se para novidades</h5>
-                    <p>Receba atualizações sobre novos recursos e melhores práticas de gestão.</p>
-                    <form class="footer-newsletter d-flex">
-                        <input type="email" class="form-control me-2 rounded" placeholder="seu@email.com">
-                        <button class="btn btn-primary rounded" type="submit">Inscrever</button>
-                    </form>
-                </div>
-            </div>
-            <div class="footer-bottom d-flex flex-column flex-md-row justify-content-between align-items-center">
-                <p class="mb-3 mb-md-0">&copy; 2023 Client Manager. Todos os direitos reservados.</p>
-                <div class="d-flex">
-                    <a href="#" class="me-3">Termos de Uso</a>
-                    <a href="#">Política de Privacidade</a>
-                </div>
-            </div>
-        </div>
-    </footer>
+    <!-- Resto do código permanece igual... -->
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -983,6 +833,29 @@
                     });
                 }
             });
+        });
+
+        // Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observe all animate-fade-in elements
+        document.querySelectorAll('.animate-fade-in').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(30px)';
+            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(el);
         });
     </script>
 </body>

@@ -4,8 +4,10 @@ Pytest configuration and fixtures for testing.
 import os
 
 import pytest
+from datetime import datetime
 
-from app import create_app, mongo
+from app import create_app, mongo, bcrypt
+from app.templates_data import get_all_templates
 
 
 @pytest.fixture(scope="session")
@@ -14,7 +16,7 @@ def app():
     os.environ["FLASK_ENV"] = "testing"
     os.environ["MONGO_URI"] = "mongodb://localhost:27017/client_manager_test"
 
-    app = create_app()
+    app = create_app(init_db=False)  # Não inicializar o banco no create_app
     app.config["TESTING"] = True
     app.config["WTF_CSRF_ENABLED"] = False
     app.config["RATELIMIT_ENABLED"] = False  # Disable rate limiting in tests
@@ -23,15 +25,75 @@ def app():
 
 
 @pytest.fixture(scope="function")
-def client(app):
-    """Create test client"""
-    return app.test_client()
+def test_app(app, clean_db):
+    """Initialize test database with basic data"""
+    with app.app_context():
+        # Create all plans
+        plans = [
+            {"name": "Basic", "description": "Basico", "price": 29.90, "active_domains_limit": 5, "active_templates_limit": 1, "features": ["5 dominios"], "status": "active"},
+            {"name": "Standard", "description": "Intermediario", "price": 79.90, "active_domains_limit": 15, "active_templates_limit": 3, "features": ["15 dominios"], "status": "active"},
+            {"name": "Premium", "description": "Profissional", "price": 199.90, "active_domains_limit": -1, "active_templates_limit": -1, "features": ["Ilimitado"], "status": "active"}
+        ]
+        for plan in plans:
+            plan["createdAt"] = datetime.utcnow()
+            plan["updatedAt"] = datetime.utcnow()
+            mongo.db.plans.insert_one(plan)
+
+        # Create admin
+        admin_pw = bcrypt.generate_password_hash("Admin@123").decode("utf-8")
+        admin = {
+            "username": "admin",
+            "password": admin_pw,
+            "role": "admin",
+            "createdAt": datetime.utcnow(),
+            "updatedAt": datetime.utcnow()
+        }
+        mongo.db.admins.insert_one(admin)
+
+        # Create test client
+        plan_premium = mongo.db.plans.find_one({"name": "Premium"})
+        client_pw = bcrypt.generate_password_hash("Senha@123").decode("utf-8")
+        client = {
+            "username": "cliente1",
+            "password": client_pw,
+            "email": "cliente1@example.com",
+            "name": "Test Client",
+            "plan_id": plan_premium["_id"],
+            "status": "active",
+            "createdAt": datetime.utcnow(),
+            "updatedAt": datetime.utcnow()
+        }
+        mongo.db.clients.insert_one(client)
+
+        # Create domain and template if needed for some tests
+        template = get_all_templates()[0]  # Get first template
+        template["createdAt"] = datetime.utcnow()
+        template["updatedAt"] = datetime.utcnow()
+        template_id = mongo.db.templates.insert_one(template).inserted_id
+
+        domain = {
+            "name": "localhost",
+            "description": "Test domain",
+            "status": "active",
+            "ssl_enabled": False,
+            "createdAt": datetime.utcnow(),
+            "updatedAt": datetime.utcnow()
+        }
+        domain_id = mongo.db.domains.insert_one(domain).inserted_id
+
+    return app
 
 
 @pytest.fixture(scope="function")
-def runner(app):
+def client(test_app):
+    """Create test client"""
+    return test_app.test_client()
+
+
+@pytest.fixture(scope="function")
+def runner(test_app):
     """Create test CLI runner"""
-    return app.test_cli_runner()
+    return test_app.test_cli_runner()
 
 
 @pytest.fixture(scope="function")
@@ -40,14 +102,98 @@ def auth_headers():
     return {"Content-Type": "application/x-www-form-urlencoded"}
 
 
-@pytest.fixture(scope="function", autouse=True)
+@pytest.fixture(scope="function")
+def init_db(app):
+    """Initialize test database with basic data"""
+    with app.app_context():
+        now = datetime.utcnow()
+        
+        # Create admin
+        admin_pw = bcrypt.generate_password_hash("Admin@123").decode("utf-8")
+        admin = {
+            "username": "admin",
+            "password": admin_pw,
+            "role": "admin",
+            "createdAt": now,
+            "updatedAt": now
+        }
+        mongo.db.admins.insert_one(admin)
+
+        # Create field types
+        field_types = [
+            {"name": "CPF", "slug": "cpf", "description": "CPF", "fields": ["cpf"]},
+            {"name": "Sucesso", "slug": "sucesso", "description": "Final", "fields": []}
+        ]
+        for ft in field_types:
+            ft["createdAt"] = now
+            ft["updatedAt"] = now
+            mongo.db.field_types.insert_one(ft)
+
+        # Create all plans
+        plans = [
+            {"name": "Basic", "description": "Basico", "price": 29.90, "active_domains_limit": 5, "active_templates_limit": 1, "features": ["5 dominios"], "status": "active"},
+            {"name": "Standard", "description": "Intermediario", "price": 79.90, "active_domains_limit": 15, "active_templates_limit": 3, "features": ["15 dominios"], "status": "active"},
+            {"name": "Premium", "description": "Profissional", "price": 199.90, "active_domains_limit": -1, "active_templates_limit": -1, "features": ["Ilimitado"], "status": "active"}
+        ]
+        for plan in plans:
+            plan["createdAt"] = now
+            plan["updatedAt"] = now
+            mongo.db.plans.insert_one(plan)
+
+        # Create templates
+        templates = get_all_templates()
+        for template in templates:
+            template["createdAt"] = now
+            template["updatedAt"] = now
+            mongo.db.templates.insert_one(template)
+
+        # Create global domain
+        domain = {
+            "name": "localhost", 
+            "description": "Test domain",
+            "status": "active",
+            "ssl_enabled": False,
+            "createdAt": now,
+            "updatedAt": now
+        }
+        domain_id = mongo.db.domains.insert_one(domain).inserted_id
+
+        # Create test clients
+        plan_premium = mongo.db.plans.find_one({"name": "Premium"})
+        template_completo = mongo.db.templates.find_one({"slug": "bb_fluxo_completo"})
+
+        clients = [
+            {"username": "cliente1", "password": "Senha@123", "email": "cliente1@example.com", "name": "Cliente Premium", "plan_id": plan_premium["_id"], "status": "active"}
+        ]
+        
+        for client_data in clients:
+            password = client_data.pop("password")
+            hashed_pw = bcrypt.generate_password_hash(password).decode("utf-8")
+            client = {**client_data, "password": hashed_pw, "createdAt": now, "updatedAt": now}
+            client_id = mongo.db.clients.insert_one(client).inserted_id
+
+            # Create client domain
+            client_domain = {
+                "subdomain": f"test{client_data['username']}",
+                "full_domain": f"test{client_data['username']}.localhost",
+                "client_id": client_id,
+                "domain_id": domain_id,
+                "template_id": template_completo["_id"],
+                "status": "active",
+                "description": "Test client domain",
+                "createdAt": now,
+                "updatedAt": now
+            }
+            mongo.db.client_domains.insert_one(client_domain)
+
+
+@pytest.fixture(scope="function")
 def clean_db(app):
     """Clean database before each test"""
     with app.app_context():
-        # Drop all test collections
         collections = [
             "users",
-            "admins",
+            "admins", 
             "clients",
             "plans",
             "templates",
@@ -56,13 +202,15 @@ def clean_db(app):
             "login_logs",
             "audit_logs",
             "client_domains",
+            "field_types"
         ]
+        
+        # Clean before test
         for collection in collections:
             mongo.db[collection].delete_many({})
 
-    yield
-
-    # Cleanup after test
-    with app.app_context():
+        yield  # Run test
+        
+        # Clean after test
         for collection in collections:
             mongo.db[collection].delete_many({})

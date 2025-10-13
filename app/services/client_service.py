@@ -122,15 +122,24 @@ class ClientService:
         if not plan:
             return False, "Selected plan does not exist"
 
-        # Update client
-        update_data = {"plan_id": ObjectId(plan_id) if isinstance(plan_id, str) else plan_id}
+        try:
+            # Convert IDs to ObjectId
+            client_obj_id = ObjectId(client_id) if isinstance(client_id, str) else client_id
+            plan_obj_id = ObjectId(plan_id) if isinstance(plan_id, str) else plan_id
 
-        if activation_date:
-            update_data["planActivatedAt"] = activation_date
-        if expiration_date:
-            update_data["expiredAt"] = expiration_date
+            # Update client
+            update_data = {"plan_id": plan_obj_id}
 
-        return Client.update(client_id, update_data)
+            if activation_date:
+                update_data["planActivatedAt"] = activation_date
+            if expiration_date:
+                update_data["expiredAt"] = expiration_date
+
+            return Client.update(client_obj_id, update_data)
+        except Exception as e:
+            from flask import current_app
+            current_app.logger.error(f"Error updating client: {e}")
+            return False, str(e)
 
     @staticmethod
     def check_client_plan_expiration(

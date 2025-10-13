@@ -107,11 +107,11 @@ class TestAuditService:
             assert "timestamp" in log
             assert log["timestamp"] is not None
 
-    def test_audit_log_contains_ip_address(self, app):
+    def test_audit_log_contains_ip_address(self, client, app):
         """Test that audit logs include IP address"""
-        with app.app_context():
-            AuditService.log_action("test_action", "test_entity", ip_address="192.168.1.1")
-
+        with app.test_request_context('/', environ_base={'REMOTE_ADDR': '192.168.1.1'}):
+            AuditService.log_action("test_action", "test_entity")
+            
             log = mongo.db.audit_logs.find_one({"action": "test_action"})
 
             assert "ip_address" in log

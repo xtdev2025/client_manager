@@ -1,6 +1,7 @@
 """
 Unit tests for ClientService.
 """
+from app import mongo  # Import mongo for direct database access
 from app.models.client import Client
 from app.models.plan import Plan
 from app.services.client_service import ClientService
@@ -82,6 +83,9 @@ class TestClientService:
     def test_get_clients_with_plan_info(self, app):
         """Test getting all clients with plan information"""
         with app.app_context():
+            # Remove existing clients
+            mongo.db.clients.delete_many({})
+
             # Create plan and multiple clients
             success, plan_id = Plan.create("Test Plan", "Test Description", 99.99, 30)
             Client.create("client1", "password123", plan_id)
@@ -96,16 +100,27 @@ class TestClientService:
     def test_update_client_plan(self, app):
         """Test updating client plan"""
         with app.app_context():
+            # Remove existing clients
+            mongo.db.clients.delete_many({})
+
             # Create plans and client
             success, plan1_id = Plan.create("Plan 1", "Description 1", 50.00, 30)
+            assert success is True, "Failed to create first plan"
+            
             success, plan2_id = Plan.create("Plan 2", "Description 2", 100.00, 60)
+            assert success is True, "Failed to create second plan"
+            
             success, client_id = Client.create("testclient", "password123", plan1_id)
+            assert success is True, "Failed to create test client"
+
+            # Convert IDs to ObjectId format
+            client_obj_id = str(client_id)  # Convert to string to match Client.update behavior
+            plan2_obj_id = str(plan2_id)
 
             # Update client plan
-            success, message = ClientService.update_client_plan(client_id, plan2_id)
-
-            assert success is True
+            success, message = ClientService.update_client_plan(client_obj_id, plan2_obj_id)
+            assert success is True, f"Failed to update plan: {message}"
 
             # Verify plan was updated
-            client = Client.get_by_id(client_id)
-            assert str(client["plan_id"]) == plan2_id
+            client = Client.get_by_id(client_obj_id)
+            assert str(client["plan_id"]) == plan2_obj_id, f"Plan not updated correctly: {client}"

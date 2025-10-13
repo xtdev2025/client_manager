@@ -28,7 +28,7 @@ limiter = Limiter(
 )
 
 
-def create_app(config_name=None):
+def create_app(config_name=None, init_db=True):
     app = Flask(__name__, template_folder="templates")
 
     # Load the default configuration
@@ -160,8 +160,10 @@ def create_app(config_name=None):
             return redirect(url_for('auth.login'))
         return e
 
-    with app.app_context():
-        from app.db_init import initialize_db
-        initialize_db()
+    # Only initialize database if init_db is True
+    if init_db:
+        with app.app_context():
+            from app.db_init import initialize_db
+            initialize_db()
 
     return app
