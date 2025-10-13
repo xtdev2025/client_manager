@@ -450,7 +450,8 @@
 
 
             <!-- Login Form -->
-            <form method="POST" action="#">
+            <form method="POST" action="{{ url_for('auth.login') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="form-group">
                     <label class="form-label" for="username">Email ou usuário</label>
                     <input type="text" class="form-control" id="username" name="username" 

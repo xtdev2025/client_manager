@@ -151,9 +151,17 @@ def create_app(config_name=None):
     app.register_blueprint(dashboard_blueprint)
 
     # Initialize database with default data if needed
+    # Handle CSRF errors
+    @app.errorhandler(400)
+    def handle_csrf_error(e):
+        if 'CSRF' in str(e):
+            from flask import flash, redirect, url_for
+            flash('Sua sessão expirou. Por favor, tente novamente.', 'danger')
+            return redirect(url_for('auth.login'))
+        return e
+
     with app.app_context():
         from app.db_init import initialize_db
-
         initialize_db()
 
     return app
