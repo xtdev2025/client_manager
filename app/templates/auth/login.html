@@ -437,10 +437,16 @@
                 <h1 class="login-title">Painel de Controle</h1>
             </div>
 
-            <!-- Alert Message Example -->
-            <div class="alert" style="display: none;">
-                Exemplo de mensagem de erro
-            </div>
+            <!-- Alert Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert{% if category == 'success' %} alert-success{% endif %}" style="display: block;">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
 
 
             <!-- Login Form -->
