@@ -1,0 +1,20 @@
+[Unit]
+Description=xPages Flask application
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/client_manager
+Environment="PATH=/home/ubuntu/client_manager/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin"
+ExecStart=/home/ubuntu/client_manager/venv/bin/gunicorn -b 0.0.0.0:5000 run:app
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
+
+# Notes:
+# - Adjust User/Group/WorkingDirectory to match your setup.
+# - This example uses gunicorn and assumes the app exports `app` in run.py.
