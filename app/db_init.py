@@ -49,7 +49,7 @@ def initialize_db():
     
     if mongo.db.client_domains.count_documents({}) == 0:
         print("Criando subdominios...")
-        #create_client_domains()
+        create_client_domains()
     else:
         print("Subdominios ja existem")
     
