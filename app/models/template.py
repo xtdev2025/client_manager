@@ -24,22 +24,28 @@ class Template:
         return slug
 
     @staticmethod
+    def get_unique_slug(name):
+        """Generates a unique slug, adding a suffix if necessary."""
+        base_slug = Template.generate_slug(name)
+        slug = base_slug
+        
+        existing = mongo.db.templates.find_one({"slug": slug})
+        
+        counter = 1
+        while existing:
+            slug = f"{base_slug}_{counter}"
+            existing = mongo.db.templates.find_one({"slug": slug})
+            counter += 1
+            
+        return slug
+
+
+    @staticmethod
     def create(name, description, content=None, status="active"):
         """Create a new template"""
         try:
-            # Generate slug from name
-            slug = Template.generate_slug(name)
-
-            # Check if slug already exists
-            existing = mongo.db.templates.find_one({"slug": slug})
-            if existing:
-                # Add number suffix if slug exists
-                counter = 1
-                while existing:
-                    test_slug = f"{slug}_{counter}"
-                    existing = mongo.db.templates.find_one({"slug": test_slug})
-                    counter += 1
-                slug = test_slug
+            # Generate unique slug
+            slug = Template.get_unique_slug(name)
 
             # Create template object with simplified structure
             new_template = {
@@ -70,6 +76,39 @@ class Template:
         except Exception as e:
             current_app.logger.error(f"Error creating template: {e}")
             return False, str(e)
+
+
+    # ----------------------------------------------------------------------
+    # NOVO MÉTODO PARA CLONAGEM
+    # ----------------------------------------------------------------------
+    @staticmethod
+    def insert_from_dict(data: dict):
+        """
+        Insere um novo documento Template no banco de dados a partir de um dicionário,
+        usado para clonagem. Requer que o campo '_id' já tenha sido removido.
+        """
+        try:
+            # 1. Gera um novo slug único para o template clonado
+            new_name = data.get('name', 'Template Clonado')
+            data['slug'] = Template.get_unique_slug(new_name)
+            
+            # 2. Atualiza os timestamps de criação e atualização
+            current_time = datetime.utcnow()
+            data['createdAt'] = current_time
+            data['updatedAt'] = current_time
+
+            # 3. Insere o documento completo (que inclui 'pages', 'versions', etc.)
+            result = mongo.db.templates.insert_one(data)
+            
+            if result.inserted_id:
+                return True, str(result.inserted_id)
+            return False, "Database error during clone insertion"
+
+        except Exception as e:
+            current_app.logger.error(f"Error inserting template from dict (cloning): {e}")
+            return False, str(e)
+    # ----------------------------------------------------------------------
+
 
     @staticmethod
     def update(template_id, data):

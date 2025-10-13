@@ -1,5 +1,5 @@
 from bson import ObjectId
-from flask import Blueprint, abort, current_app, flash, redirect, request, url_for
+from flask import Blueprint, abort, current_app, flash, redirect, request, url_for, send_file
 from flask_login import current_user, login_required
 
 from app.controllers.auth import admin_required
@@ -146,6 +146,106 @@ def edit_template(template_id):
 
     return TemplateView.render_edit_form(template_data)
 
+@template.route("/download/<template_id>")
+@login_required
+@admin_required
+def download_template(template_id):
+    """Download a template backup (e.g., as a JSON file)"""
+    template_data = Template.get_by_id(template_id)
+    if not template_data:
+        flash("Template não encontrado para download.", "danger")
+        return redirect(url_for("template.list_templates"))
+
+    try:
+        # 1. Converte o objeto template (que pode conter BSON types) para um dict JSON-serializável.
+        # Você precisará de uma função auxiliar para converter BSON/ObjectId para string se usar
+        # a serialização JSON padrão do Python/Flask.
+        # Ex: template_data.pop("_id", None) # Remove _id para facilitar a importação futura
+        # Ou usar uma função de serialização JSON que lide com BSON.
+        
+        # Exemplo simples (assumindo que a maioria dos campos já é serializável)
+        data_to_export = template_data.copy()
+        
+        # Converte o ObjectId e remove campos desnecessários para backup/restauração
+        # É crucial que sua classe Template tenha um método para exportar dados limpos
+        if '_id' in data_to_export and isinstance(data_to_export['_id'], ObjectId):
+             data_to_export['_id'] = str(data_to_export['_id'])
+        data_to_export.pop("createdAt", None)
+        data_to_export.pop("updatedAt", None)
+
+        import json
+        from io import BytesIO
+
+        # 2. Cria o conteúdo do arquivo JSON
+        json_content = json.dumps(data_to_export, indent=4, ensure_ascii=False)
+        buffer = BytesIO(json_content.encode('utf-8'))
+        
+        filename = f"template_{template_data.get('slug', template_id)}_backup.json"
+
+        # 3. Retorna o arquivo para o download
+        AuditService.log_template_action("download", template_id, {"name": template_data.get('name')})
+        
+        return send_file(
+            buffer,
+            mimetype='application/json',
+            as_attachment=True,
+            download_name=filename
+        )
+
+    except Exception as e:
+        current_app.logger.error(f"Erro ao gerar backup do template {template_id}: {e}")
+        flash("Erro interno ao gerar o arquivo de backup.", "danger")
+        return redirect(url_for("template.list_templates"))
+
+@template.route("/clone/<template_id>", methods=["POST"])
+@login_required
+@admin_required
+def clone_template(template_id):
+    """Clone an existing template, including all its subdocuments (pages, versions, etc.)."""
+    
+    # 1. Busca o template original
+    original_template = Template.get_by_id(template_id)
+    if not original_template:
+        flash("Template não encontrado para clonagem.", "danger")
+        return redirect(url_for("template.list_templates"))
+
+    # Para uso no log e flash message
+    original_name = original_template.get('name', 'Template Original')
+
+    # 2. Prepara os dados para o novo template (clone)
+    # Copia os dados, que agora incluem 'pages', 'versions', etc.
+    clone_data = original_template.copy()
+    
+    # Remove campos específicos do MongoDB (_id, createdAt, updatedAt)
+    # Estes serão regenerados na inserção
+    clone_data.pop("_id", None)
+    clone_data.pop("createdAt", None)
+    clone_data.pop("updatedAt", None)
+    
+    # Define um novo nome e slug para o clone
+    new_name = f"{original_name} (Cópia)"
+    clone_data["name"] = new_name
+    
+    # É uma boa prática limpar o slug ou gerar um novo, se o modelo o utiliza
+    clone_data.pop("slug", None) 
+    
+    # 3. Cria o novo template usando o dicionário completo
+    # É crucial que este novo método no seu modelo lide com a inserção
+    # de todos os campos no MongoDB/banco de dados.
+    success, new_id = Template.insert_from_dict(clone_data)
+
+    if success:
+        # 4. Log template creation in audit trail
+        AuditService.log_template_action(
+            "clone", 
+            new_id, 
+            {"original_id": template_id, "new_name": new_name, "pages_cloned": len(clone_data.get('pages', []))}
+        )
+        flash(f"Template '{original_name}' clonado com sucesso como '{new_name}'.", "success")
+        return redirect(url_for("template.edit_template", template_id=new_id))
+    else:
+        flash(f"Erro ao clonar template: {new_id}", "danger")
+        return redirect(url_for("template.list_templates"))
 
 @template.route("/delete/<template_id>", methods=["POST"])
 @login_required

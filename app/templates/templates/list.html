@@ -67,17 +67,36 @@
                         </td>
                         <td>{{ template.createdAt.strftime('%d/%m/%Y') if template.createdAt else 'N/D' }}</td>
                         <td class="text-end">
-                            <div class="btn-group btn-group-sm" role="group">
-                                <a href="{{ url_for('template.view_template', template_id=template._id) }}" class="btn btn-info" title="Visualizar">
-                                    <i class="fas fa-eye"></i>
+                            {# Mudança: O btn-group-sm foi removido pois os botões com texto ficam muito grandes,
+                                mas a classe 'd-flex flex-nowrap justify-content-end' é usada para gerenciar o espaço. #}
+                            <div class="d-flex flex-nowrap justify-content-end gap-2"> 
+                                
+                                {# Botão Editar #}
+                                <a href="{{ url_for('template.edit_template', template_id=template._id) }}" class="btn btn-sm btn-warning" title="Editar">
+                                    <i class="fas fa-edit me-1"></i> Editar
                                 </a>
-                                <a href="{{ url_for('template.edit_template', template_id=template._id) }}" class="btn btn-warning" title="Editar">
-                                    <i class="fas fa-edit"></i>
+                                
+                                {# Botão Clonar #}
+                                <form method="POST" action="{{ url_for('template.clone_template', template_id=template._id) }}"
+                                    class="d-inline" onsubmit="return confirm('Tem certeza que deseja clonar este modelo?');">
+                                    {# Nota: O uso de {{ csrf_token() }} é o padrão Flask-WTF. Mantendo sua estrutura, mas otimizando: #}
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"> 
+                                    <button type="submit" class="btn btn-sm btn-secondary" title="Clonar">
+                                        <i class="fas fa-copy me-1"></i> Clonar
+                                    </button>
+                                </form>
+
+                                {# Botão Baixar (Backup) #}
+                                <a href="{{ url_for('template.download_template', template_id=template._id) }}" class="btn btn-sm btn-success" title="Baixar (Backup)">
+                                    <i class="fas fa-download me-1"></i> Baixar
                                 </a>
+
+                                {# Botão Excluir #}
                                 <form method="POST" action="{{ url_for('template.delete_template', template_id=template._id) }}" 
                                       class="d-inline" onsubmit="return confirm('Tem certeza que deseja excluir este modelo?');">
-                                    <button type="submit" class="btn btn-danger" title="Excluir">
-                                        <i class="fas fa-trash"></i>
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"> 
+                                      <button type="submit" class="btn btn-sm btn-danger" title="Excluir">
+                                        <i class="fas fa-trash me-1"></i> Excluir
                                     </button>
                                 </form>
                             </div>
