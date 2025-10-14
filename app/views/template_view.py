@@ -17,7 +17,7 @@ class TemplateView(BaseView):
         Returns:
             str: Rendered template list template
         """
-        return BaseView.render_table("templates/list.html", templates)
+        return BaseView.render("templates/list.html", templates=templates)
 
     @staticmethod
     def render_create_form(form_data=None, errors=None):

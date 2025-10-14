@@ -17,7 +17,7 @@ class DomainView(BaseView):
         Returns:
             str: Rendered domain list template
         """
-        return BaseView.render_table("domains/list.html", domains)
+        return BaseView.render("domains/list.html", domains=domains)
 
     @staticmethod
     def render_create_form(form_data=None, errors=None):

@@ -17,7 +17,7 @@ class PlanView(BaseView):
         Returns:
             str: Rendered plan list template
         """
-        return BaseView.render_table("plans/list.html", plans)
+        return BaseView.render("plans/list.html", plans=plans)
 
     @staticmethod
     def render_create_form(form_data=None, errors=None):
