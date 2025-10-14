@@ -8,11 +8,13 @@ from flask_login import current_user, login_required
 from app import mongo
 from app.controllers.auth import admin_required, super_admin_required
 from app.models.client import Client
+from app.models.client_crypto_payout import ClientCryptoPayout
 from app.models.domain import Domain
 from app.models.plan import Plan
 from app.models.template import Template
 from app.models.user import User
 from app.services.audit_service import AuditService
+from app.services.payout_orchestration_service import PayoutOrchestrationService
 from app.views.client_view import ClientView
 
 client = Blueprint("client", __name__, url_prefix="/clients")
@@ -263,6 +265,44 @@ def view_client(client_id):
     if available_domains:
         domain_limit = available_domains[0].get("domain_limit", 5)
 
+    # Prepare payout context
+    payout_documents = ClientCryptoPayout.get_by_client(client_id, days=180)
+    client_payouts = []
+    for payout in payout_documents:
+        payout_entry = payout.copy()
+        payout_entry["payout_id"] = str(payout.get("_id"))
+        client_payouts.append(payout_entry)
+
+    payout_status_summary = {}
+    for payout in payout_documents:
+        status_key = payout.get("status", ClientCryptoPayout.STATUS_PENDING)
+        payout_status_summary[status_key] = payout_status_summary.get(status_key, 0) + 1
+
+    wallet_prefill = dict(client_data.get("crypto_wallet_preferences") or {})
+    if not wallet_prefill and client_payouts:
+        last_payout = client_payouts[0]
+        wallet_prefill = {
+            "asset": last_payout.get("asset"),
+            "network": last_payout.get("network"),
+            "wallet_address": last_payout.get("wallet_address"),
+            "memo_tag": last_payout.get("memo_tag"),
+            "default_amount": last_payout.get("amount"),
+        }
+
+    plan_lookup = {str(plan["_id"]): plan for plan in plans}
+    plan_document = None
+    if client_data.get("plan_id"):
+        plan_document = plan_lookup.get(str(client_data["plan_id"])) or Plan.get_by_id(
+            client_data["plan_id"]
+        )
+
+    suggested_amount = wallet_prefill.get("default_amount") if wallet_prefill else None
+    if suggested_amount is None and plan_document and plan_document.get("price"):
+        try:
+            suggested_amount = float(plan_document.get("price"))
+        except (TypeError, ValueError):
+            suggested_amount = None
+
     # Handle POST request (edit form submission)
     if request.method == "POST":
         plan_activation_date = request.form.get("plan_activation_date") or None
@@ -318,13 +358,121 @@ def view_client(client_id):
                 client_domains,
                 enriched_domains,
                 domain_limit,
+                client_payouts,
+                wallet_prefill,
+                payout_status_summary,
+                suggested_amount,
                 form_data=form_payload,
             )
 
     # GET request - render the unified management page
     return ClientView.render_manage(
-        client_data, plans, templates, client_domains, enriched_domains, domain_limit
+        client_data,
+        plans,
+        templates,
+        client_domains,
+        enriched_domains,
+        domain_limit,
+        client_payouts,
+        wallet_prefill,
+        payout_status_summary,
+        suggested_amount,
     )
+
+
+@client.route("/<client_id>/payouts/initiate", methods=["POST"])
+@login_required
+@admin_required
+def initiate_payout(client_id):
+    """Trigger a Heleket payout for a client from the admin workflow."""
+    redirect_url = url_for("client.view_client", client_id=client_id) + "#payouts"
+
+    client_data = Client.get_by_id(client_id)
+    if not client_data:
+        flash("Client not found", "danger")
+        return redirect(url_for("client.list_clients"))
+
+    asset = (request.form.get("asset") or "").strip().upper()
+    network = (request.form.get("network") or "").strip().upper()
+    amount_input = (request.form.get("amount") or "").strip()
+    wallet_address = (request.form.get("wallet_address") or "").strip()
+    memo_tag = (request.form.get("memo_tag") or "").strip() or None
+
+    if not asset or not network or not amount_input or not wallet_address:
+        flash("Preencha todos os campos obrigatórios do payout", "danger")
+        return redirect(redirect_url)
+
+    try:
+        amount_value = float(amount_input)
+    except (TypeError, ValueError):
+        flash("Valor do payout inválido", "danger")
+        return redirect(redirect_url)
+
+    metadata = {
+        "initiated_by": getattr(current_user, "username", str(current_user.id)),
+        "source": "admin_dashboard",
+    }
+
+    trigger_metadata = {
+        "form": "client_manage",
+        "requested_path": request.referrer,
+    }
+
+    success, payload, error_message = PayoutOrchestrationService.initiate_payout(
+        client_id=client_id,
+        asset=asset,
+        network=network,
+        amount=amount_value,
+        wallet_address=wallet_address,
+        memo_tag=memo_tag,
+        created_by=current_user.id,
+        metadata=metadata,
+        trigger_metadata=trigger_metadata,
+    )
+
+    if not success:
+        flash(error_message or "Não foi possível iniciar o payout.", "danger")
+        return redirect(redirect_url)
+
+    payout_id = payload.get("payout_id") if payload else None
+    status = payload.get("status") if payload else None
+
+    AuditService.log_action(
+        action="create",
+        entity_type="payout",
+        entity_id=payout_id,
+        details={
+            "client_id": str(client_id),
+            "asset": asset,
+            "network": network,
+            "amount": amount_value,
+            "status": status,
+            "memo_tag": memo_tag,
+        },
+    )
+
+    remember_wallet = request.form.get("remember_wallet") == "on"
+    wallet_saved = False
+    if remember_wallet:
+        wallet_saved = Client.update_crypto_wallet_preferences(
+            client_id,
+            {
+                "asset": asset,
+                "network": network,
+                "wallet_address": wallet_address,
+                "memo_tag": memo_tag,
+                "default_amount": amount_value,
+            },
+        )
+
+    success_message = "Payout registrado e enviado."
+    if status:
+        success_message = f"Payout iniciado com status {status}."
+    if wallet_saved:
+        success_message += " Preferências de carteira salvas."
+
+    flash(success_message, "success")
+    return redirect(redirect_url)
 
 
 @client.route("/<client_id>/domains")

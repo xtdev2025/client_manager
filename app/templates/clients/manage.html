@@ -25,6 +25,11 @@
                 </button>
             </li>
             <li class="nav-item" role="presentation">
+                <button class="nav-link" id="payouts-tab" data-bs-toggle="tab" data-bs-target="#payouts" type="button" role="tab">
+                    <i class="fas fa-coins"></i> Payouts ({{ client_payouts|length }})
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
                 <button class="nav-link" id="info-entries-tab" data-bs-toggle="tab" data-bs-target="#info-entries" type="button" role="tab">
                     <i class="fas fa-database"></i> Info Entries ({{ client.info_count|default(0) }})
                 </button>
@@ -144,6 +149,7 @@
                             </div>
                             <div class="card-body p-4">
                                 <form method="POST" action="{{ url_for('client.view_client', client_id=client._id) }}" id="editClientForm">
+                                    {% include "partials/csrf_field.html" %}
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="mb-3">
@@ -278,9 +284,10 @@
                                         <td>{{ cd.domain.name if cd.domain else 'Unknown domain' }}</td>
                                         <td><a href="http://{{ cd.full_domain }}" target="_blank">{{ cd.full_domain }}</a></td>
                                         <td>{{ cd.createdAt.strftime('%d/%m/%Y %H:%M') if cd.createdAt else 'N/A' }}</td>
-                                        <td>
-                                            <form method="POST" action="{{ url_for('client.remove_domain', client_id=client._id, client_domain_id=cd._id) }}" 
-                                                  class="d-inline" onsubmit="return confirm('Are you sure you want to remove this domain?');">
+                                                                                <td>
+                                                                                        <form method="POST" action="{{ url_for('client.remove_domain', client_id=client._id, client_domain_id=cd._id) }}" 
+                                                                                                    class="d-inline" onsubmit="return confirm('Are you sure you want to remove this domain?');">
+                                                                                                {% include "partials/csrf_field.html" %}
                                                 <button type="submit" class="btn btn-sm btn-danger">
                                                     <i class="fas fa-trash"></i> Remove
                                                 </button>
@@ -312,6 +319,7 @@
                         <hr>
                         <h6 class="mb-3">Add New Domain</h6>
                         <form method="POST" action="{{ url_for('client.add_domain', client_id=client._id) }}" class="row g-3">
+                            {% include "partials/csrf_field.html" %}
                             <div class="col-md-5">
                                 <label for="domain_id" class="form-label">Domain*</label>
                                 <select class="form-select" id="domain_id" name="domain_id" required onchange="updateDomainSuffix()">
@@ -348,6 +356,150 @@
                     </div>
                 </div>
             </div>
+
+                <!-- Payouts Tab -->
+                <div class="tab-pane fade" id="payouts" role="tabpanel">
+                    <div class="row g-3">
+                        <div class="col-12 col-lg-5">
+                            <div class="card shadow h-100">
+                                <div class="card-header d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h5 class="card-title mb-1">Iniciar payout manual</h5>
+                                        <small class="text-muted">Dispare transferências cripto via Heleket com idempotência monitorada.</small>
+                                    </div>
+                                    {% if payout_status_summary %}
+                                    {% set status_classes = {'pending':'bg-warning text-dark','broadcast':'bg-info','confirmed':'bg-success','failed':'bg-danger','cancelled':'bg-secondary'} %}
+                                    <div class="d-flex flex-wrap gap-1 justify-content-end">
+                                        {% for status, amount in payout_status_summary.items() %}
+                                        <span class="badge {{ status_classes.get(status, 'bg-primary') }} text-uppercase">
+                                            {{ status }} | {{ amount }}
+                                        </span>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="card-body">
+                                    <form method="POST" action="{{ url_for('client.initiate_payout', client_id=client._id) }}" class="needs-validation" novalidate>
+                                        {% include "partials/csrf_field.html" %}
+                                        <div class="row g-3">
+                                            <div class="col-6">
+                                                <label for="payoutAsset" class="form-label">Ativo*</label>
+                                                <input type="text" class="form-control text-uppercase" id="payoutAsset" name="asset" placeholder="ex: USDT" value="{{ payout_prefill.get('asset', '') }}" required>
+                                            </div>
+                                            <div class="col-6">
+                                                <label for="payoutNetwork" class="form-label">Rede*</label>
+                                                <input type="text" class="form-control text-uppercase" id="payoutNetwork" name="network" placeholder="ex: TRON" value="{{ payout_prefill.get('network', '') }}" required>
+                                            </div>
+                                        </div>
+
+                                        {% set default_amount_candidate = payout_prefill.get('default_amount') if payout_prefill else None %}
+                                        {% if default_amount_candidate is none %}
+                                            {% set default_amount_candidate = suggested_payout_amount %}
+                                        {% endif %}
+                                        {% if default_amount_candidate is not none %}
+                                            {% set default_amount_display = '%.2f'|format(default_amount_candidate) %}
+                                        {% else %}
+                                            {% set default_amount_display = '' %}
+                                        {% endif %}
+
+                                        <div class="mt-3">
+                                            <label for="payoutAmount" class="form-label">Valor*</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text">$</span>
+                                                <input type="number" step="0.01" min="0" class="form-control" id="payoutAmount" name="amount" placeholder="0.00" value="{{ default_amount_display }}" required>
+                                            </div>
+                                            {% if suggested_payout_amount %}
+                                            <small class="text-muted">Sugestão baseada no plano atual: {{ '%.2f'|format(suggested_payout_amount) }}.</small>
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="mt-3">
+                                            <label for="payoutWallet" class="form-label">Carteira de destino*</label>
+                                            <textarea class="form-control" id="payoutWallet" name="wallet_address" rows="3" placeholder="Cole o endereço da carteira" required>{{ payout_prefill.get('wallet_address', '') }}</textarea>
+                                            <small class="text-muted">Validada pelo Heleket durante a criação do payout.</small>
+                                        </div>
+
+                                        <div class="mt-3">
+                                            <label for="payoutMemo" class="form-label">Memo / Tag (opcional)</label>
+                                            <input type="text" class="form-control" id="payoutMemo" name="memo_tag" placeholder="Memo, Tag ou Destination Tag" value="{{ payout_prefill.get('memo_tag', '') }}">
+                                        </div>
+
+                                        <div class="form-check mt-3">
+                                            <input class="form-check-input" type="checkbox" value="on" id="rememberWallet" name="remember_wallet" {% if payout_prefill %}checked{% endif %}>
+                                            <label class="form-check-label" for="rememberWallet">
+                                                Guardar como preferência do cliente para próximos payouts
+                                            </label>
+                                        </div>
+
+                                        <div class="d-grid mt-4 gap-2">
+                                            <button type="submit" class="btn btn-primary btn-lg">
+                                                <i class="fas fa-bolt"></i> Disparar payout agora
+                                            </button>
+                                            <a href="{{ url_for('dashboard.admin_dashboard') }}" class="btn btn-outline-secondary">
+                                                <i class="fas fa-tachometer-alt"></i> Revisar desempenho no dashboard
+                                            </a>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-7">
+                            <div class="card shadow h-100">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="card-title mb-0">Histórico recente de payouts</h5>
+                                    <span class="badge bg-primary">{{ client_payouts|length }} registro{{ 's' if client_payouts|length != 1 else '' }}</span>
+                                </div>
+                                <div class="card-body">
+                                    {% if client_payouts %}
+                                    <div class="table-responsive">
+                                        <table class="table table-hover align-middle mb-0">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Data</th>
+                                                    <th>Status</th>
+                                                    <th>Valor</th>
+                                                    <th>Rede</th>
+                                                    <th>Carteira</th>
+                                                    <th>Transação</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for payout in client_payouts %}
+                                                <tr>
+                                                    <td class="text-nowrap">
+                                                        {{ payout.createdAt.strftime('%d/%m/%Y %H:%M') if payout.createdAt else '—' }}
+                                                    </td>
+                                                    {% set status_label = payout.status or 'pending' %}
+                                                    {% set status_classes = {'pending':'bg-warning text-dark','broadcast':'bg-info','confirmed':'bg-success','failed':'bg-danger','cancelled':'bg-secondary'} %}
+                                                    <td><span class="badge {{ status_classes.get(status_label, 'bg-secondary') }}">{{ status_label|capitalize }}</span></td>
+                                                    <td>
+                                                        <strong>{{ '%.2f'|format(payout.amount|default(0)) }}</strong>
+                                                        <small class="text-muted ms-1">{{ payout.asset or '' }}</small>
+                                                    </td>
+                                                    <td>{{ payout.network or '—' }}</td>
+                                                    <td class="text-truncate" style="max-width: 200px;" title="{{ payout.wallet_address }}">
+                                                        <code class="small">{{ payout.wallet_address or '—' }}</code>
+                                                    </td>
+                                                    <td class="text-truncate" style="max-width: 160px;" title="{{ payout.heleket_transaction_id or '-' }}">
+                                                        <small class="text-muted">{{ payout.heleket_transaction_id or '—' }}</small>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    {% else %}
+                                    <div class="text-center py-5">
+                                        <i class="fas fa-coins fa-2x text-muted mb-3"></i>
+                                        <p class="mb-1">Nenhum payout foi iniciado ainda.</p>
+                                        <p class="text-muted small">Use o formulário ao lado para disparar o primeiro pagamento deste cliente.</p>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
             <!-- Info Entries Tab -->
             <div class="tab-pane fade" id="info-entries" role="tabpanel">
@@ -452,6 +604,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <form action="{{ url_for('client.delete_client', client_id=client._id) }}" method="POST">
+                    {% include "partials/csrf_field.html" %}
                     <button type="submit" class="btn btn-danger">Delete</button>
                 </form>
             </div>
@@ -496,5 +649,18 @@ document.addEventListener('DOMContentLoaded', function() {
     editTab.show();
 });
 {% endif %}
+
+// Respect URL hash to keep selected tab (e.g., #payouts)
+document.addEventListener('DOMContentLoaded', function() {
+    const hash = window.location.hash;
+    if (!hash) {
+        return;
+    }
+    const trigger = document.querySelector(`[data-bs-target="${hash}"]`);
+    if (trigger) {
+        const tab = new bootstrap.Tab(trigger);
+        tab.show();
+    }
+});
 </script>
 {% endblock %}

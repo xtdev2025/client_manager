@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from typing import Any, Dict
 
 from bson.objectid import ObjectId
 from flask import current_app
@@ -223,6 +224,50 @@ class Client(User):
         except Exception as e:
             current_app.logger.error(f"Error deleting client: {e}")
             return False, str(e)
+
+    @staticmethod
+    def update_crypto_wallet_preferences(client_id, preferences: Dict[str, Any]) -> bool:
+        """Persist crypto wallet preferences used during payouts."""
+        try:
+            if isinstance(client_id, str):
+                client_id = ObjectId(client_id)
+
+            allowed_keys = {"asset", "network", "wallet_address", "memo_tag", "default_amount"}
+            sanitized: Dict[str, Any] = {}
+
+            for key in allowed_keys:
+                if key not in preferences:
+                    continue
+
+                value = preferences.get(key)
+                if value in (None, ""):
+                    continue
+
+                if key == "default_amount":
+                    try:
+                        value = float(value)
+                    except (TypeError, ValueError):
+                        continue
+
+                sanitized[key] = value
+
+            update_doc: Dict[str, Any] = {
+                "$set": {
+                    "updatedAt": datetime.utcnow(),
+                }
+            }
+
+            if sanitized:
+                update_doc["$set"]["crypto_wallet_preferences"] = sanitized
+            else:
+                update_doc.setdefault("$unset", {})["crypto_wallet_preferences"] = ""
+
+            result = mongo.db.clients.update_one({"_id": client_id}, update_doc)
+            return result.modified_count > 0
+
+        except Exception as e:
+            current_app.logger.error(f"Error updating crypto wallet preferences: {e}")
+            return False
 
     @staticmethod
     def get_all():

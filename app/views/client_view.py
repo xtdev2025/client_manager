@@ -167,6 +167,10 @@ class ClientView(BaseView):
         client_domains,
         available_domains,
         domain_limit,
+        client_payouts=None,
+        payout_prefill=None,
+        payout_status_summary=None,
+        suggested_amount=None,
         form_data=None,
         errors=None,
     ):
@@ -210,6 +214,10 @@ class ClientView(BaseView):
             client_domains=client_domains,
             available_domains=available_domains,
             domain_limit=domain_limit,
+            client_payouts=client_payouts or [],
+            payout_prefill=payout_prefill or {},
+            payout_status_summary=payout_status_summary or {},
+            suggested_payout_amount=suggested_amount,
             form_data=form_data,
             errors=errors,
         )
