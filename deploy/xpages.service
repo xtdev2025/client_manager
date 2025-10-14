@@ -8,6 +8,7 @@ User=ubuntu
 Group=ubuntu
 WorkingDirectory=/home/ubuntu/client_manager
 Environment="PATH=/home/ubuntu/client_manager/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin"
+EnvironmentFile=/etc/client-manager/env
 ExecStart=/home/ubuntu/client_manager/venv/bin/gunicorn -b 0.0.0.0:5000 run:app
 Restart=on-failure
 RestartSec=5s
@@ -18,3 +19,5 @@ WantedBy=multi-user.target
 # Notes:
 # - Adjust User/Group/WorkingDirectory to match your setup.
 # - This example uses gunicorn and assumes the app exports `app` in run.py.
+# - Ensure /etc/client-manager/env exports HELEKET_PROJECT_URL, HELEKET_MERCHANT_ID,
+#   HELEKET_API_KEY e HELEKET_WEBHOOK_SECRET antes de iniciar/recarregar o serviço.

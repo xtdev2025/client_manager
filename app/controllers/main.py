@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from flask import Blueprint, redirect, url_for
+from flask import Blueprint, current_app, jsonify, redirect, url_for
 from flask_login import current_user, login_required
 
 from app.models.admin import Admin
@@ -29,3 +29,17 @@ def index():
 def dashboard():
     """Dashboard route - redirect to new enterprise dashboard"""
     return redirect(url_for("dashboard.index"))
+
+
+@main.route("/health")
+def health_check():
+    """Lightweight health-check endpoint used by deployment targets."""
+    return jsonify(
+        {
+            "status": "ok",
+            "webhook_secret_configured": bool(
+                current_app.config.get("HELEKET_WEBHOOK_SECRET")
+            ),
+            "timestamp": datetime.utcnow().isoformat() + "Z",
+        }
+    )

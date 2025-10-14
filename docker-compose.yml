@@ -8,13 +8,19 @@ services:
     environment:
       - FLASK_ENV=development
       - MONGODB_URI=mongodb://mongodb:27017/client_manager
+      - RABBITMQ_URI=amqp://guest:guest@rabbitmq:5672/
+      - HELEKET_PROJECT_URL=${HELEKET_PROJECT_URL:-https://api.heleket.sandbox}
+      - HELEKET_MERCHANT_ID=${HELEKET_MERCHANT_ID:-local-merchant}
+      - HELEKET_API_KEY=${HELEKET_API_KEY:-local-api-key}
+      - HELEKET_WEBHOOK_SECRET=${HELEKET_WEBHOOK_SECRET:-local-webhook-secret}
     depends_on:
       - mongodb
+      - rabbitmq
     volumes:
       - .:/app
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      test: ["CMD-SHELL", "curl -fsS http://localhost:5000/health && curl -fsS http://localhost:5000/payouts/webhook/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -35,6 +41,23 @@ services:
       timeout: 10s
       retries: 3
 
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   nginx:
     image: nginx:alpine
     ports:
@@ -49,3 +72,4 @@ services:
 
 volumes:
   mongodb_data:
+  rabbitmq_data:
