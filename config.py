@@ -35,6 +35,7 @@ class Config:
     HELEKET_PROJECT_URL = os.environ.get("HELEKET_PROJECT_URL")
     HELEKET_MERCHANT_ID = os.environ.get("HELEKET_MERCHANT_ID")
     HELEKET_API_KEY = os.environ.get("HELEKET_API_KEY")
+    HELEKET_WEBHOOK_SECRET = os.environ.get("HELEKET_WEBHOOK_SECRET")
     
 class DevelopmentConfig(Config):
     DEBUG = True

@@ -146,6 +146,10 @@ def create_app(config_name=None, init_db=True):
 
     app.register_blueprint(dashboard_blueprint)
 
+    from app.controllers.payout import payout as payout_blueprint
+
+    app.register_blueprint(payout_blueprint)
+
     # Initialize database with default data if needed
     # Handle CSRF errors
     @app.errorhandler(400)
