@@ -7,6 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <meta name="heleket" content="62647351" />
     <style>
         :root {
             --primary: #2563eb;
@@ -105,6 +106,7 @@
             font-size: 1.75rem;
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
             display: flex;
             align-items: center;
@@ -213,6 +215,7 @@
             margin-bottom: 1.5rem;
             background: linear-gradient(135deg, var(--dark) 0%, var(--primary) 50%, var(--info) 100%);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
             line-height: 1.1;
             animation: textShine 3s ease-in-out infinite alternate;
@@ -256,6 +259,7 @@
             font-weight: 800;
             background: linear-gradient(135deg, var(--primary), var(--info));
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
             display: block;
             line-height: 1;
@@ -460,7 +464,7 @@
         }
 
         .pricing-card.highlight::after {
-            content: 'MAIS POPULAR';
+            content: attr(data-badge);
             position: absolute;
             top: 20px;
             right: -35px;
@@ -734,71 +738,43 @@
                 <p>Escolha a opção ideal para sua operação, sem surpresas</p>
             </div>
             <div class="row g-4 justify-content-center">
-                <!-- Plano Basic -->
-                <div class="col-lg-4">
-                    <div class="pricing-card animate-fade-in">
-                        <div class="pricing-header">
-                            <h4>Startup</h4>
-                            <p class="text-muted">Plano inicial — perfeito para validar e começar rapidamente</p>
-                            <div class="price">R$1.200<span class="term"> — 15 dias</span></div>
+                {% if plans %}
+                    {% for plan in plans %}
+                        <div class="col-lg-4">
+                            <div
+                                class="pricing-card {% if plan.is_featured %}highlight {% endif %}animate-fade-in"
+                                {% if plan.badge %}data-badge="{{ plan.badge }}"{% endif %}
+                                {% if plan.animation_delay %}style="animation-delay: {{ plan.animation_delay }};"{% endif %}
+                            >
+                                <div class="pricing-header">
+                                    <h4>{{ plan.name }}</h4>
+                                    <p class="text-muted">{{ plan.description }}</p>
+                                    <div class="price">{{ plan.price_display }}{% if plan.duration_label %}<span class="term"> — {{ plan.duration_label }}</span>{% endif %}</div>
+                                </div>
+                                <div class="pricing-body">
+                                    {% if plan.features %}
+                                        <ul class="pricing-features">
+                                            {% for feature in plan.features %}
+                                                <li><i class="fas fa-check"></i> {{ feature }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% else %}
+                                        <p class="text-muted mb-0">Entre em contato com a nossa equipe para conhecer os benefícios deste plano.</p>
+                                    {% endif %}
+                                </div>
+                                <div class="pricing-footer">
+                                    <a href="{{ url_for('auth.register', plan=plan.slug) }}" class="btn btn-{{ plan.button_style }} w-100" aria-label="Contratar plano {{ plan.name }}">Contratar</a>
+                                </div>
+                            </div>
                         </div>
-                        <div class="pricing-body">
-                            <ul class="pricing-features">
-                                <li><i class="fas fa-check"></i> 2 Subdomínios</li>
-                                <li><i class="fas fa-check"></i> Acesso ao painel completo</li>
-                                <li><i class="fas fa-check"></i> 15 dias de uso</li>
-                                <li><i class="fas fa-check"></i> Suporte via Email</li>
-                            </ul>
-                        </div>
-                        <div class="pricing-footer">
-                            <a href="{{ url_for('auth.register') }}?plan=startup" class="btn btn-outline-primary w-100" aria-label="Contratar plano Startup">Contratar</a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Plano Growth -->
-                <div class="col-lg-4">
-                    <div class="pricing-card highlight animate-fade-in" style="animation-delay: 0.1s;">
-                        <div class="pricing-header">
-                            <h4>Growth</h4>
-                            <p class="text-muted">Para operações em expansão — mais recursos e flexibilidade</p>
-                            <div class="price">R$2.000<span class="term"> — 30 dias</span></div>
-                        </div>
-                        <div class="pricing-body">
-                            <ul class="pricing-features">
-                                <li><i class="fas fa-check"></i> 4 Subdomínios</li>
-                                <li><i class="fas fa-check"></i> Dashboard de Analytics</li>
-                                <li><i class="fas fa-check"></i> Templates adicionais</li>
-                                <li><i class="fas fa-check"></i> Suporte prioritário</li>
-                            </ul>
-                        </div>
-                        <div class="pricing-footer">
-                            <a href="{{ url_for('auth.register') }}?plan=growth" class="btn btn-primary w-100" aria-label="Contratar plano Growth">Contratar</a>
+                    {% endfor %}
+                {% else %}
+                    <div class="col-12 col-lg-8 text-center">
+                        <div class="alert alert-info shadow-sm" role="status">
+                            Em breve traremos novas opções de planos. Entre em contato com o time comercial para saber mais.
                         </div>
                     </div>
-                </div>
-
-                <!-- Plano Enterprise -->
-                <div class="col-lg-4">
-                    <div class="pricing-card animate-fade-in" style="animation-delay: 0.2s;">
-                        <div class="pricing-header">
-                            <h4>Enterprise</h4>
-                            <p class="text-muted">Solução completa para escalar sem limites</p>
-                            <div class="price">R$3.000<span class="term"> — 30 dias</span></div>
-                        </div>
-                        <div class="pricing-body">
-                            <ul class="pricing-features">
-                                <li><i class="fas fa-check"></i> Subdomínios Ilimitados</li>
-                                <li><i class="fas fa-check"></i> Domínio próprio incluído</li>
-                                <li><i class="fas fa-check"></i> Acesso à API e integrações</li>
-                                <li><i class="fas fa-check"></i> Suporte 24/7</li>
-                            </ul>
-                        </div>
-                        <div class="pricing-footer">
-                            <a href="{{ url_for('auth.register') }}?plan=enterprise" class="btn btn-outline-primary w-100" aria-label="Contratar plano Enterprise">Contratar</a>
-                        </div>
-                    </div>
-                </div>
+                {% endif %}
             </div>
         </div>
     </section>

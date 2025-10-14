@@ -179,15 +179,10 @@ O **Client Manager** é uma aplicação web Flask que utiliza **Server-Side Rend
 
 ---
 
-### 📢 Public Templates (`/public`)
+### 📢 Public Templates (`/template/*`)
 
-**Blueprint:** `public_template_bp`  
-**Arquivo:** `app/controllers/public_template.py`
-
-| Rota | Método | Descrição | Auth |
-|------|--------|-----------|------|
-| `/public/<domain>` | GET | Exibir template público | Público |
-| `/public/click/<domain>` | POST | Registrar click | Público |
+> ⚠️ **Funcionalidade descontinuada:** As rotas públicas de template foram removidas.
+> Documentação anterior foi mantida apenas para referência histórica.
 
 ---
 

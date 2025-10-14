@@ -1,6 +1,59 @@
 from datetime import datetime
+
 from app import bcrypt, mongo
 from app.templates_data import get_all_templates
+
+
+PLAN_DEFINITIONS = [
+    {
+        "name": "Startup",
+        "slug": "startup",
+        "description": "Plano inicial — perfeito para validar e começar rapidamente",
+        "price": 1200.0,
+        "duration_days": 15,
+        "active_domains_limit": 2,
+        "active_templates_limit": 1,
+        "features": [
+            "2 Subdomínios",
+            "Acesso ao painel completo",
+            "15 dias de uso",
+            "Suporte via Email"
+        ],
+        "status": "active"
+    },
+    {
+        "name": "Growth",
+        "slug": "growth",
+        "description": "Para operações em expansão — mais recursos e flexibilidade",
+        "price": 2000.0,
+        "duration_days": 30,
+        "active_domains_limit": 4,
+        "active_templates_limit": 3,
+        "features": [
+            "4 Subdomínios",
+            "Dashboard de Analytics",
+            "Templates adicionais",
+            "Suporte prioritário"
+        ],
+        "status": "active"
+    },
+    {
+        "name": "Enterprise",
+        "slug": "enterprise",
+        "description": "Solução completa para escalar sem limites",
+        "price": 3000.0,
+        "duration_days": 30,
+        "active_domains_limit": -1,
+        "active_templates_limit": -1,
+        "features": [
+            "Subdomínios ilimitados",
+            "Domínio próprio incluído",
+            "Acesso à API e integrações",
+            "Suporte 24/7"
+        ],
+        "status": "active"
+    }
+]
 
 DOMAIN_ID = None
 CLIENT_IDS = {}
@@ -73,16 +126,14 @@ def create_admins():
         print(f"  OK {admin_data['username']}")
 
 def create_plans():
-    plans = [
-        {"name": "Basic", "description": "Basico", "price": 29.90, "active_domains_limit": 5, "active_templates_limit": 1, "features": ["5 dominios"], "status": "active"},
-        {"name": "Standard", "description": "Intermediario", "price": 79.90, "active_domains_limit": 15, "active_templates_limit": 3, "features": ["15 dominios"], "status": "active"},
-        {"name": "Premium", "description": "Profissional", "price": 199.90, "active_domains_limit": -1, "active_templates_limit": -1, "features": ["Ilimitado"], "status": "active"}
-    ]
-    for plan in plans:
-        plan["createdAt"] = datetime.utcnow()
-        plan["updatedAt"] = datetime.utcnow()
+    for plan_definition in PLAN_DEFINITIONS:
+        plan = {
+            **plan_definition,
+            "createdAt": datetime.utcnow(),
+            "updatedAt": datetime.utcnow()
+        }
         result = mongo.db.plans.insert_one(plan)
-        print(f"  OK {plan['name']}")
+        print(f"  OK {plan_definition['name']}")
 
 def create_templates():
     templates = get_all_templates()
@@ -118,16 +169,20 @@ def create_domain():
 
 def create_clients():
     global CLIENT_IDS
-    plan_basic = mongo.db.plans.find_one({"name": "Basic"})
-    plan_standard = mongo.db.plans.find_one({"name": "Standard"})
-    plan_premium = mongo.db.plans.find_one({"name": "Premium"})
-    
+    plan_startup = mongo.db.plans.find_one({"name": "Startup"})
+    plan_growth = mongo.db.plans.find_one({"name": "Growth"})
+    plan_enterprise = mongo.db.plans.find_one({"name": "Enterprise"})
+
+    if not all([plan_startup, plan_growth, plan_enterprise]):
+        print("  Erro: Não foi possível localizar todos os planos padrão para criar clientes.")
+        return
+
     clients = [
-        {"username": "cliente1", "password": "Senha@123", "email": "cliente1@example.com", "name": "Cliente Premium", "plan_id": plan_premium["_id"], "status": "active"},
-        {"username": "cliente2", "password": "Senha@123", "email": "cliente2@example.com", "name": "Cliente Standard", "plan_id": plan_standard["_id"], "status": "active"},
-        {"username": "cliente3", "password": "Senha@123", "email": "cliente3@example.com", "name": "Cliente Basic", "plan_id": plan_basic["_id"], "status": "active"}
+        {"username": "cliente1", "password": "Senha@123", "email": "cliente1@example.com", "name": "Cliente Enterprise", "plan_id": plan_enterprise["_id"], "status": "active"},
+        {"username": "cliente2", "password": "Senha@123", "email": "cliente2@example.com", "name": "Cliente Growth", "plan_id": plan_growth["_id"], "status": "active"},
+        {"username": "cliente3", "password": "Senha@123", "email": "cliente3@example.com", "name": "Cliente Startup", "plan_id": plan_startup["_id"], "status": "active"}
     ]
-    
+
     CLIENT_IDS = {}
     for client_data in clients:
         password = client_data.pop("password")

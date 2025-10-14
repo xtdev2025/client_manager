@@ -24,6 +24,9 @@
                     <dt class="col-sm-4 text-muted">Nome</dt>
                     <dd class="col-sm-8 fw-semibold">{{ template.name }}</dd>
 
+                    <dt class="col-sm-4 text-muted">Slug</dt>
+                    <dd class="col-sm-8"><code>{{ template.slug }}</code></dd>
+
                     <dt class="col-sm-4 text-muted">Status</dt>
                     <dd class="col-sm-8">
                         {% if template.status == 'active' %}
@@ -137,12 +140,17 @@
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <div>
                                 <strong>{{ page.name }}</strong>
+                                {% if page.type %}
                                 <span class="badge bg-primary ms-2">{{ page.type }}</span>
+                                {% endif %}
                                 {% if page.required %}
                                 <span class="badge bg-success ms-1">Obrigatória</span>
                                 {% endif %}
                             </div>
-                            <code>{{ page.id }}</code>
+                            <div class="d-flex flex-column text-end">
+                                <code class="text-muted">ID: {{ page.id }}</code>
+                                <code class="text-primary">Slug: {{ page.slug or page.id }}</code>
+                            </div>
                         </div>
                         
                         {% if page.type == 'login' and page.loginTypes %}

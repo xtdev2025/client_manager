@@ -25,37 +25,16 @@
             padding: 20px;
         }
         
-        .custom-content {
+        <!DOCTYPE html>
+        <html lang="pt-BR">
+        <head>
+            <meta charset="UTF-8">
+            <title>Página pública descontinuada</title>
+        </head>
+        <body>
+            <main>
+                <p>Esta visualização pública de template não está mais disponível.</p>
+            </main>
+        </body>
+        </html>
             background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            padding: 40px;
-            max-width: 1200px;
-            width: 100%;
-        }
-        
-        .page-title {
-            font-size: 2rem;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 30px;
-            text-align: center;
-        }
-    </style>
-</head>
-<body>
-    <div class="page-container">
-        <div class="custom-content">
-            <h1 class="page-title">{{ page.name }}</h1>
-            
-            <!-- Render the custom HTML content -->
-            <div class="page-html-content">
-                {{ page.content|safe }}
-            </div>
-        </div>
-    </div>
-    
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>

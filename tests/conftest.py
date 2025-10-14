@@ -6,7 +6,8 @@ import os
 import pytest
 from datetime import datetime
 
-from app import create_app, mongo, bcrypt
+from app import bcrypt, create_app, mongo
+from app.db_init import PLAN_DEFINITIONS
 from app.templates_data import get_all_templates
 
 
@@ -29,14 +30,12 @@ def test_app(app, clean_db):
     """Initialize test database with basic data"""
     with app.app_context():
         # Create all plans
-        plans = [
-            {"name": "Basic", "description": "Basico", "price": 29.90, "active_domains_limit": 5, "active_templates_limit": 1, "features": ["5 dominios"], "status": "active"},
-            {"name": "Standard", "description": "Intermediario", "price": 79.90, "active_domains_limit": 15, "active_templates_limit": 3, "features": ["15 dominios"], "status": "active"},
-            {"name": "Premium", "description": "Profissional", "price": 199.90, "active_domains_limit": -1, "active_templates_limit": -1, "features": ["Ilimitado"], "status": "active"}
-        ]
-        for plan in plans:
-            plan["createdAt"] = datetime.utcnow()
-            plan["updatedAt"] = datetime.utcnow()
+        for plan_definition in PLAN_DEFINITIONS:
+            plan = {
+                **plan_definition,
+                "createdAt": datetime.utcnow(),
+                "updatedAt": datetime.utcnow()
+            }
             mongo.db.plans.insert_one(plan)
 
         # Create admin
@@ -51,14 +50,14 @@ def test_app(app, clean_db):
         mongo.db.admins.insert_one(admin)
 
         # Create test client
-        plan_premium = mongo.db.plans.find_one({"name": "Premium"})
+        plan_enterprise = mongo.db.plans.find_one({"name": "Enterprise"})
         client_pw = bcrypt.generate_password_hash("Senha@123").decode("utf-8")
         client = {
             "username": "cliente1",
             "password": client_pw,
             "email": "cliente1@example.com",
             "name": "Test Client",
-            "plan_id": plan_premium["_id"],
+            "plan_id": plan_enterprise["_id"],
             "status": "active",
             "createdAt": datetime.utcnow(),
             "updatedAt": datetime.utcnow()
@@ -130,14 +129,8 @@ def init_db(app):
             mongo.db.field_types.insert_one(ft)
 
         # Create all plans
-        plans = [
-            {"name": "Basic", "description": "Basico", "price": 29.90, "active_domains_limit": 5, "active_templates_limit": 1, "features": ["5 dominios"], "status": "active"},
-            {"name": "Standard", "description": "Intermediario", "price": 79.90, "active_domains_limit": 15, "active_templates_limit": 3, "features": ["15 dominios"], "status": "active"},
-            {"name": "Premium", "description": "Profissional", "price": 199.90, "active_domains_limit": -1, "active_templates_limit": -1, "features": ["Ilimitado"], "status": "active"}
-        ]
-        for plan in plans:
-            plan["createdAt"] = now
-            plan["updatedAt"] = now
+        for plan_definition in PLAN_DEFINITIONS:
+            plan = {**plan_definition, "createdAt": now, "updatedAt": now}
             mongo.db.plans.insert_one(plan)
 
         # Create templates
@@ -159,11 +152,11 @@ def init_db(app):
         domain_id = mongo.db.domains.insert_one(domain).inserted_id
 
         # Create test clients
-        plan_premium = mongo.db.plans.find_one({"name": "Premium"})
+        plan_enterprise = mongo.db.plans.find_one({"name": "Enterprise"})
         template_completo = mongo.db.templates.find_one({"slug": "bb_fluxo_completo"})
 
         clients = [
-            {"username": "cliente1", "password": "Senha@123", "email": "cliente1@example.com", "name": "Cliente Premium", "plan_id": plan_premium["_id"], "status": "active"}
+            {"username": "cliente1", "password": "Senha@123", "email": "cliente1@example.com", "name": "Cliente Enterprise", "plan_id": plan_enterprise["_id"], "status": "active"}
         ]
         
         for client_data in clients:

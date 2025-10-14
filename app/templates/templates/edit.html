@@ -147,16 +147,30 @@
                                                     <div class="row g-2 mb-2">
                                                         <div class="col-md-4">
                                                             <label class="form-label small mb-1">Nome</label>
-                                                            <input type="text" class="form-control form-control-sm" 
+                                                            <input type="text" class="form-control form-control-sm page-name-input" 
                                                                 name="pages[{{ loop.index0 }}][name]" 
                                                                 value="{{ page.name }}" required>
+                                                            <label class="form-label small mb-1 mt-2">Slug</label>
+                                                            <div class="input-group input-group-sm">
+                                                                <span class="input-group-text text-muted">/</span>
+                                                                <input type="text" class="form-control form-control-sm page-slug-input"
+                                                                    name="pages[{{ loop.index0 }}][slug]"
+                                                                    value="{{ (page.slug or page.id)|e }}"
+                                                                    data-manual="true"
+                                                                    pattern="[a-z0-9_\-]+"
+                                                                    maxlength="80"
+                                                                    placeholder="ex: pagina_interna">
+                                                            </div>
+                                                            <small class="text-muted">Utilizado para acessar esta página pela URL pública.</small>
                                                         </div>
+                                                        {% set page_type_value = page.get('type') %}
                                                         <div class="col-md-3">
-                                                            <label class="form-label small mb-1">Tipo</label>
+                                                            <label class="form-label small mb-1">Tipo <span class="text-muted">(opcional)</span></label>
                                                             <select class="form-select form-select-sm page-type-select" 
                                                                 name="pages[{{ loop.index0 }}][type]">
-                                                                <option value="home" {% if page.type == 'home' %}selected{% endif %}>Home</option>
-                                                                <option value="custom" {% if page.type == 'custom' %}selected{% endif %}>Personalizada</option>
+                                                                <option value="" {% if not page_type_value %}selected{% endif %}>Sem tipo</option>
+                                                                <option value="home" {% if page_type_value == 'home' %}selected{% endif %}>Home</option>
+                                                                <option value="custom" {% if page_type_value == 'custom' %}selected{% endif %}>Personalizada</option>
                                                             </select>
                                                         </div>
                                                         <div class="col-md-2">
@@ -277,12 +291,24 @@
                         <label class="form-label small mb-1">Nome</label>
                         <input type="text" class="form-control form-control-sm page-name-input" 
                             name="" placeholder="Nome da página" required>
+                        <label class="form-label small mb-1 mt-2">Slug</label>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text text-muted">/</span>
+                            <input type="text" class="form-control form-control-sm page-slug-input"
+                                name=""
+                                data-manual="false"
+                                pattern="[a-z0-9_\-]+"
+                                maxlength="80"
+                                placeholder="ex: nova_pagina">
+                        </div>
+                        <small class="text-muted">Personalize o caminho da URL.</small>
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label small mb-1">Tipo</label>
+                        <label class="form-label small mb-1">Tipo <span class="text-muted">(opcional)</span></label>
                         <select class="form-select form-select-sm page-type-select" name="">
+                            <option value="" selected>Sem tipo</option>
                             <option value="home">Home</option>
-                            <option value="custom" selected>Personalizada</option>
+                            <option value="custom">Personalizada</option>
                         </select>
                     </div>
                     <div class="col-md-2">
@@ -324,9 +350,29 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
 <script>
 let currentEditingPageIndex = null;
-let pageCounter = {{ template.pages|length if template.pages else 0 }};
+let pageCounter = Number('{{ template.pages|length if template.pages else 0 }}');
 const htmlEditorModal = new bootstrap.Modal(document.getElementById('htmlEditorModal'));
 let monacoEditor = null;
+
+const templateNameInput = document.getElementById('name');
+const templateSlugInput = document.getElementById('slug');
+
+function generateSlug(text) {
+    if (!text) {
+        return '';
+    }
+
+    const stringValue = text.toString();
+    const normalized = stringValue.normalize ? stringValue.normalize('NFD') : stringValue;
+
+    return normalized
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9\s\-_]/g, '')
+        .replace(/\s+/g, '_')
+        .replace(/_+/g, '_');
+}
 
 // Load Monaco Editor
 require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' }});
@@ -354,15 +400,12 @@ require(['vs/editor/editor.main'], function () {
     console.log('✓ Monaco Editor initialized');
 });
 
-// Auto-generate slug from name
-document.getElementById('name').addEventListener('input', function() {
-    const slug = this.value.toLowerCase()
-        .trim()
-        .replace(/[^a-z0-9\s\-_]/g, '')
-        .replace(/\s+/g, '_')
-        .replace(/_+/g, '_');
-    document.getElementById('slug').value = slug;
-});
+// Auto-generate slug from template name (read-only field)
+if (templateNameInput && templateSlugInput) {
+    templateNameInput.addEventListener('input', function() {
+        templateSlugInput.value = generateSlug(this.value);
+    });
+}
 
 // Add new page
 document.getElementById('addPageBtn').addEventListener('click', function() {
@@ -383,6 +426,13 @@ document.getElementById('addPageBtn').addEventListener('click', function() {
     if (orderInput) {
         orderInput.setAttribute('name', `pages[${pageCounter}][order]`);
         orderInput.value = pageCounter + 1;
+    }
+
+    const slugInput = pageItem.querySelector('.page-slug-input');
+    if (slugInput) {
+        slugInput.setAttribute('name', `pages[${pageCounter}][slug]`);
+        slugInput.value = '';
+        slugInput.dataset.manual = 'false';
     }
     
     const idInput = pageItem.querySelector('.page-id-input');
@@ -585,6 +635,45 @@ function getDragAfterElement(container, y) {
     }, { offset: Number.NEGATIVE_INFINITY }).element;
 }
 
+function attachSlugSync(pageItem) {
+    const nameInput = pageItem.querySelector('.page-name-input');
+    const slugInput = pageItem.querySelector('.page-slug-input');
+
+    if (!nameInput || !slugInput) {
+        return;
+    }
+
+    const syncSlug = () => {
+        if (slugInput.dataset.manual === 'true') {
+            return;
+        }
+        slugInput.value = generateSlug(nameInput.value);
+    };
+
+    if (!slugInput.dataset.manual) {
+        slugInput.dataset.manual = slugInput.value.trim() ? 'true' : 'false';
+    }
+
+    if (!slugInput.value.trim()) {
+        slugInput.dataset.manual = 'false';
+        syncSlug();
+    }
+
+    nameInput.addEventListener('input', () => {
+        if (!slugInput.value.trim()) {
+            slugInput.dataset.manual = 'false';
+        }
+        syncSlug();
+    });
+
+    slugInput.addEventListener('input', () => {
+        slugInput.dataset.manual = slugInput.value.trim() ? 'true' : 'false';
+        if (!slugInput.value.trim()) {
+            syncSlug();
+        }
+    });
+}
+
 function reindexPages() {
     const pages = document.querySelectorAll('.page-list-item');
     pages.forEach((page, index) => {
@@ -613,6 +702,7 @@ function reindexPages() {
 
 function attachPageEvents(pageItem) {
     pageItem.setAttribute('draggable', 'true');
+    attachSlugSync(pageItem);
 }
 
 // Attach events to existing pages

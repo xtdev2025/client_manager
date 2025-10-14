@@ -179,7 +179,7 @@ Processamento de requisições HTTP e orquestração entre services/models.
 - `domain.py` - Gestão de domínios
 - `info.py` - Gestão de informações bancárias
 - `main.py` - Rotas principais (index, dashboard)
-- `public_template.py` - Renderização pública de templates
+- ~~`public_template.py` - Renderização pública de templates~~ *(removido)*
 
 **Responsabilidades:**
 

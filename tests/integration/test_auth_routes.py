@@ -19,12 +19,12 @@ class TestAuthRoutes:
         """Test successful admin login"""
         with app.app_context():
             # Create test admin
-            Admin.create("testadmin", "password123", "admin")
+            Admin.create("superadmin", "Admin@123", "admin")
 
         # Attempt login
         response = client.post(
             "/login",
-            data={"username": "testadmin", "password": "password123"},
+            data={"username": "superadmin", "password": "Admin@123"},
             follow_redirects=True,
         )
 
@@ -36,12 +36,12 @@ class TestAuthRoutes:
         with app.app_context():
             # Create plan and client
             success, plan_id = Plan.create("Test Plan", "Description", 99.99, 30)
-            Client.create("testclient", "password123", plan_id, status="active")
+            Client.create("testclient", "Admin@123", plan_id, status="active")
 
         # Attempt login
         response = client.post(
             "/login",
-            data={"username": "testclient", "password": "password123"},
+            data={"username": "testclient", "password": "Admin@123"},
             follow_redirects=True,
         )
 
@@ -50,11 +50,11 @@ class TestAuthRoutes:
     def test_login_invalid_credentials(self, client, app):
         """Test login with invalid credentials"""
         with app.app_context():
-            Admin.create("testadmin", "password123", "admin")
+            Admin.create("superadmin", "Admin@123", "admin")
 
         response = client.post(
             "/login",
-            data={"username": "testadmin", "password": "wrongpassword"},
+            data={"username": "superadmin", "password": "wrongpassword"},
             follow_redirects=True,
         )
 
@@ -65,11 +65,11 @@ class TestAuthRoutes:
         """Test login with inactive client account"""
         with app.app_context():
             success, plan_id = Plan.create("Test Plan", "Description", 99.99, 30)
-            Client.create("testclient", "password123", plan_id, status="inactive")
+            Client.create("testclient", "Admin@123", plan_id, status="inactive")
 
         response = client.post(
             "/login",
-            data={"username": "testclient", "password": "password123"},
+            data={"username": "testclient", "password": "Admin@123"},
             follow_redirects=True,
         )
 
@@ -88,10 +88,10 @@ class TestAuthRoutes:
     def test_logout(self, client, app):
         """Test logout functionality"""
         with app.app_context():
-            Admin.create("testadmin", "password123", "admin")
+            Admin.create("superadmin", "Admin@123", "admin")
 
         # Login first
-        client.post("/login", data={"username": "testadmin", "password": "password123"})
+        client.post("/login", data={"username": "superadmin", "password": "Admin@123"})
 
         # Then logout
         response = client.get("/logout", follow_redirects=True)
@@ -109,10 +109,10 @@ class TestAuthRoutes:
         with app.app_context():
             # Create and login as client
             success, plan_id = Plan.create("Test Plan", "Description", 99.99, 30)
-            Client.create("testclient", "password123", plan_id, status="active")
+            Client.create("testclient", "Admin@123", plan_id, status="active")
 
         # Login as client
-        client.post("/login", data={"username": "testclient", "password": "password123"})
+        client.post("/login", data={"username": "testclient", "password": "Admin@123"})
 
         # Try to access admin route
         response = client.get("/admins/", follow_redirects=True)

@@ -13,7 +13,7 @@ class TestAuditService:
         """Test successful action logging"""
         with app.app_context():
             # Create admin for user_id
-            success, admin_id = Admin.create("testadmin", "password123", "admin")
+            success, admin_id = Admin.create("superadmin", "Admin@123", "superadmin")
 
             # Log an action
             result = AuditService.log_action(
@@ -37,7 +37,7 @@ class TestAuditService:
     def test_log_admin_action(self, app):
         """Test logging admin-specific action"""
         with app.app_context():
-            success, admin_id = Admin.create("testadmin", "password123", "admin")
+            success, admin_id = Admin.create("superadmin", "Admin@123", "admin")
 
             result = AuditService.log_admin_action(
                 action="create", admin_id=admin_id, details={"username": "newadmin"}
@@ -66,7 +66,7 @@ class TestAuditService:
         """Test logging plan-specific action"""
         with app.app_context():
             result = AuditService.log_plan_action(
-                action="create", plan_id="test_plan_id", details={"name": "Premium Plan"}
+                action="create", plan_id="test_plan_id", details={"name": "Enterprise"}
             )
 
             assert result is True

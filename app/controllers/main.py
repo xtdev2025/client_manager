@@ -20,7 +20,8 @@ def index():
     """Home page route"""
     if current_user.is_authenticated:
         return redirect(url_for("main.dashboard"))
-    return MainView.render_index()
+    plans = Plan.get_all()
+    return MainView.render_index(plans=plans)
 
 
 @main.route("/dashboard")

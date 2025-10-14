@@ -2,7 +2,9 @@
 
 ## Visão Geral
 
-O sistema de templates do Client Manager permite criar e gerenciar páginas personalizadas para clientes. Cada template possui páginas com conteúdo HTML personalizado que pode ser acessado publicamente via URLs amigáveis.
+O sistema de templates do Client Manager permite criar e gerenciar páginas personalizadas para clientes. Cada template possui páginas com conteúdo HTML personalizado que **antes** podia ser acessado publicamente via URLs amigáveis.
+
+> ⚠️ **Importante:** A partir de outubro de 2025 as rotas públicas de template e o fluxo de submissão associado foram descontinuados. Este documento mantém as referências apenas para histórico e eventual reimplementação.
 
 ## Funcionalidades Implementadas
 
@@ -23,36 +25,17 @@ Cada template contém uma ou mais páginas com:
 - **Conteúdo HTML**: HTML personalizado para renderização
 - **Ordem**: ordem de exibição das páginas
 
-### 3. **Rotas Públicas** ✅
+### 3. **Rotas Públicas** *(removidas)*
 
-O sistema expõe rotas públicas para acesso aos templates:
+As rotas públicas `GET /template/<slug>/<page_id>` e `POST /template/<slug>/<page_id>/submit` foram descontinuadas. Os exemplos e instruções anteriores foram mantidos apenas como referência histórica.
 
-```
-GET  /template/<slug>/<page_id>        # Visualizar página
-POST /template/<slug>/<page_id>/submit # Submeter formulário
-```
+### 4. **Templates Públicos Responsivos** *(removidos)*
 
-**Exemplos:**
+O conjunto de templates voltados para visualização pública não faz mais parte da aplicação.
 
-```
-http://127.0.0.1:5000/template/basic_template/home
-http://127.0.0.1:5000/template/professional_template/login
-http://127.0.0.1:5000/template/ecommerce/contact
-```
+### 5. **Auditoria de Acessos** *(ajustada)*
 
-### 4. **Templates Públicos Responsivos** ✅
-
-- Página simplificada para renderização pública
-- Suporte a HTML customizado
-- Design responsivo
-- Página de sucesso após submissão de formulários
-
-### 5. **Auditoria de Acessos** ✅
-
-- Registro de todas as visualizações de páginas
-- Captura de IP do visitante
-- Logs detalhados com timestamp
-- Rastreamento de slug e page_id acessados
+O serviço de auditoria continua disponível para rotas internas. Logs específicos das páginas públicas foram desativados com a remoção das rotas.
 
 ## Estrutura de Dados
 
@@ -118,26 +101,12 @@ http://127.0.0.1:5000/template/ecommerce/contact
 
 ### 3. Acessar Página Pública
 
-Copie a URL pública da página:
+> ℹ️ **Histórico:** As instruções abaixo descrevem o fluxo antigo de URLs públicas. Elas foram mantidas apenas como referência para equipes que precisam migrar integrações existentes.
 
-```
-http://127.0.0.1:5000/template/<slug>/<page_id>
-```
+- URL base anterior: `http://127.0.0.1:5000/template/<slug>/<page_id>`
+- Endpoint de submissão anterior: `/template/<slug>/<page_id>/submit`
 
-Substitua:
-
-- `<slug>` pelo slug do template
-- `<page_id>` pelo ID da página
-
-### 4. Submeter Formulário
-
-Se a página contiver um formulário, ele pode ser submetido via POST para:
-
-```
-/template/<slug>/<page_id>/submit
-```
-
-Após submissão, o usuário é redirecionado para uma página de sucesso.
+Ambos deixaram de existir na aplicação atual.
 
 ## Arquivos do Sistema
 
@@ -148,7 +117,7 @@ Após submissão, o usuário é redirecionado para uma página de sucesso.
 ### Controllers
 
 - ✅ `app/controllers/template.py` - Gerenciamento de templates (admin)
-- ✅ `app/controllers/public_template.py` - Rotas públicas para visualização
+- ~~`app/controllers/public_template.py` - Rotas públicas para visualização~~ *(removido)*
 
 ### Views
 
@@ -161,10 +130,10 @@ Após submissão, o usuário é redirecionado para uma página de sucesso.
   - `create.html` - Criação de templates
   - `edit.html` - Edição de templates
   - `view.html` - Visualização de templates
-- ✅ `app/templates/public/` - Templates públicos
-  - `template_page.html` - Renderização de página (completa)
-  - `template_page_simple.html` - Renderização de página (simplificada)
-  - `submit_success.html` - Página de sucesso
+- ✅ `app/templates/public/` - Templates públicos *(arquivos mantidos apenas como placeholder informativo)*
+   - `template_page.html` - Mensagem informando descontinuação
+   - `template_page_simple.html` - Mensagem informando descontinuação
+   - `submit_success.html` - Mensagem informando descontinuação
 
 ### Services
 
@@ -193,7 +162,7 @@ Após submissão, o usuário é redirecionado para uma página de sucesso.
 
 3. **Notificações**
    - Email ao receber nova submissão
-   - SMS para notificações urgentes
+   - TELEGRAM/DISCORD para notificações urgentes
    - Webhooks para integrações
 
 4. **Temas e Personalização**
@@ -239,25 +208,23 @@ Após submissão, o usuário é redirecionado para uma página de sucesso.
    http://127.0.0.1:5000/templates/edit/<id>
    ```
 
-3. **Acessar página pública:**
+3. **Acessar página pública:** *(historicamente disponível)*
 
-   ```
-   http://127.0.0.1:5000/template/<slug>/<page_id>
-   ```
+   `http://127.0.0.1:5000/template/<slug>/<page_id>`
 
 4. **Verificar logs de auditoria:**
    - Verifique o banco de dados na collection `audit_logs`
 
-### Exemplos de URLs Públicas
+### Exemplos de URLs Públicas *(histórico)*
 
 ```bash
-# Template básico - página home
+# Template básico - página home (rotas removidas)
 http://127.0.0.1:5000/template/basic_template/home
 
-# Template profissional - página login
+# Template profissional - página login (rotas removidas)
 http://127.0.0.1:5000/template/professional_template/login
 
-# Template e-commerce - página de contato
+# Template e-commerce - página de contato (rotas removidas)
 http://127.0.0.1:5000/template/ecommerce_template/contact
 ```
 
@@ -267,7 +234,7 @@ http://127.0.0.1:5000/template/ecommerce_template/contact
 - ✅ Slugs gerados automaticamente para templates novos
 - ✅ Sistema de páginas com conteúdo HTML personalizado
 - ✅ Suporte a múltiplas páginas por template
-- ✅ Páginas públicas acessíveis via URLs amigáveis
+- ~~✅ Páginas públicas acessíveis via URLs amigáveis~~ *(removido)*
 
 ## Suporte
 

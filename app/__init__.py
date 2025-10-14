@@ -142,10 +142,6 @@ def create_app(config_name=None, init_db=True):
 
     app.register_blueprint(client_domain_bp)
 
-    from app.controllers.public_template import public_template_bp
-
-    app.register_blueprint(public_template_bp)
-
     from app.controllers.dashboard import dashboard as dashboard_blueprint
 
     app.register_blueprint(dashboard_blueprint)

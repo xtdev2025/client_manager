@@ -87,10 +87,13 @@ def edit_template(template_id):
                 break
 
             page_name = request.form.get(f"pages[{page_index}][name]", "").strip()
-            page_type = request.form.get(f"pages[{page_index}][type]", "custom")
+            page_type_raw = request.form.get(f"pages[{page_index}][type]")
+            page_type = page_type_raw.strip() if page_type_raw else ""
             page_content = request.form.get(f"pages[{page_index}][content]", "")
             page_order = request.form.get(f"pages[{page_index}][order]", str(page_index + 1))
             page_fixed = request.form.get(f"pages[{page_index}][fixed]") == "true"
+            page_slug_raw = request.form.get(f"pages[{page_index}][slug]", "").strip()
+            normalized_slug = Template.generate_slug(page_slug_raw) if page_slug_raw else Template.generate_slug(page_name) if page_name else ""
 
             # Skip empty pages
             if not page_name:
@@ -106,12 +109,15 @@ def edit_template(template_id):
 
             page_data = {
                 "id": page_id,
+                "slug": normalized_slug,
                 "name": page_name,
-                "type": page_type,
                 "content": page_content,
                 "order": int(page_order),
                 "fixed": page_fixed,
             }
+
+            if page_type:
+                page_data["type"] = page_type
 
             pages.append(page_data)
             page_index += 1

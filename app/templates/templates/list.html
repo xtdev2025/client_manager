@@ -39,7 +39,10 @@
                 <tbody>
                     {% for template in templates %}
                     <tr>
-                        <td>{{ template.name }}</td>
+                        <td>
+                            <div class="fw-semibold">{{ template.name }}</div>
+                            <small class="text-muted">/{{ template.slug }}</small>
+                        </td>
                         <td>{{ template.description|default('—')|truncate(50) }}</td>
                         <td>
                             <span class="badge bg-info">
