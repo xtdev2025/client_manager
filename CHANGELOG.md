@@ -7,85 +7,27 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ---
 
-## [Unreleased] - 2025-10-14
+## [Unreleased] - 2025-10-16
 
 ### 🆕 Adicionado
 
-- **Workflow Reminder**: Inserido aviso no `TODO.md` para reforçar auto-completar tarefas, registrar resumos de sprint e sinalizar o próximo foco.
-- **Doc Heleket Data Mapping**: Criado `docs/HELEKET_DATA_MAPPING.md` com inventário de campos orientado a `clients`, gatilhos propostos e lacunas para payouts em cripto.
-- **Heleket API Client**: Implementado módulo cliente dedicado (`app/services/heleket_client.py`) para integração com gateway de pagamentos Heleket, incluindo:
-  - Autenticação via headers (X-Merchant-ID, X-API-Key)
-  - Gerenciamento de chaves de idempotência (SHA256)
-  - Retry automático com backoff exponencial (max 3 tentativas)
-  - Tratamento estruturado de erros (HeleketError, HeleketAuthenticationError)
-  - Métodos para criar, consultar e cancelar payouts
-  - Placeholder para verificação de assinatura de webhooks
-  - Testes unitários completos com mocks (16 casos de teste)
-- **Client Crypto Payout Model**: Criado modelo `app/models/client_crypto_payout.py` para persistir requisições de pagamento, incluindo:
-  - Registro de payloads enviados ao Heleket
-  - Rastreamento de IDs de transação e status on-chain
-  - Campos para asset, network, amount, wallet_address
-  - Suporte a diferentes origens (manual, scheduled, bonus)
-  - Histórico de callbacks e atualizações (responseLogs)
-  - Helpers de repositório para consultas por status/data/cliente
-  - Métodos de estatísticas agregadas
-  - Índices MongoDB para performance (client_id, status, idempotency_key único)
-  - Testes unitários completos (18 casos de teste)
-- **Documentação Técnica**: Criado `docs/HELEKET_CLIENT.md` com guia completo de uso do cliente Heleket, incluindo exemplos de integração, boas práticas e referência de API.
+- (Sprint 2) Workflow administrativo de payouts: Nova aba "Payouts" em `clients/manage.html` com formulário guiado, histórico de transações, âncoras de navegação e persistência de preferências de carteira por cliente via `Client.update_crypto_wallet_preferences`.
+- (Sprint 2) Endpoint `/payouts/webhook`: Blueprint dedicada com validação HMAC (`HELEKET_WEBHOOK_SECRET`), atualização de status em `ClientCryptoPayout.update_status` e registro de auditoria centralizado.
+- (Sprint 2) Testes automatizados de payouts: Novos cenários garantem fluxo administrativo (`tests/integration/test_admin_payout_workflow.py`) e callbacks Heleket (`tests/unit/test_payout_webhook.py`).
+- (Sprint 2) Partial CSRF reutilizável: `app/templates/partials/csrf_field.html` centraliza o input `csrf_token` e foi incluído em todos os formulários `POST` para padronizar a proteção.
+- (Sprint 1) Health-check endpoints operacionais: adicionados `GET /health` e `GET /payouts/webhook/health` para suporte a sondas de infraestrutura e alerta de segredo ausente.
 
 ### 🔄 Modificado
 
-- **Guidelines de Contribuição**: Atualização de `.github/copilot-instructions.md` para alinhar o trabalho com `TODO.md`, exigir sugestões contextuais, resumos de sprint e sincronização com `CHANGELOG.md`.
-- **TODO.md**: Item "Confirmar gatilhos de negócio e mapeamento de dados" mantém status concluído com foco em ativos digitais, introduzindo `client_wallet_profile` e `client_crypto_payouts` como entregáveis futuros.
-- **docs/HELEKET_DATA_MAPPING.md**: Revisado para refletir o Heleket como gateway cripto, trocar requisitos bancários por carteira/ativo/rede e adicionar pauta de alinhamento com Produto/Compliance.
-- **config.py**: Já contém variáveis de ambiente para credenciais Heleket (HELEKET_PROJECT_URL, HELEKET_MERCHANT_ID, HELEKET_API_KEY).
-- **tests/conftest.py**: Adicionada coleção `client_crypto_payouts` à lista de limpeza de banco de dados nos testes.
+- (Sprint 2) Dashboard Enterprise: Quick action "Disparar payout" agora aponta diretamente para o novo fluxo administrativo.
+- (Sprint 2) Documentação operacional: `TODO.md` e `.github/copilot-instructions.md` reforçam o workflow de sprints (auto-completar itens, registrar resumos e sinalizar próximos focos).
+- (Sprint 2) `docs/HELEKET_DATA_MAPPING.md`: Revisado para refletir requisitos de carteira/ativo/rede e próximos alinhamentos com Produto/Compliance.
+- (Sprint 2) Base de testes: `tests/conftest.py` limpa `client_crypto_payouts` por padrão para evitar vazamento entre cenários.
+- (Sprint 1) Playbook de deployment: `docker-compose.yml` injeta credenciais Heleket com health-checks da rota de webhook; `deploy/xpages.service` referencia `/etc/client-manager/env` e `deploy/README.md` detalha rotação de segredos.
 
----
+### 🐛 Corrigido
 
-## [2.1.0] - 2024-12-19
-
-### 🆕 Adicionado
-
-- **Scripts Python**: Conversão completa de 6 scripts shell para Python
-  - `scripts/startup.py` - Script de inicialização para produção
-  - `scripts/test_workflows.py` - Teste de workflows essenciais
-  - `scripts/test_all_workflows.py` - Teste completo de workflows
-  - `scripts/aws_eb_deploy.py` - Deploy AWS Elastic Beanstalk
-  - `scripts/aws_ec2_deploy.py` - Deploy AWS EC2
-  - `scripts/azure_deploy.py` - Deploy Azure App Service
-
-- **Documentação Expandida**:
-  - `docs/SCRIPTS_DOCUMENTATION.md` - Documentação completa dos scripts
-  - `docs/MIGRATION_SHELL_TO_PYTHON.md` - Detalhes da migração
-  - `CHANGELOG.md` - Este arquivo de changelog
-
-### 🔄 Modificado
-
-- **README.md**:
-  - Atualização dos comandos de deploy para Python
-  - Nova seção de modernização
-  - Documentação adicional expandida
-  - Changelog recente adicionado
-  - Estrutura do projeto atualizada
-
-### 🗑️ Removido
-
-- **Scripts Shell Legacy**:
-  - `startup.sh` → Convertido para `scripts/startup.py`
-  - `test-workflows.sh` → Convertido para `scripts/test_workflows.py`
-  - `test-all-workflows.sh` → Convertido para `scripts/test_all_workflows.py`
-  - `scripts/aws_eb_deploy.sh` → Convertido para `scripts/aws_eb_deploy.py`
-  - `scripts/aws_ec2_deploy.sh` → Convertido para `scripts/aws_ec2_deploy.py`
-  - `scripts/azure_deploy.sh` → Convertido para `scripts/azure_deploy.py`
-
-### 🔧 Melhorias Técnicas
-
-- **Portabilidade**: Scripts agora funcionam em Windows, Linux e macOS
-- **Tratamento de Erros**: Exception handling robusto em Python
-- **Estrutura OOP**: Classes organizadas para melhor manutenibilidade
-- **Logging Aprimorado**: Feedback visual com emojis e mensagens claras
-- **Permissões**: Scripts Python configurados como executáveis
+- (Sprint 2) Seed de subdomínios resiliente: `create_client_domains()` agora valida pré-condições e emite avisos, evitando `KeyError` em bancos com dados legados.
 
 ---
 

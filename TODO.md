@@ -39,7 +39,11 @@
 	- Suggestion: Executar `ClientCryptoPayout.create_indexes()` durante inicialização da aplicação para garantir performance.
 
 ### Tarefas de Suporte - Sprint 1
-- [ ] **Playbook de deployment** — Atualizar scripts `deploy/` e `docker-compose.yml` com novas variáveis de env, health checks para webhook de pagamento e instruções para rotação de credenciais Heleket. _Responsável: DevOps_
+- [x] **Playbook de deployment** — Atualizar scripts `deploy/` e `docker-compose.yml` com novas variáveis de env, health checks para webhook de pagamento e instruções para rotação de credenciais Heleket. _Responsável: DevOps_
+	- _Status: Concluído (14/10/2025)_
+	- Resultado: `docker-compose.yml` agora injeta variáveis Heleket (`HELEKET_PROJECT_URL`, `HELEKET_MERCHANT_ID`, `HELEKET_API_KEY`, `HELEKET_WEBHOOK_SECRET`) e executa sondas em `/health` e `/payouts/webhook/health`; `deploy/xpages.service` passou a referenciar `/etc/client-manager/env` e documenta os segredos obrigatórios; criado `deploy/README.md` com procedimento de rotação e checklist pós-deploy.
+	- Documentação: Ver `deploy/README.md` para fluxo detalhado e comandos de verificação.
+	- Suggestion: Automatizar a sincronização do arquivo `/etc/client-manager/env` a partir do cofre corporativo (ex.: script com AWS CLI) para evitar discrepâncias em ambientes com múltiplas instâncias.
 
 **Resumo da Sprint 1:** 
 - ✅ **Concluída (14/10/2025)** — Fundação da integração Heleket estabelecida com sucesso
@@ -48,6 +52,7 @@
   - Modelo de persistência client_crypto_payouts com helpers de consulta e índices otimizados
   - Documentação técnica completa (HELEKET_CLIENT.md) e exemplos de integração
   - Cobertura de testes: 34 casos de teste (16 para cliente API + 18 para modelo)
+	- Playbook de deployment atualizado com variáveis Heleket, health-checks de webhook e guia de rotação de credenciais
   - Configuração de credenciais via variáveis de ambiente já estabelecida
 - 📋 **Pendências:** 
   - Implementação de verificação de assinatura de webhook (aguardando docs Heleket)
@@ -61,9 +66,30 @@
 ## Sprint 2: Orquestração de Pagamentos & Workflow Administrativo
 
 ### Integração de Pagamentos Heleket - Fase 2
-- [ ] **Implementar serviço de orquestração de pagamentos** — Introduzir camada de serviço que valida entradas (verificações de saldo, prevenção de duplicatas), cria pagamento Heleket via cliente, persiste registros e enfileira jobs de acompanhamento para polling de status. _Responsável: Backend_
-- [ ] **Expor workflow administrativo** — Adicionar formulário/ação voltado para admin (controller + template) para iniciar pagamentos, mostrando dados de carteira do cliente pré-preenchidos, sugestões de valor e prompts de confirmação. Atualizar ações rápidas do dashboard com CTA. _Responsável: Full-stack_
-- [ ] **Tratar callbacks/webhooks Heleket** — Registrar endpoint (ex: `/payouts/webhook`) que verifica assinaturas, atualiza estado do registro de pagamento e registra eventos de auditoria. Documentar schema de payload esperado conforme docs Heleket. _Responsável: Backend_
+- [x] **Reforçar proteção CSRF em formulários críticos** — Revisar todos os fluxos administrativos/portal que executam POST/DELETE (clientes, domínios, planos, infos, admins, portal do cliente) para injetar `csrf_token` e ajustar JavaScript/modais. _Responsável: Backend + Frontend_
+	- _Status: Concluído (16/10/2025)_
+	- Resultado: Criado partial `partials/csrf_field.html` e incluído em 30 formulários (clientes, infos, domínios, planos, admins, templates, portal do cliente). Todos os formulários com `method="POST"` agora injetam o token automaticamente, inclusive em modais de exclusão.
+	- Verificação: `pytest tests/unit/test_client_crypto_payout.py tests/unit/test_payout_orchestration_service.py -q`.
+	- Suggestion: Criar lint/check automatizado que rejeite formulários sem `{% include "partials/csrf_field.html" %}` e monitorar diariamente novos formulários para manter a cobertura integral.
+- [x] **Implementar serviço de orquestração de pagamentos** — Introduzir camada de serviço que valida entradas (verificações de saldo, prevenção de duplicatas), cria pagamento Heleket via cliente, persiste registros e enfileira jobs de acompanhamento para polling de status. _Responsável: Backend_
+	- _Status: Concluído (14/10/2025)_
+	- Resultado: Criado `PayoutOrchestrationService` coordenando validações, geração de idempotency key, persistência em `ClientCryptoPayout`, integração com `HeleketClient` e tratamento de falhas com logs + reconciliação básica; atualizado modelo para rastrear `created_by` e operações atômicas (`$set`/`$push`).
+	- Verificação: `pytest tests/unit/test_client_crypto_payout.py tests/unit/test_payout_orchestration_service.py -q`.
+	- Suggestion: Instrumentar métricas e fila/retry assíncrono para falhas de API, além de expor hooks de sincronia (`sync_status`, webhooks) nas próximas tarefas.
+- [x] **Expor workflow administrativo** — Adicionar formulário/ação voltado para admin (controller + template) para iniciar pagamentos, mostrando dados de carteira do cliente pré-preenchidos, sugestões de valor e prompts de confirmação. Atualizar ações rápidas do dashboard com CTA. _Responsável: Full-stack_
+	- _Status: Concluído (14/10/2025)_
+	- Resultado: Criado fluxo “Payouts” em `clients/manage.html` com formulário responsivo que injeta preferências de carteira, sugestão de valor pelo plano e histórico de transações; nova rota `POST /clients/<id>/payouts/initiate` delega ao `PayoutOrchestrationService`, registra auditoria e persiste preferências na coleção `clients`. Dashboard administrativo ganhou CTA "Disparar payout" apontando para a aba dedicada.
+	- Suggestion: Adicionar loading state/feedback em tempo real (ex.: spinner ou toast) quando o payout demora para confirmar, preparando terreno para integração WebSocket ou polling em Sprint 3.
+- [x] **Tratar callbacks/webhooks Heleket** — Registrar endpoint (ex: `/payouts/webhook`) que verifica assinaturas, atualiza estado do registro de pagamento e registra eventos de auditoria. Documentar schema de payload esperado conforme docs Heleket. _Responsável: Backend_
+	- _Status: Concluído (14/10/2025)_
+	- Resultado: Adicionada blueprint `payout` com rota `POST /payouts/webhook`, validação HMAC (`HELEKET_WEBHOOK_SECRET`), atualização de status via `ClientCryptoPayout.update_status`, registro de `lastWebhookAt` e logs no `AuditService`; novos testes garantem assinatura obrigatória e atualização de transações.
+	- Suggestion: Expandir o mapeamento de status para cobrir eventos de chargeback/cancelamento parcial assim que a documentação Heleket estiver disponível.
+
+### Tarefas de Suporte - Sprint 2
+- [x] **Fortalecer seed de subdomínios com dados legados** — Ajustar `app/db_init.py` para validar existência de clientes, domínio e template antes de criar registros `client_domains`, evitando exceções quando o banco já possui dados diferentes dos seeds padrões. _Responsável: Backend_
+	- _Status: Concluído (14/10/2025)_
+	- Resultado: `create_client_domains()` agora emite avisos amigáveis e interrompe o seed quando encontra lacunas, impedindo `KeyError` durante inicialização em bancos pré-existentes.
+	- Suggestion: Instrumentar script de seed para carregar configurações de exemplo via arquivo JSON/YAML no futuro, facilitando customização conforme ambiente.
 
 ### Melhorias de UX do Dashboard - Fase 1
 - [ ] **Unificar sistema de layout** — Refatorar `dashboard.html` + `dashboard/admin.html` para usar container, espaçamento e componentes de card consistentes definidos em `dashboard.css`; remover estilos inline e garantir ordem de empilhamento mobile. _Responsável: Frontend_
