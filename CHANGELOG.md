@@ -18,6 +18,12 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - (Sprint 2) Testes automatizados de payouts: Novos cenários garantem fluxo administrativo (`tests/integration/test_admin_payout_workflow.py`) e callbacks Heleket (`tests/unit/test_payout_webhook.py`).
 - (Sprint 2) Partial CSRF reutilizável: `app/templates/partials/csrf_field.html` centraliza o input `csrf_token` e foi incluído em todos os formulários `POST` para padronizar a proteção.
 - (Sprint 1) Health-check endpoints operacionais: adicionados `GET /health` e `GET /payouts/webhook/health` para suporte a sondas de infraestrutura e alerta de segredo ausente.
+- (Sprint 5) Helpers de view compartilhados: `BaseView` extendido com métodos `render_form` e `render_table` para padronização de templates CRUD; todas as classes `*View` atualizadas para usar conveniência mínima.
+- (Sprint 5) Método centralizado de contagem de subdomínios: `Domain.get_subdomain_count()` implementado e consumido por controllers `client` e `domain` para eliminar duplicação.
+- (Sprint 5) Testes automatizados de scaffolding: Suite parametrizada `test_crud_scaffolding.py` com 40 testes validando comportamento consistente dos mixins CRUD para todas as entidades (domain, client, plan, template, info).
+- (Sprint 5) Sessão de threat modeling agendada: Foco em vetores de abuso de pagamento, spoofing de webhook e vazamento de dados, com garantia de conformidade às políticas internas de segurança.
+- (Sprint 5) Acessibilidade aprimorada: Adicionados `aria-label` em botões de ícones únicos em templates de listagem (clients, domains, plans, infos) para conformidade WCAG.
+- (Sprint 5) Instrumentação de métricas: Atributos `data-cta` e `data-section` adicionados aos links de estatísticas do dashboard para suporte futuro a analytics e testes A/B.
 
 ### 🔄 Modificado
 
