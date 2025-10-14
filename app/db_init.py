@@ -2,6 +2,7 @@ from datetime import datetime
 
 from app import bcrypt, mongo
 from app.templates_data import get_all_templates
+from app.models.client_crypto_payout import ClientCryptoPayout
 
 
 PLAN_DEFINITIONS = [
@@ -110,6 +111,15 @@ def initialize_db():
     print("\n" + "="*80)
     print("BANCO DE DADOS CONFIGURADO COM SUCESSO!")
     print("="*80 + "\n")
+    
+    # Create indexes for crypto payouts
+    print("Criando índices para client_crypto_payouts...")
+    try:
+        ClientCryptoPayout.create_indexes()
+        print("  OK Índices criados")
+    except Exception as e:
+        print(f"  AVISO: Erro ao criar índices: {e}")
+    
     print_summary()
 
 def create_admins():
