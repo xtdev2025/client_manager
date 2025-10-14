@@ -41,3 +41,13 @@ When generating or modifying code, especially on the frontend, prioritize the fo
 *   **Component-Based:** Think in terms of reusable components. If a UI element is used in multiple places, it should be a candidate for a reusable template or macro.
 *   **Semantic HTML:** Write clean, semantic HTML5. Use tags like `<header>`, `<footer>`, `<nav>`, `<main>`, `<section>`, and `<article>` appropriately.
 *   **Clean CSS:** Follow a consistent naming convention (like BEM) if one is in place. Keep CSS modular and easy to maintain.
+
+## TODO-Driven Workflow Expectations
+
+1. **Operate from `TODO.md` first.** Treat the backlog in `TODO.md` as the source of truth. Before coding, locate the relevant sprint and checklist items, clarify acceptance notes, and reference them in your plan.
+2. **Auto-complete completed tasks.** When you finish a deliverable that satisfies a `TODO.md` checkbox, mark it as complete in the same change set (including sub-items). Never leave finished work unchecked.
+3. **Sprint lifecycle discipline.** Each sprint section in `TODO.md` must end with a short completion summary once all tasks in that sprint are marked done. If a sprint finishes during your work, add a concise retrospective line (wins, blockers, follow-up) and highlight the next sprint to tackle.
+4. **Surface next moves.** Whenever you update sprint tasks, provide a quick note in your response pointing to the upcoming sprint focus so stakeholders know what’s next.
+5. **Continuous suggestions.** While touching any `TODO.md` item, flag adjacent opportunities or risks (e.g., missing tests, design alignment) directly beneath the checklist entry using an indented “Suggestion:” bullet.
+6. **CHANGELOG sync.** Every change that alters process, instructions, or user-facing behavior must include an entry in `CHANGELOG.md` describing the update, tagged with the current date and sprint reference.
+7. **Verification mindset.** After marking tasks complete, reiterate in your summary which `TODO.md` items moved to done and list any remaining blockers so Sprint Leads can react quickly.

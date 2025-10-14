@@ -7,6 +7,18 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [Unreleased] - 2025-10-14
+
+### 🆕 Adicionado
+
+- **Workflow Reminder**: Inserido aviso no `TODO.md` para reforçar auto-completar tarefas, registrar resumos de sprint e sinalizar o próximo foco.
+
+### 🔄 Modificado
+
+- **Guidelines de Contribuição**: Atualização de `.github/copilot-instructions.md` para alinhar o trabalho com `TODO.md`, exigir sugestões contextuais, resumos de sprint e sincronização com `CHANGELOG.md`.
+
+---
+
 ## [2.1.0] - 2024-12-19
 
 ### 🆕 Adicionado

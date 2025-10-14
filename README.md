@@ -409,6 +409,11 @@ SECRET_KEY=sua-chave-secreta-super-segura-aqui-mude-isso
 # Banco de Dados MongoDB
 MONGO_URI=mongodb://localhost:27017/client_manager
 
+# Integração Heleket (apenas para desenvolvimento local)
+HELEKET_PROJECT_URL=http://localhost:5000/payouts
+HELEKET_MERCHANT_ID=00000000-0000-0000-0000-000000000000
+HELEKET_API_KEY=sua-chave-heleket-local
+
 # Opcional: Configuração de produção
 # MONGO_URI=mongodb://usuario:senha@host:porta/database
 ```
@@ -419,6 +424,21 @@ MONGO_URI=mongodb://localhost:27017/client_manager
 # Gerar uma SECRET_KEY segura
 python -c "import secrets; print(secrets.token_hex(32))"
 ```
+
+> 💡 **Dica**: Crie um arquivo `.env.local` (listado no `.gitignore`) para guardar as credenciais verdadeiras de desenvolvimento. O arquivo global `.env` pode ficar com valores padrão. Em staging/produção, utilize o cofre de segredos corporativo (ex.: AWS Secrets Manager) para injetar `HELEKET_*`.
+
+#### Variáveis opcionais úteis
+
+| Variável | Uso | Ambiente recomendado |
+| --- | --- | --- |
+| `PORT` | Define a porta do Flask quando executado via `run.py` | Dev |
+| `BCRYPT_LOG_ROUNDS` | Ajusta custo de hash de senhas no Flask-Bcrypt | Dev/Prod |
+| `JWT_SECRET_KEY` | Tokenização caso habilitemos JWT futuramente | Prod |
+| `GEMINI_API_KEY` | Integrações de IA/assistentes internos | Apenas `.env.local` |
+| `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_DEFAULT_REGION` | Scripts de deploy para AWS | Apenas cofre de segredos |
+| `RATELIMIT_ENABLED`, `RATELIMIT_STORAGE_URI`/`RATELIMIT_STORAGE_URL` | Configurações de rate limiting do Flask-Limiter | Dev/Prod |
+
+> 🔒 **Segurança**: mantenha `AWS_*`, `GEMINI_API_KEY` e outros segredos apenas no cofre corporativo ou em `.env.local` que não é versionado.
 
 ### 3. Inicializar o Banco de Dados
 
