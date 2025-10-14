@@ -5,16 +5,18 @@
 ## Sprint 1: Fundação da Integração Heleket & Setup Inicial
 
 ### Integração de Pagamentos Heleket - Fase 1
-- [ ] **Confirmar gatilhos de negócio e mapeamento de dados** — Mapear quais eventos devem gerar um pagamento Heleket (ação manual do admin, lote agendado, baseado em limite) e identificar campos obrigatórios (`amount`, `currency`, informações bancárias do beneficiário) das coleções existentes (`infos`, `clients`). _Responsáveis: Produto + Backend_
-	- _Status: Em andamento (14/10/2025)_
-	- Suggestion: Levantar fluxos atuais de criação de pagamentos com líderes de produto e extrair modelo de dados a partir de `app/models/info.py` e `app/models/client.py` antes de entrevistas com stakeholders.
+- [x] **Confirmar gatilhos de negócio e mapeamento de dados** — Mapear quais eventos devem gerar um pagamento Heleket (ação manual do admin, lote agendado, bônus de ativação) e identificar campos obrigatórios (`asset`, `network`, `amount`, `idempotency_key`) a partir da coleção `clients` e de novas estruturas de carteira. _Responsáveis: Produto + Backend_
+	- _Status: Concluído (15/10/2025)_
+	- Resultado: Inventariados campos relevantes em `clients` e `plans`, definidos modelos propostos `client_wallet_profile` e `client_crypto_payouts`, além de gatilhos orientados a clientes (manual no painel, rotina por plano, bônus de ativação). Lacunas críticas registradas: cadastro de carteira, definição de ativo/rede por plano, regra de valor, idempotência, procedimentos de validação de endereços.
+	- Documentação: Ver `docs/HELEKET_DATA_MAPPING.md` para a matriz atualizada e próximos passos focados em cripto.
+	- Suggestion: Agendar alinhamento com Produto/Compliance para validar requisitos de carteira (ativos, redes, limites, confirmação de endereço) antes de iniciar a criação do schema e UI de `client_wallet_profile`.
 - [ ] **Capturar credenciais Heleket de forma segura** — Estender `config.py` para ler chave/segredo da API e URL base de variáveis de ambiente; atualizar documentação de deployment e armazenamento de secrets. _Responsável: DevOps_
 	- Guardar `Merchant ID`, `Project URL` e `API Key` no cofre de segredos corporativo (ex.: AWS Secrets Manager) usando nomes padronizados (`HELEKET_PROJECT_URL`, `HELEKET_MERCHANT_ID`, `HELEKET_API_KEY`).
 	- Suggestion: Validar com DevOps se já existe cofre de segredos (AWS Secrets Manager) e mapear variáveis necessárias para ambientes `dev`, `staging` e `prod`.
 - [ ] **Criar cliente da API Heleket** — Implementar módulo cliente dedicado (ex: `app/services/heleket_client.py`) gerenciando headers de autenticação, chaves de idempotência, retry/backoff e superfícies de erro estruturadas. Incluir testes unitários com mocks de respostas. _Responsável: Backend_
 	- Suggestion: Definir interface baseada nas rotas de payouts e contemplar abstração para futuros endpoints (ex: cancelamento, consulta) para evitar refatorações.
-- [ ] **Persistir requisições de pagamento** — Adicionar modelo/coleção `Payout` para registrar payloads de requisição, IDs Heleket, status, valor, moeda, IDs de cliente/info associados e metadados de auditoria. Fornecer helpers de repositório para consultas por status/data. _Responsável: Backend_
-	- Suggestion: Reaproveitar padrões de `app/models/click.py` para timestamps e índices; planejar índices em `status` + `createdAt` para relatórios.
+- [ ] **Persistir requisições de pagamento** — Adicionar coleção `client_crypto_payouts` para registrar payloads enviados ao Heleket, IDs de transação, status on-chain, valor, ativo, rede, referência à carteira e metadados de auditoria. Fornecer helpers de repositório para consultas por status/data. _Responsável: Backend_
+	- Suggestion: Reaproveitar padrões de `app/models/click.py` para timestamps e índices; planejar índices em `status` + `requestedAt` + `asset`, além de armazenar hash da transação para reconciliação.
 
 ### Tarefas de Suporte - Sprint 1
 - [ ] **Playbook de deployment** — Atualizar scripts `deploy/` e `docker-compose.yml` com novas variáveis de env, health checks para webhook de pagamento e instruções para rotação de credenciais Heleket. _Responsável: DevOps_
@@ -29,7 +31,7 @@
 
 ### Integração de Pagamentos Heleket - Fase 2
 - [ ] **Implementar serviço de orquestração de pagamentos** — Introduzir camada de serviço que valida entradas (verificações de saldo, prevenção de duplicatas), cria pagamento Heleket via cliente, persiste registros e enfileira jobs de acompanhamento para polling de status. _Responsável: Backend_
-- [ ] **Expor workflow administrativo** — Adicionar formulário/ação voltado para admin (controller + template) para iniciar pagamentos, mostrando informações bancárias do cliente pré-preenchidas, sugestões de valor e prompts de confirmação. Atualizar ações rápidas do dashboard com CTA. _Responsável: Full-stack_
+- [ ] **Expor workflow administrativo** — Adicionar formulário/ação voltado para admin (controller + template) para iniciar pagamentos, mostrando dados de carteira do cliente pré-preenchidos, sugestões de valor e prompts de confirmação. Atualizar ações rápidas do dashboard com CTA. _Responsável: Full-stack_
 - [ ] **Tratar callbacks/webhooks Heleket** — Registrar endpoint (ex: `/payouts/webhook`) que verifica assinaturas, atualiza estado do registro de pagamento e registra eventos de auditoria. Documentar schema de payload esperado conforme docs Heleket. _Responsável: Backend_
 
 ### Melhorias de UX do Dashboard - Fase 1

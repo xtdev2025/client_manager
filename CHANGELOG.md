@@ -12,10 +12,13 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 ### 🆕 Adicionado
 
 - **Workflow Reminder**: Inserido aviso no `TODO.md` para reforçar auto-completar tarefas, registrar resumos de sprint e sinalizar o próximo foco.
+- **Doc Heleket Data Mapping**: Criado `docs/HELEKET_DATA_MAPPING.md` com inventário de campos orientado a `clients`, gatilhos propostos e lacunas para payouts em cripto.
 
 ### 🔄 Modificado
 
 - **Guidelines de Contribuição**: Atualização de `.github/copilot-instructions.md` para alinhar o trabalho com `TODO.md`, exigir sugestões contextuais, resumos de sprint e sincronização com `CHANGELOG.md`.
+- **TODO.md**: Item "Confirmar gatilhos de negócio e mapeamento de dados" mantém status concluído com foco em ativos digitais, introduzindo `client_wallet_profile` e `client_crypto_payouts` como entregáveis futuros.
+- **docs/HELEKET_DATA_MAPPING.md**: Revisado para refletir o Heleket como gateway cripto, trocar requisitos bancários por carteira/ativo/rede e adicionar pauta de alinhamento com Produto/Compliance.
 
 ---
 
