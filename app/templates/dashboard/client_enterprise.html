@@ -4,8 +4,8 @@
 
 {% block styles %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}" defer></script>
 {% endblock %}
 
 {% block content %}
@@ -88,8 +88,9 @@
         <div class="col-md-8">
             <div class="dashboard-card">
                 <h5 class="mb-3">Clicks nos Últimos 30 Dias</h5>
-                <div class="chart-container">
-                    <canvas id="clicksChart"></canvas>
+                <div class="chart-container chart-loading" data-chart="client-clicks" aria-live="polite" aria-busy="true">
+                    <div class="chart-skeleton" aria-hidden="true"></div>
+                    <canvas id="clicksChart" role="img" aria-label="Clicks do cliente nos últimos 30 dias"></canvas>
                 </div>
                 <div class="text-center mt-2">
                     <button class="btn btn-sm btn-outline-primary" onclick="DashboardJS.changeClicksPeriod(7, this)">7 dias</button>
@@ -100,8 +101,9 @@
 
             <div class="dashboard-card">
                 <h5 class="mb-3">Clicks por Domínio</h5>
-                <div class="chart-container">
-                    <canvas id="domainChart"></canvas>
+                <div class="chart-container chart-loading" data-chart="client-domains" aria-live="polite" aria-busy="true">
+                    <div class="chart-skeleton" aria-hidden="true"></div>
+                    <canvas id="domainChart" role="img" aria-label="Distribuição de clicks por domínio"></canvas>
                 </div>
             </div>
         </div>

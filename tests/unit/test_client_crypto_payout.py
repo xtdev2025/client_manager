@@ -51,6 +51,9 @@ class TestClientCryptoPayout:
             assert payout["status"] == ClientCryptoPayout.STATUS_PENDING
             assert payout["origin"] == ClientCryptoPayout.ORIGIN_MANUAL
             assert payout["created_by"] == sample_admin_id
+            assert payout["retryCount"] == 0
+            assert payout["alertState"] == ClientCryptoPayout.ALERT_STATE_NONE
+            assert payout["statusHistory"][0]["source"] == "creation"
 
     def test_create_payout_with_optional_fields(self, app, sample_client_id):
         """Test payout creation with optional fields"""
@@ -272,6 +275,7 @@ class TestClientCryptoPayout:
             payout = ClientCryptoPayout.get_by_id(payout_id)
             assert len(payout["responseLogs"]) == 1
             assert payout["responseLogs"][0]["data"] == response_data
+            assert len(payout["statusHistory"]) >= 2
 
     def test_update_status_invalid_status(self, app, sample_client_id):
         """Test updating with invalid status fails"""

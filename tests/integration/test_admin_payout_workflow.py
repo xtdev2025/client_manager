@@ -100,3 +100,20 @@ def test_admin_initiates_payout_failure(client, test_app, monkeypatch):
 
     assert response.status_code == 200
     assert b"Erro ao integrar com Heleket" in response.data
+
+
+@pytest.mark.integration
+def test_admin_triggers_reconciliation_endpoint(client, test_app, monkeypatch):
+    _login_admin(client)
+
+    monkeypatch.setattr(
+        "app.controllers.payout.PayoutReconciliationService.schedule_pending",
+        lambda **kwargs: {"checked": 2, "finalized": 1, "alerts": 0, "errors": 0},
+    )
+
+    response = client.post("/payouts/reconcile", json={"limit": 10})
+
+    assert response.status_code == 200
+    body = response.get_json()
+    assert body["success"] is True
+    assert body["results"]["checked"] == 2

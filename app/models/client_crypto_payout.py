@@ -31,12 +31,40 @@ class ClientCryptoPayout:
         STATUS_CANCELLED,
     ]
 
+    FINAL_STATUSES = {STATUS_CONFIRMED, STATUS_FAILED, STATUS_CANCELLED}
+    ACTIVE_STATUSES = {STATUS_PENDING, STATUS_BROADCAST}
+
+    ALERT_STATE_NONE = "none"
+    ALERT_STATE_PENDING_REVIEW = "pending_review"
+
     # Origin constants
     ORIGIN_MANUAL = "manual"
     ORIGIN_SCHEDULED = "scheduled"
     ORIGIN_BONUS = "bonus"
 
     VALID_ORIGINS = [ORIGIN_MANUAL, ORIGIN_SCHEDULED, ORIGIN_BONUS]
+
+    STATUS_NORMALIZATION_MAP = {
+        "pending": STATUS_PENDING,
+        "processing": STATUS_PENDING,
+        "broadcast": STATUS_BROADCAST,
+        "sent": STATUS_BROADCAST,
+        "confirmed": STATUS_CONFIRMED,
+        "completed": STATUS_CONFIRMED,
+        "failed": STATUS_FAILED,
+        "error": STATUS_FAILED,
+        "cancelled": STATUS_CANCELLED,
+        "canceled": STATUS_CANCELLED,
+    }
+
+    @staticmethod
+    def normalize_status(status: Optional[str]) -> Optional[str]:
+        """Normalize raw status strings into known constants."""
+        if not status:
+            return None
+
+        normalized = ClientCryptoPayout.STATUS_NORMALIZATION_MAP.get(status.lower())
+        return normalized or ClientCryptoPayout.STATUS_BROADCAST
 
     @staticmethod
     def create(
@@ -99,6 +127,12 @@ class ClientCryptoPayout:
 
             # Prepare payout document
             now = datetime.utcnow()
+            history_entry = {
+                "timestamp": now,
+                "status": ClientCryptoPayout.STATUS_PENDING,
+                "source": "creation",
+            }
+
             payout_data = {
                 "client_id": client_id,
                 "wallet_profile_id": wallet_profile_id,
@@ -116,10 +150,18 @@ class ClientCryptoPayout:
                 "confirmedAt": None,
                 "heleketPayload": None,  # Set when request is made
                 "responseLogs": [],
+                "statusHistory": [history_entry],
                 "created_by": created_by,
                 "createdBy": created_by,  # manter compatibilidade com seeds antigos
                 "createdAt": now,
                 "updatedAt": now,
+                "lastStatusCheckAt": None,
+                "lastStatusCheckSource": None,
+                "nextStatusCheckAt": None,
+                "retryCount": 0,
+                "failureReason": None,
+                "alertState": ClientCryptoPayout.ALERT_STATE_NONE,
+                "alertEmittedAt": None,
             }
 
             result = mongo.db.client_crypto_payouts.insert_one(payout_data)
@@ -199,6 +241,10 @@ class ClientCryptoPayout:
         status: str,
         heleket_transaction_id: Optional[str] = None,
         response_data: Optional[Dict[str, Any]] = None,
+        status_source: Optional[str] = None,
+        status_details: Optional[Dict[str, Any]] = None,
+        extra_fields: Optional[Dict[str, Any]] = None,
+        append_history: bool = True,
     ) -> Tuple[bool, Optional[str]]:
         """
         Update payout status.
@@ -219,26 +265,53 @@ class ClientCryptoPayout:
             if isinstance(payout_id, str):
                 payout_id = ObjectId(payout_id)
 
-            set_data = {
+            now = datetime.utcnow()
+
+            set_data: Dict[str, Any] = {
                 "status": status,
-                "updatedAt": datetime.utcnow(),
+                "updatedAt": now,
             }
 
             if heleket_transaction_id:
                 set_data["heleket_transaction_id"] = heleket_transaction_id
 
             if status == ClientCryptoPayout.STATUS_CONFIRMED:
-                set_data["confirmedAt"] = datetime.utcnow()
+                set_data["confirmedAt"] = now
+
+            if status_source:
+                set_data["lastStatusCheckSource"] = status_source
+
+            if status in ClientCryptoPayout.FINAL_STATUSES:
+                set_data["nextStatusCheckAt"] = None
+
+            if extra_fields:
+                set_data.update(extra_fields)
 
             update_doc: Dict[str, Any] = {"$set": set_data}
 
+            push_doc: Dict[str, Any] = {}
+
             if response_data is not None:
-                log_entry = {
-                    "timestamp": datetime.utcnow(),
+                push_doc["responseLogs"] = {
+                    "timestamp": now,
                     "status": status,
                     "data": response_data,
                 }
-                update_doc["$push"] = {"responseLogs": log_entry}
+
+            if append_history:
+                history_entry: Dict[str, Any] = {
+                    "timestamp": now,
+                    "status": status,
+                    "source": status_source or "unknown",
+                }
+
+                if status_details:
+                    history_entry["details"] = status_details
+
+                push_doc["statusHistory"] = history_entry
+
+            if push_doc:
+                update_doc["$push"] = push_doc
 
             result = mongo.db.client_crypto_payouts.update_one(
                 {"_id": payout_id},
@@ -450,6 +523,11 @@ class ClientCryptoPayout:
                 [("status", 1), ("requestedAt", -1), ("asset", 1)]
             )
 
+            # Index to accelerate reconciliation scheduling
+            mongo.db.client_crypto_payouts.create_index(
+                [("status", 1), ("nextStatusCheckAt", 1)]
+            )
+
             # Unique index on idempotency_key to prevent duplicates
             mongo.db.client_crypto_payouts.create_index(
                 "idempotency_key", unique=True
@@ -470,12 +548,16 @@ class ClientCryptoPayout:
             if isinstance(payout_id, str):
                 payout_id = ObjectId(payout_id)
 
+            now = datetime.utcnow()
+
             mongo.db.client_crypto_payouts.update_one(
                 {"_id": payout_id},
                 {
                     "$set": {
-                        "lastWebhookAt": datetime.utcnow(),
-                        "updatedAt": datetime.utcnow(),
+                        "lastWebhookAt": now,
+                        "updatedAt": now,
+                        "lastStatusCheckAt": now,
+                        "lastStatusCheckSource": "webhook",
                     }
                 },
             )

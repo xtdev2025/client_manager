@@ -35,7 +35,7 @@
 		- Helpers: get_by_client, get_by_status, get_statistics
 		- Índices MongoDB: client_id+createdAt, status+requestedAt+asset, idempotency_key (unique)
 		- 18 testes unitários cobrindo CRUD, consultas e validações
-	- Resultado: Padrões de `app/models/click.py` reutilizados para timestamps e índices.
+	- Resultado: Modelo dedicado segue convenções de timestamps/índices inspiradas em `app/models/click.py`, porém mantém coleção própria (`client_crypto_payouts`) isolada dos registros de landing pages.
 	- Suggestion: Executar `ClientCryptoPayout.create_indexes()` durante inicialização da aplicação para garantir performance.
 
 ### Tarefas de Suporte - Sprint 1
@@ -92,11 +92,20 @@
 	- Suggestion: Instrumentar script de seed para carregar configurações de exemplo via arquivo JSON/YAML no futuro, facilitando customização conforme ambiente.
 
 ### Melhorias de UX do Dashboard - Fase 1
-- [ ] **Unificar sistema de layout** — Refatorar `dashboard.html` + `dashboard/admin.html` para usar container, espaçamento e componentes de card consistentes definidos em `dashboard.css`; remover estilos inline e garantir ordem de empilhamento mobile. _Responsável: Frontend_
-- [ ] **Implementar breakpoints de grid responsivo** — Auditar classes Bootstrap para prevenir aperto de quatro cards em tablets; introduzir tipografia baseada em CSS clamp e utilitários min-height para cards. _Responsável: Frontend_
-- [ ] **Adicionar estados de carregamento/vazio** — Fornecer skeleton loaders e feedback `aria-live` para seções assíncronas (tabelas, gráficos) para que admins vejam progresso ao invés de áreas em branco. _Responsável: Frontend_
+- [x] **Unificar sistema de layout** — Refatorar `dashboard.html` + `dashboard/admin.html` para usar container, espaçamento e componentes de card consistentes definidos em `dashboard.css`; remover estilos inline e garantir ordem de empilhamento mobile. _Responsável: Frontend_
+	- _Status: Concluído (14/10/2025)_
+	- Resultado: `dashboard.html` agora injeta `dashboard.css`/`dashboard.js` com `dashboard-container` compartilhado e `dashboard/admin.html` foi reescrito com cabeçalho flexível, cards `dashboard-card`/`dashboard-action-link` e remoção de estilos inline mantendo CTAs e tabelas alinhados ao visual enterprise.
+	- Suggestion: Replicar o cabeçalho unificado e seções `dashboard-section` no `client_enterprise.html` para eliminar discrepâncias entre perfis admin e cliente.
+- [x] **Implementar breakpoints de grid responsivo** — Auditar classes Bootstrap para prevenir aperto de quatro cards em tablets; introduzir tipografia baseada em CSS clamp e utilitários min-height para cards. _Responsável: Frontend_
+	- _Status: Concluído (14/10/2025)_
+	- Resultado: Estatísticas usam agora `col-12 col-sm-6 col-xl-3`, tipografias com `clamp()` e utilitário `metric-card` garantindo min-height adaptativo, além de ajustes mobile (`padding`, `table-col-wide`) que evitam compressão em tablets.
+	- Suggestion: Executar smoke test em Safari/iPad e ajustar limites de `table-col-wide` caso relatos de truncamento excedam o esperado.
+- [x] **Adicionar estados de carregamento/vazio** — Fornecer skeleton loaders e feedback `aria-live` para seções assíncronas (tabelas, gráficos) para que admins vejam progresso ao invés de áreas em branco. _Responsável: Frontend_
+	- _Status: Concluído (14/10/2025)_
+	- Resultado: Containers Chart.js iniciam com `chart-skeleton` acessível, transição via `markChartLoading/markChartLoaded`, mensagens de erro não destrutivas e empty states migrados para `dashboard-empty` com `role="status"` e feedback `aria-live`.
+	- Suggestion: Instrumentar métricas de carregamento dos endpoints `/dashboard/api/*` para acompanhar latência e disparar alertas antes de regressões.
 
-**Resumo da Sprint 2:** _(preencher quando concluída)_
+**Resumo da Sprint 2:** ✅ Concluída (14/10/2025) — Fluxo Heleket operacional, dashboard admin modernizado com layout unificado, responsividade refinada e estados de carregamento acessíveis; próximos passos focam em métricas e reconciliação no Sprint 3.
 
 **Próximo foco após Sprint 2:** _Sprint 3_
 
@@ -104,15 +113,33 @@
 
 ## Sprint 3: Monitoramento, Analytics & Melhorias de UX
 
+
 ### Integração de Pagamentos Heleket - Fase 3
-- [ ] **Adicionar reconciliação & monitoramento** — Construir tarefa periódica ou ação manual para buscar status de pagamentos em andamento, destacar falhas e notificar admins (email/slack/log). _Responsável: Backend_
-- [ ] **Integrar analytics** — Exibir KPIs de pagamento (totais pendentes/pagos/falhados) em cards ou gráficos do dashboard administrativo. _Responsável: Frontend_
+- [x] **Adicionar reconciliação & monitoramento** — Construir tarefa periódica ou ação manual para buscar status de pagamentos em andamento, destacar falhas e notificar admins (email/slack/log). _Responsável: Backend_
+	- _Status: Concluído (14/10/2025)_
+	- Resultado: Adicionados campos de monitoramento em `client_crypto_payouts` (`statusHistory`, `nextStatusCheckAt`, `retryCount`, `alertState`, etc.), criado `PayoutReconciliationService` com `schedule_pending` e `check_now`, CLI `flask reconcile-payouts` e endpoint admin `POST /payouts/reconcile`. Alertas automáticos definem `alertState` após tentativas/tempo limite e logs de auditoria acompanham sucesso/erros.
+	- Verificação: `pytest tests/unit/test_client_crypto_payout.py tests/unit/test_payout_reconciliation_service.py tests/unit/test_reconcile_cli.py tests/integration/test_admin_payout_workflow.py::test_admin_triggers_reconciliation_endpoint`
+	- Suggestion: Conectar `alertState=pending_review` a notificações Slack/email e adicionar task scheduler (Celery/cron) para invocar `flask reconcile-payouts` em produção.
+	- Insight (17/10/2025): `client_crypto_payouts` já armazena `status`, `heleket_transaction_id`, `responseLogs`, `lastWebhookAt`, `trigger_metadata` e `heleketPayload`, mas não há campos de auditoria para polling (`lastPolledAt`, `nextPollAt`, `retryCount`, `failureReason`) nem flag para alertas enviados. Índices existentes cobrem `status`, `createdAt`, `idempotency_key` e `heleket_transaction_id`, porém não há index específico para monitorar pendências antigas (`status=pending` com `requestedAt` antigo).
+	- Insight (17/10/2025): Webhooks atualizam `status`/`lastWebhookAt`, mas não registram `source` da atualização (polling vs webhook), dificultando reconciliar eventos contraditórios. Também falta histórico consolidado (além de `responseLogs`) para expor timeline amigável no dashboard.
+	- Suggestion: Introduzir campos `lastStatusCheckAt`, `nextStatusCheckAt`, `statusCheckSource` e `alertState` para monitoramento proativo, além de índice composto `status + requestedAt` focado em pendências. Avaliar materializar `statusHistory` compacta para o dashboard e armazenar códigos de erro Heleket para relatórios.
+	- Plano (18/10/2025): Criar `PayoutReconciliationService` com métodos `schedule_pending()` e `check_now(payout_id)` reutilizando `HeleketClient.get_payout_status`. A rotina `schedule_pending()` deve buscar documentos com `status in {pending, broadcast}` e `nextStatusCheckAt <= agora` (fallback para `requestedAt` > 5 min) e atualizar `lastStatusCheckAt`, `statusHistory` e `retryCount`. Ao receber status final (confirmed/failed/cancelled), gravar `statusHistory`, limpar `nextStatusCheckAt` e registrar auditoria.
+	- Plano (18/10/2025): Expor dois gatilhos: (1) comando CLI `python manage.py reconcile_payouts --window 30` para cron/CI e (2) ação manual no painel admin “Reconciliar payouts agora” que dispara POST para novo endpoint `/payouts/reconcile`. Ambos devem consolidar notificações: enviar alerta Slack/email quando `alertState` mudar para `pending_review` (ex.: após 3 tentativas sem sucesso ou `requestedAt` > 30 min).
+	- Plano (18/10/2025): Persistir `lastStatusCheckSource` (webhook|polling), `failureReason` e `alertEmittedAt`; manter responses detalhados em `responseLogs`, porém salvar snapshot simplificado (`statusHistory`) para renderização rápida. Cobrir lógica com testes unitários (mock `HeleketClient`) e um teste de integração do endpoint/CLI.
+- [x] **Integrar analytics** — Exibir KPIs de pagamento (totais pendentes/pagos/falhados) em cards ou gráficos do dashboard administrativo. _Responsável: Frontend_
+	- _Status: Concluído (14/10/2025)_
+	- Resultado: Dashboard admin agora traz cards dedicados a payouts com totais de volume/contagem, distribuição agrupada por status (pendente, confirmado, falha) e gráfico doughnut carregado via `/dashboard/api/admin-stats`, consumindo agregações do modelo `ClientCryptoPayout`.
+	- Verificação: `pytest tests/integration/test_dashboard_admin_stats.py tests/unit/test_client_crypto_payout.py`
+	- Suggestion: Instrumentar alertas visuais (ex.: badges dinâmicos) quando `pending` ultrapassar limiares definidos pelo time financeiro e habilitar filtro por período diretamente no dashboard.
 - [ ] **Testes & QA** — Cobrir cliente API, workflows de serviço, tratamento de webhook e fluxos de UI com testes automatizados; preparar checklist de staging com credenciais sandbox Heleket. _Responsável: QA_
 
 ### Melhorias de UX do Dashboard - Fase 2
 - [ ] **Reconciliar documentação vs. realidade** — Alinhar `docs/DASHBOARD_README.md` com implementação atual (gráficos faltantes) ou reativar visualizações Chart.js referenciadas no doc. _Responsável: Produto + Frontend_
 - [ ] **Destacar métricas de receita & pagamento** — Reservar slot do card de estatística superior esquerdo para pagamentos quando integração existir; incluir badges de tendência e CTA para ver histórico de pagamentos. _Responsável: Frontend_
-- [ ] **Melhorar usabilidade de tabelas** — Adicionar cabeçalhos ordenáveis, controles de tabela fixos e cards mobile compactos para `infos_detailed`, `recent_login_logs` e `recent_clicks`. _Responsável: Frontend_
+- [x] **Melhorar usabilidade de tabelas** — Adicionar cabeçalhos ordenáveis, controles de tabela fixos e cards mobile compactos para `infos_detailed`, `recent_login_logs` e `recent_clicks`. _Responsável: Frontend_
+	- _Status: Concluído (17/10/2025)_
+	- Resultado: As três tabelas agora possuem botões de ordenação acessíveis, ordenação cliente com sincronização para cards mobile e layout de cards compactos ativado abaixo de `lg`, preservando leitura de colunas extensas.
+	- Suggestion: Avaliar paginação/lazy-load dos registros quando contagens crescerem para evitar cargas longas no DOM e preparar filtros rápidos por status/usuário.
 
 ### Tarefas de Suporte - Sprint 3
 - [ ] **Atualizações de documentação** — Adicionar detalhes de integração Heleket a `docs/` (fluxos de API, diagramas de sequência, setup de env) e referenciar novos padrões de arquitetura CRUD. _Responsável: Technical Writer_

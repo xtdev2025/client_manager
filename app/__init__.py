@@ -1,6 +1,7 @@
 import os
 from datetime import datetime, timedelta
 
+import click
 from flask import Flask
 from flask_bcrypt import Bcrypt
 from flask_limiter import Limiter
@@ -165,5 +166,31 @@ def create_app(config_name=None, init_db=True):
         with app.app_context():
             from app.db_init import initialize_db
             initialize_db()
+
+    @app.cli.command("reconcile-payouts")
+    @click.option("--limit", default=100, type=int, help="Número máximo de payouts a processar")
+    @click.option("--min-delay", default=None, type=int, help="Minutos mínimos desde o requestedAt para reconciliar")
+    @click.option("--interval", default=None, type=int, help="Minutos para reagendar próxima checagem")
+    @click.option("--alert-attempts", default=None, type=int, help="Tentativas antes de gerar alerta")
+    @click.option("--alert-age", default=None, type=int, help="Minutos desde requestedAt para gerar alerta")
+    @click.option("--lookback", default=None, type=int, help="Dias de lookback para considerar payouts")
+    def reconcile_payouts_command(limit, min_delay, interval, alert_attempts, alert_age, lookback):
+        """Executa reconciliação de payouts Heleket pendentes."""
+        from app.services.payout_reconciliation_service import PayoutReconciliationService
+
+        results = PayoutReconciliationService.schedule_pending(
+            limit=limit,
+            min_delay_minutes=min_delay,
+            poll_interval_minutes=interval,
+            alert_attempts=alert_attempts,
+            alert_age_minutes=alert_age,
+            lookback_days=lookback,
+        )
+
+        click.echo(
+            "Reconciliation summary: "
+            f"checked={results['checked']} finalized={results['finalized']} "
+            f"alerts={results['alerts']} errors={results['errors']}"
+        )
 
     return app

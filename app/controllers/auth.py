@@ -14,7 +14,7 @@ from app.services.audit_service import AuditService
 from app.services.auth_service import AuthService
 from app.views.auth_view import AuthView
 
-auth = Blueprint("auth", __name__)
+auth = Blueprint("auth", __name__, url_prefix="/auth")
 
 
 def admin_required(f: Callable[..., Any]) -> Callable[..., Any]:

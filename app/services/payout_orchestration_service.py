@@ -159,6 +159,14 @@ class PayoutOrchestrationService:
         payout_id=payout_id,
         status=ClientCryptoPayout.STATUS_FAILED,
         response_data=error_payload,
+        status_source="orchestration",
+        status_details={"stage": "initiate", "error": api_error} if api_error else {"stage": "initiate"},
+        extra_fields={
+          "failureReason": api_error,
+          "lastStatusCheckAt": datetime.utcnow(),
+          "lastStatusCheckSource": "orchestration",
+          "nextStatusCheckAt": None,
+        },
       )
 
       failure_snapshot = {
@@ -184,6 +192,12 @@ class PayoutOrchestrationService:
       status=heleket_status,
       heleket_transaction_id=transaction_id,
       response_data=api_response,
+      status_source="orchestration",
+      status_details={"stage": "initiate", "raw_status": api_response.get("status") if api_response else None},
+      extra_fields={
+        "lastStatusCheckAt": datetime.utcnow(),
+        "lastStatusCheckSource": "orchestration",
+      },
     )
 
     payout_snapshot = {

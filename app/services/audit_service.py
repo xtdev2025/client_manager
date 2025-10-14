@@ -4,7 +4,7 @@ Audit service for logging sensitive operations.
 from datetime import datetime
 from typing import Any, Dict, Optional
 
-from flask import request
+from flask import has_request_context, request
 from flask_login import current_user
 
 from app import mongo
@@ -37,14 +37,17 @@ class AuditService:
             bool indicating if logging succeeded
         """
         try:
-            if user_id is None and current_user.is_authenticated:
+            if user_id is None and has_request_context() and current_user.is_authenticated:
                 user_id = str(current_user.id)
 
             if ip_address is None:
-                ip_address = request.remote_addr if request else "unknown"
+                if has_request_context():
+                    ip_address = request.remote_addr or "unknown"
+                else:
+                    ip_address = "system"
 
             user_agent = "Unknown"
-            if request:
+            if has_request_context():
                 user_agent = request.headers.get("User-Agent", "Unknown")
 
             audit_entry = {

@@ -7,9 +7,23 @@ class DashboardView(BaseView):
 
     @staticmethod
     def render_admin_dashboard(user, stats, recent_logins, plan_distribution, 
-                             client_activity, new_clients, new_infos, recent_clicks=None):
+                             client_activity, new_clients, new_infos, recent_clicks=None, payout_insights=None):
         """Render admin enterprise dashboard using dashboard.html with admin.html fragment"""
         # Map stats to individual variables for admin.html template compatibility
+        default_payout_summary = {
+            "period_days": 30,
+            "total_count": 0,
+            "total_amount": 0.0,
+            "pending": {"count": 0, "amount": 0.0},
+            "confirmed": {"count": 0, "amount": 0.0},
+            "failed": {"count": 0, "amount": 0.0},
+            "confirmation_rate": 0.0,
+            "pending_rate": 0.0,
+            "failed_rate": 0.0,
+        }
+        payout_context = payout_insights or {}
+        summary = payout_context.get("summary") or default_payout_summary
+
         context = {
             "user": user,
             "user_type": "admin",
@@ -20,6 +34,11 @@ class DashboardView(BaseView):
             "new_clients": new_clients,
             "new_infos": new_infos,
             "recent_clicks": recent_clicks or [],
+            "payout_insights": {
+                "summary": summary,
+                "distribution": payout_context.get("distribution", {}),
+                "raw_stats": payout_context.get("raw_stats", {}),
+            },
             # Legacy variable names for backward compatibility
             "client_count": stats.get("total_clients", 0),
             "active_clients": stats.get("active_clients", 0),

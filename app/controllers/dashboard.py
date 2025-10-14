@@ -5,6 +5,7 @@ from flask_login import current_user, login_required
 
 from app.models.admin import Admin
 from app.models.client import Client
+from app.models.client_crypto_payout import ClientCryptoPayout
 from app.models.click import Click
 from app.models.domain import Domain
 from app.models.info import Info
@@ -63,6 +64,73 @@ def _get_plan_distribution_cached():
     except Exception as e:
         print(f"Error getting plan distribution: {e}")
         return {}
+
+
+def _get_payout_insights(days: int = 30):
+    """Aggregate payout metrics for admin dashboard."""
+    stats = ClientCryptoPayout.get_statistics(days=days)
+    by_status = stats.get("by_status", {}) if stats else {}
+
+    def _get_entry(status: str):
+        entry = by_status.get(status, {})
+        return entry.get("count", 0), float(entry.get("total_amount", 0) or 0)
+
+    def _combine(statuses):
+        total_count = 0
+        total_amount = 0.0
+        for status in statuses:
+            count, amount = _get_entry(status)
+            total_count += count
+            total_amount += amount
+        return total_count, total_amount
+
+    pending_count, pending_amount = _combine([
+        ClientCryptoPayout.STATUS_PENDING,
+        ClientCryptoPayout.STATUS_BROADCAST,
+    ])
+    confirmed_count, confirmed_amount = _get_entry(ClientCryptoPayout.STATUS_CONFIRMED)
+    failed_count, failed_amount = _combine([
+        ClientCryptoPayout.STATUS_FAILED,
+        ClientCryptoPayout.STATUS_CANCELLED,
+    ])
+
+    total_count = stats.get("total_count", 0) if stats else 0
+
+    def _percentage(part):
+        return (part / total_count * 100.0) if total_count > 0 else 0.0
+
+    summary = {
+        "period_days": stats.get("period_days", days) if stats else days,
+        "total_count": total_count,
+        "total_amount": float(stats.get("total_amount", 0) or 0) if stats else 0.0,
+        "pending": {"count": pending_count, "amount": pending_amount},
+        "confirmed": {"count": confirmed_count, "amount": confirmed_amount},
+        "failed": {"count": failed_count, "amount": failed_amount},
+        "confirmation_rate": _percentage(confirmed_count),
+        "pending_rate": _percentage(pending_count),
+        "failed_rate": _percentage(failed_count),
+        "raw_by_status": by_status,
+    }
+
+    distribution = {
+        "labels": [
+            "Pendentes",
+            "Confirmados",
+            "Falhos",
+        ],
+        "datasets": [
+            {
+                "data": [pending_count, confirmed_count, failed_count],
+                "backgroundColor": [
+                    "rgba(9, 105, 218, 0.8)",
+                    "rgba(26, 127, 55, 0.85)",
+                    "rgba(207, 34, 46, 0.8)",
+                ],
+            }
+        ],
+    }
+
+    return summary, distribution, stats or {}
 
 
 @dashboard.route("/")
@@ -154,6 +222,8 @@ def admin_dashboard():
     ]
     recent_clicks = list(db.clicks.aggregate(recent_clicks_pipeline))
 
+    payout_summary, payout_distribution, raw_payout_stats = _get_payout_insights()
+
     return DashboardView.render_admin_dashboard(
         user=user,
         stats=stats,
@@ -162,7 +232,12 @@ def admin_dashboard():
         client_activity=client_activity,
         new_clients=new_clients,
         new_infos=new_infos,
-        recent_clicks=recent_clicks
+        recent_clicks=recent_clicks,
+        payout_insights={
+            "summary": payout_summary,
+            "distribution": payout_distribution,
+            "raw_stats": raw_payout_stats,
+        }
     )
 
 
@@ -355,6 +430,8 @@ def admin_stats_api():
     ]
     status_distribution = {item["_id"]: item["count"] for item in db.clients.aggregate(status_pipeline)}
 
+    payout_summary, payout_distribution, raw_payout_stats = _get_payout_insights()
+
     return jsonify({
         "plan_distribution": {
             "labels": list(plan_distribution.keys()),
@@ -380,7 +457,10 @@ def admin_stats_api():
                     "rgba(255, 205, 86, 0.8)"
                 ]
             }]
-        }
+        },
+        "payout_distribution": payout_distribution,
+        "payout_summary": payout_summary,
+        "payout_raw": raw_payout_stats,
     })
 
 

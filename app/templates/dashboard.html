@@ -8,27 +8,23 @@
 
 {% block title %}Painel - Gerenciador de Clientes{% endblock %}
 
-{% block page_title %}
-    {% if resolved_user_type == 'admin' %}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="mb-1">Painel</h1>
-            <p class="text-muted mb-0">Bem-vindo de volta, {{ user.username }}! Veja o que está acontecendo hoje.</p>
-        </div>
-    </div>
-    {% endif %}
+{% block styles %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}" defer></script>
 {% endblock %}
 
+{% block header %}{% endblock %}
+
 {% block content %}
-<div class="container-fluid">
-    {% if resolved_user_type == 'admin' %}
-        <div class="row">
+<div class="dashboard-container">
+    <div class="container-fluid px-3 px-lg-4">
+        {% if resolved_user_type == 'admin' %}
             {% include 'dashboard/admin.html' %}
-        </div>
-    {% else %}
-        <div class="content-wrapper">
+        {% else %}
             {% include 'dashboard/client.html' %}
-        </div>
-    {% endif %}
+        {% endif %}
+    </div>
 </div>
 {% endblock %}

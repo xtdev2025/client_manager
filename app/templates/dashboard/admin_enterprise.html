@@ -4,28 +4,105 @@
 
 {% block styles %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}" defer></script>
 {% endblock %}
 
 {% block content %}
 <div class="dashboard-container">
 <div class="container-fluid px-3 px-lg-4">
     <!-- Header Section -->
-    <div class="row mb-4">
+    <section class="dashboard-section">
+        <div class="dashboard-header">
+            <div>
+                <h1 class="dashboard-title"><i class="fas fa-tachometer-alt text-primary me-2"></i>Dashboard Enterprise</h1>
+                <p class="dashboard-subtitle">Visão geral completa do sistema em tempo real.</p>
+            </div>
+            <div class="dashboard-actions">
+                <button type="button" class="btn btn-sm btn-outline-primary" data-dashboard-action="refresh">
+                    <i class="fas fa-sync-alt"></i> Atualizar
+                </button>
+                <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-clipboard-list"></i> Logs
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Payment KPI Spotlight -->
+    <div class="row g-3 mb-4 payment-kpis">
         <div class="col-12">
-            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
-                <div class="mb-3 mb-md-0">
-                    <h1 class="h3 mb-1"><i class="fas fa-tachometer-alt text-primary me-2"></i>Dashboard Enterprise</h1>
-                    <p class="text-muted mb-0 small">Visão geral completa do sistema em tempo real</p>
+            <div class="dashboard-card kpi-header-card">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                    <div>
+                        <div class="dashboard-card-eyebrow text-uppercase small fw-semibold text-muted">Pagamentos Heleket</div>
+                        <h4 class="dashboard-card-title mb-1">Performance de payouts (últimos {{ payout_insights.summary.period_days }} dias)</h4>
+                        <p class="mb-0 text-muted">Monitoramento consolidado de transferências cripto: confirme tendências, encontre gargalos e mantenha o fluxo saudável.</p>
+                    </div>
+                    <div class="text-md-end">
+                        <div class="total-amount-display">Total movimentado: <strong>{{ "%.2f"|format(payout_insights.summary.total_amount|float) }}</strong></div>
+                        <a class="btn btn-sm btn-primary mt-2" href="{{ url_for('client.list_clients') }}#payout-ready">
+                            <i class="fas fa-coins me-1"></i> Ver pagamentos
+                        </a>
+                    </div>
                 </div>
-                <div class="d-flex gap-2 flex-wrap">
-                    <button class="btn btn-sm btn-outline-primary" onclick="location.reload()">
-                        <i class="fas fa-sync-alt"></i> Atualizar
-                    </button>
-                    <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-sm btn-outline-secondary">
-                        <i class="fas fa-clipboard-list"></i> Logs
-                    </a>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-4">
+            <div class="stat-card payout-card success">
+                <div class="stat-card-icon bg-success-soft text-success">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-number">{{ payout_insights.summary.confirmed.count }}</div>
+                <div class="stat-label">Pagos</div>
+                <p class="stat-meta mb-1">{{ "%.2f"|format(payout_insights.summary.confirmed.amount|float) }} confirmados</p>
+                <div class="stat-progress">
+                    {% set total = payout_insights.summary.total_count or 1 %}
+                    {% set percent = (payout_insights.summary.confirmed.count / total * 100) if total > 0 else 0 %}
+                    {% set percent_floor = percent|round(0, 'floor') %}
+                    <div class="progress-thin progress-has-variable" style="--progress-width: {{ percent_floor }}%;">
+                        <div class="progress-bar bg-success"></div>
+                    </div>
+                    <small class="text-muted">{{ percent|round(1) }}% do volume</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="stat-card payout-card warning">
+                <div class="stat-card-icon bg-warning-soft text-warning">
+                    <i class="fas fa-hourglass-half"></i>
+                </div>
+                <div class="stat-number">{{ payout_insights.summary.pending.count }}</div>
+                <div class="stat-label">Em andamento</div>
+                <p class="stat-meta mb-1">{{ "%.2f"|format(payout_insights.summary.pending.amount|float) }} aguardando confirmação</p>
+                <div class="stat-progress">
+                    {% set total = payout_insights.summary.total_count or 1 %}
+                    {% set percent = (payout_insights.summary.pending.count / total * 100) if total > 0 else 0 %}
+                    {% set percent_floor = percent|round(0, 'floor') %}
+                    <div class="progress-thin progress-has-variable" style="--progress-width: {{ percent_floor }}%;">
+                        <div class="progress-bar bg-warning"></div>
+                    </div>
+                    <small class="text-muted">{{ percent|round(1) }}% do volume</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="stat-card payout-card danger">
+                <div class="stat-card-icon bg-danger-soft text-danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="stat-number">{{ payout_insights.summary.failed.count }}</div>
+                <div class="stat-label">Intervenção</div>
+                <p class="stat-meta mb-1">{{ "%.2f"|format(payout_insights.summary.failed.amount|float) }} requer atenção</p>
+                <div class="stat-progress">
+                    {% set total = payout_insights.summary.total_count or 1 %}
+                    {% set percent = (payout_insights.summary.failed.count / total * 100) if total > 0 else 0 %}
+                    {% set percent_floor = percent|round(0, 'floor') %}
+                    <div class="progress-thin progress-has-variable" style="--progress-width: {{ percent_floor }}%;">
+                        <div class="progress-bar bg-danger"></div>
+                    </div>
+                    <small class="text-muted">{{ percent|round(1) }}% do volume</small>
                 </div>
             </div>
         </div>
@@ -34,21 +111,30 @@
     <!-- Statistics Cards - Full Width Responsive Grid -->
     <div class="row g-3 mb-4">
         <div class="col-6 col-md-4 col-lg-2">
-            <div class="stat-card">
-                <div class="stat-number">{{ stats.total_clients }}</div>
-                <div class="stat-label">Total Clientes</div>
-                <div class="growth-indicator growth-up">
-                    <i class="fas fa-arrow-up"></i> +{{ new_clients }} este mês
+            <div class="stat-card payout-highlight success">
+                <div class="stat-number">R$ {{ "%.2f"|format(payout_insights.summary.total_amount|float) }}</div>
+                <div class="stat-label">Pagamentos {{ payout_insights.summary.period_days }} dias</div>
+                <div class="growth-indicator">
+                    Taxa de sucesso {{ payout_insights.summary.confirmation_rate|round(1) }}%
+                </div>
+                <div class="d-flex justify-content-between align-items-center mt-2">
+                    <span class="badge bg-success-soft text-success fw-semibold">
+                        <i class="fas fa-check-circle me-1"></i>{{ payout_insights.summary.confirmed.count }} pagos
+                    </span>
+                    <a href="{{ url_for('client.list_clients') }}#payout-ready" class="stat-link">
+                        Ver histórico
+                    </a>
                 </div>
             </div>
         </div>
         <div class="col-6 col-md-4 col-lg-2">
             <div class="stat-card success">
-                <div class="stat-number">{{ stats.active_clients }}</div>
-                <div class="stat-label">Ativos</div>
-                <div class="growth-indicator">
-                    {{ "%.1f"|format((stats.active_clients / stats.total_clients * 100) if stats.total_clients > 0 else 0) }}%
+                <div class="stat-number">{{ stats.total_clients }}</div>
+                <div class="stat-label">Total Clientes</div>
+                <div class="growth-indicator growth-up">
+                    <i class="fas fa-arrow-up"></i> +{{ new_clients }} este mês
                 </div>
+                <small class="stat-meta">{{ stats.active_clients }} ativos ({{ "%.1f"|format((stats.active_clients / stats.total_clients * 100) if stats.total_clients > 0 else 0) }}%)</small>
             </div>
         </div>
         <div class="col-6 col-md-4 col-lg-2">
@@ -93,14 +179,43 @@
     <div class="row g-3 mb-4">
         <!-- Left Column - Charts (Larger on desktop) -->
         <div class="col-12 col-lg-8">
+            <!-- Payments Chart -->
+            <div class="dashboard-card mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0"><i class="fas fa-coins text-primary me-2"></i>Status dos Pagamentos</h5>
+                    <span class="badge bg-primary">{{ payout_insights.summary.total_count }} transações</span>
+                </div>
+                <div class="chart-container chart-loading" data-chart="payout-status" aria-live="polite" aria-busy="true">
+                    <div class="chart-skeleton" aria-hidden="true"></div>
+                    <canvas id="payoutStatusChart" role="img" aria-label="Distribuição de status de payouts"></canvas>
+                </div>
+                <div class="payout-legend mt-3">
+                    <div class="row g-3 text-center">
+                        <div class="col-4">
+                            <p class="legend-label text-success mb-0">Confirmados</p>
+                            <small class="text-muted">{{ payout_insights.summary.confirmed.count }} / {{ "%.2f"|format(payout_insights.summary.confirmed.amount|float) }}</small>
+                        </div>
+                        <div class="col-4">
+                            <p class="legend-label text-primary mb-0">Pendentes</p>
+                            <small class="text-muted">{{ payout_insights.summary.pending.count }} / {{ "%.2f"|format(payout_insights.summary.pending.amount|float) }}</small>
+                        </div>
+                        <div class="col-4">
+                            <p class="legend-label text-danger mb-0">Falhos</p>
+                            <small class="text-muted">{{ payout_insights.summary.failed.count }} / {{ "%.2f"|format(payout_insights.summary.failed.amount|float) }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Clicks Chart - Full Width -->
             <div class="dashboard-card mb-3">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="mb-0"><i class="fas fa-chart-line text-info me-2"></i>Clicks nos Últimos 30 Dias</h5>
                     <span class="badge bg-info">{{ stats.total_clicks }} total</span>
                 </div>
-                <div class="chart-container" style="height: 280px;">
-                    <canvas id="adminClicksChart"></canvas>
+                <div class="chart-container chart-loading" data-chart="admin-clicks" aria-live="polite" aria-busy="true">
+                    <div class="chart-skeleton" aria-hidden="true"></div>
+                    <canvas id="adminClicksChart" role="img" aria-label="Gráfico de clicks nos últimos 30 dias"></canvas>
                 </div>
             </div>
 
@@ -109,16 +224,18 @@
                 <div class="col-12 col-md-6">
                     <div class="dashboard-card">
                         <h5 class="mb-3"><i class="fas fa-chart-pie text-primary me-2"></i>Distribuição de Planos</h5>
-                        <div class="chart-container" style="height: 250px;">
-                            <canvas id="planChart"></canvas>
+                        <div class="chart-container chart-loading" data-chart="plan-distribution" aria-live="polite" aria-busy="true">
+                            <div class="chart-skeleton" aria-hidden="true"></div>
+                            <canvas id="planChart" role="img" aria-label="Distribuição de planos"></canvas>
                         </div>
                     </div>
                 </div>
                 <div class="col-12 col-md-6">
                     <div class="dashboard-card">
                         <h5 class="mb-3"><i class="fas fa-chart-bar text-success me-2"></i>Status dos Clientes</h5>
-                        <div class="chart-container" style="height: 250px;">
-                            <canvas id="statusChart"></canvas>
+                        <div class="chart-container chart-loading" data-chart="status-distribution" aria-live="polite" aria-busy="true">
+                            <div class="chart-skeleton" aria-hidden="true"></div>
+                            <canvas id="statusChart" role="img" aria-label="Status dos clientes"></canvas>
                         </div>
                     </div>
                 </div>
@@ -175,8 +292,8 @@
                     </div>
                     {% endfor %}
                     {% if not recent_logins %}
-                    <div class="text-center text-muted py-3">
-                        <i class="fas fa-inbox fa-2x mb-2"></i>
+                    <div class="dashboard-empty" role="status" aria-live="polite">
+                        <i class="fas fa-inbox"></i>
                         <p class="mb-0 small">Nenhuma atividade recente</p>
                     </div>
                     {% endif %}
@@ -233,8 +350,8 @@
                     </table>
                 </div>
                 {% else %}
-                <div class="text-center py-5">
-                    <i class="fas fa-mouse-pointer fa-3x text-muted mb-3"></i>
+                <div class="dashboard-empty" role="status" aria-live="polite">
+                    <i class="fas fa-mouse-pointer"></i>
                     <p class="text-muted mb-0">Nenhum click registrado ainda.</p>
                 </div>
                 {% endif %}

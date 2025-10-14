@@ -1,380 +1,476 @@
-    <!-- Admin Dashboard -->
-    
-    <!-- Primary Statistics Row -->
-    <div class="col-lg-3 col-md-6 mb-4">
-        <div class="card stat-card stat-card-primary">
-            <div class="card-body position-relative">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <div class="stat-label">Total de Clientes</div>
-                        <div class="stat-number">{{ client_count }}</div>
-                        <div class="stat-change">
-                            <i class="fas fa-check-circle"></i>
-                            <span>{{ active_clients }} ativos</span>
-                        </div>
-                    </div>
-                    <div class="icon-hover">
-                        <i class="fas fa-users fa-2x opacity-75"></i>
-                    </div>
-                </div>
-                <a href="{{ url_for('client.list_clients') }}" class="btn btn-sm btn-light mt-3">
-                    <i class="fas fa-arrow-right"></i> Ver todos
-                </a>
-            </div>
+{% set info_active_percentage = (active_infos / info_count * 100) if info_count > 0 else 0 %}
+
+<section class="dashboard-section">
+    <div class="dashboard-header">
+        <div>
+            <h1 class="dashboard-title"><i class="fas fa-tachometer-alt text-primary me-2"></i>Painel Administrativo</h1>
+            <p class="dashboard-subtitle">Acompanhe clientes, planos e atividade em tempo real.</p>
+        </div>
+        <div class="dashboard-actions">
+            <button type="button" class="btn btn-sm btn-outline-primary" data-dashboard-action="refresh">
+                <i class="fas fa-sync-alt me-1"></i>Atualizar
+            </button>
+            <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-clipboard-list me-1"></i>Logs
+            </a>
         </div>
     </div>
+</section>
 
-    <div class="col-lg-3 col-md-6 mb-4">
-        <div class="card stat-card stat-card-success">
-            <div class="card-body position-relative">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <div class="stat-label">Total de Planos</div>
-                        <div class="stat-number">{{ plan_count }}</div>
-                        <div class="stat-change">
-                            <i class="fas fa-layer-group"></i>
-                            <span>Planos de assinatura</span>
-                        </div>
-                    </div>
-                    <div class="icon-hover">
-                        <i class="fas fa-tags fa-2x opacity-75"></i>
-                    </div>
+<section class="dashboard-section">
+    <div class="row g-3">
+        <div class="col-12 col-sm-6 col-xl-3">
+            <article class="stat-card dashboard-stat">
+                <div class="stat-card-icon bg-primary-subtle text-primary">
+                    <i class="fas fa-users"></i>
                 </div>
-                <a href="{{ url_for('plan.list_plans') }}" class="btn btn-sm btn-light mt-3">
-                    <i class="fas fa-arrow-right"></i> Ver todos
-                </a>
-            </div>
+                <div class="stat-number">{{ client_count }}</div>
+                <div class="stat-label">Total de Clientes</div>
+                <p class="stat-meta"><i class="fas fa-check-circle me-1"></i>{{ active_clients }} ativos</p>
+                <a class="stat-link" href="{{ url_for('client.list_clients') }}">Ver todos <i class="fas fa-arrow-right ms-1"></i></a>
+            </article>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <article class="stat-card dashboard-stat success">
+                <div class="stat-card-icon bg-success-subtle text-success">
+                    <i class="fas fa-layer-group"></i>
+                </div>
+                <div class="stat-number">{{ plan_count }}</div>
+                <div class="stat-label">Total de Planos</div>
+                <p class="stat-meta"><i class="fas fa-tags me-1"></i>Planos ativos</p>
+                <a class="stat-link" href="{{ url_for('plan.list_plans') }}">Ver todos <i class="fas fa-arrow-right ms-1"></i></a>
+            </article>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <article class="stat-card dashboard-stat info">
+                <div class="stat-card-icon bg-info-subtle text-info">
+                    <i class="fas fa-globe"></i>
+                </div>
+                <div class="stat-number">{{ domain_count }}</div>
+                <div class="stat-label">Domínios</div>
+                <p class="stat-meta"><i class="fas fa-network-wired me-1"></i>{{ template_count }} templates</p>
+                <a class="stat-link" href="{{ url_for('domain.list_domains') }}">Ver todos <i class="fas fa-arrow-right ms-1"></i></a>
+            </article>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <article class="stat-card dashboard-stat warning">
+                <div class="stat-card-icon bg-warning-subtle text-warning">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <div class="stat-number">{{ admin_count }}</div>
+                <div class="stat-label">Administradores</div>
+                <p class="stat-meta"><i class="fas fa-shield-alt me-1"></i>Equipe do sistema</p>
+                <a class="stat-link" href="{{ url_for('admin.list_admins') }}">Ver todos <i class="fas fa-arrow-right ms-1"></i></a>
+            </article>
         </div>
     </div>
+</section>
 
-    <div class="col-lg-3 col-md-6 mb-4">
-        <div class="card stat-card stat-card-info">
-            <div class="card-body position-relative">
-                <div class="d-flex justify-content-between align-items-start">
+<section class="dashboard-section">
+    <div class="row g-3">
+        <div class="col-12 col-lg-6">
+            <article class="dashboard-card metric-card">
+                <div class="dashboard-card-header">
                     <div>
-                        <div class="stat-label">Total de Domínios</div>
-                        <div class="stat-number">{{ domain_count }}</div>
-                        <div class="stat-change">
-                            <i class="fas fa-globe"></i>
-                            <span>Domínios registrados</span>
-                        </div>
+                        <p class="dashboard-card-eyebrow">Informações bancárias</p>
+                        <h3 class="dashboard-card-title">{{ info_count }}</h3>
                     </div>
-                    <div class="icon-hover">
-                        <i class="fas fa-globe fa-2x opacity-75"></i>
-                    </div>
+                    <span class="badge bg-primary-subtle text-primary"><i class="fas fa-university me-1"></i>{{ active_infos }} ativos</span>
                 </div>
-                <a href="{{ url_for('domain.list_domains') }}" class="btn btn-sm btn-light mt-3">
-                    <i class="fas fa-arrow-right"></i> Ver todos
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-lg-3 col-md-6 mb-4">
-        <div class="card stat-card stat-card-warning">
-            <div class="card-body position-relative">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <div class="stat-label">Administradores</div>
-                        <div class="stat-number">{{ admin_count }}</div>
-                        <div class="stat-change">
-                            <i class="fas fa-shield-alt"></i>
-                            <span>Administradores do sistema</span>
-                        </div>
-                    </div>
-                    <div class="icon-hover">
-                        <i class="fas fa-user-shield fa-2x opacity-75"></i>
-                    </div>
+                <div class="progress progress-thin progress-has-variable" role="progressbar" aria-label="Porcentagem de informações ativas" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ info_active_percentage|round(1) }}" style="--progress-width: {{ info_active_percentage }}%;">
+                    <div class="progress-bar bg-primary"></div>
                 </div>
-                <a href="{{ url_for('admin.list_admins') }}" class="btn btn-sm btn-dark mt-3">
-                    <i class="fas fa-arrow-right"></i> Ver todos
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Secondary Statistics Row -->
-    <div class="col-lg-6 col-md-6 mb-4">
-        <div class="card">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                    <div>
-                        <h6 class="text-muted mb-1">Informações Bancárias</h6>
-                        <h3 class="mb-0">{{ info_count }}</h3>
-                    </div>
-                    <div class="badge bg-primary">
-                        <i class="fas fa-university"></i> {{ active_infos }} ativos
-                    </div>
-                </div>
-                <div class="progress" style="height: 6px;">
-                    <div class="progress-bar bg-primary" role="progressbar" 
-                         style="width: {{ (active_infos / info_count * 100) if info_count > 0 else 0 }}%"></div>
-                </div>
-                <small class="text-muted mt-2 d-block">
+                <p class="text-muted small mb-0">
                     {% if info_count > 0 %}
-                        {{ "%.1f"|format(active_infos / info_count * 100) }}% estão ativos
+                        {{ "%.1f"|format(info_active_percentage) }}% estão ativos
                     {% else %}
                         Nenhum registro ainda
                     {% endif %}
-                </small>
-            </div>
+                </p>
+            </article>
         </div>
-    </div>
-
-    <div class="col-lg-6 col-md-6 mb-4">
-        <div class="card">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start mb-3">
+        <div class="col-12 col-lg-6">
+            <article class="dashboard-card metric-card">
+                <div class="dashboard-card-header">
                     <div>
-                        <h6 class="text-muted mb-1">Modelos</h6>
-                        <h3 class="mb-0">{{ template_count }}</h3>
+                        <p class="dashboard-card-eyebrow">Modelos</p>
+                        <h3 class="dashboard-card-title">{{ template_count }}</h3>
                     </div>
-                    <div class="badge bg-secondary">
-                        <i class="fas fa-file-code"></i> Disponíveis
-                    </div>
+                    <span class="badge bg-secondary-subtle text-secondary"><i class="fas fa-file-code me-1"></i>Disponíveis</span>
                 </div>
-                <div class="d-flex gap-2 mt-3">
-                    <a href="{{ url_for('template.list_templates') }}" class="btn btn-sm btn-outline-primary flex-fill">
-                        <i class="fas fa-list"></i> Ver modelos
+                <div class="d-flex flex-wrap gap-2 mt-3">
+                    <a href="{{ url_for('template.list_templates') }}" class="btn btn-outline-primary btn-sm flex-grow-1">
+                        <i class="fas fa-list me-1"></i>Ver modelos
                     </a>
-                    <a href="{{ url_for('template.create_template') }}" class="btn btn-sm btn-primary">
-                        <i class="fas fa-plus"></i> Novo
+                    <a href="{{ url_for('template.create_template') }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus me-1"></i>Novo
                     </a>
                 </div>
-            </div>
+            </article>
         </div>
     </div>
+</section>
 
-    <!-- Quick Actions and Admin Info Row -->
-    <div class="col-lg-6 mb-4">
-        <div class="card h-100">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-bolt text-warning me-2"></i>Ações rápidas</h5>
-            </div>
-            <div class="card-body">
-                <div class="d-grid gap-2">
-                    <a href="{{ url_for('client.create_client') }}" class="btn btn-outline-primary text-start">
-                        <i class="fas fa-user-plus me-2"></i> Adicionar novo cliente
+<section class="dashboard-section">
+    <div class="row g-3">
+        <div class="col-12 col-lg-6">
+            <article class="dashboard-card h-100">
+                <div class="dashboard-card-header">
+                    <h5 class="mb-0"><i class="fas fa-bolt text-warning me-2"></i>Ações rápidas</h5>
+                </div>
+                <div class="dashboard-action-list">
+                    <a href="{{ url_for('client.create_client') }}" class="dashboard-action-link">
+                        <i class="fas fa-user-plus"></i><span>Adicionar novo cliente</span>
                     </a>
-                    <a href="{{ url_for('plan.create_plan') }}" class="btn btn-outline-success text-start">
-                        <i class="fas fa-plus-circle me-2"></i> Criar novo plano
+                    <a href="{{ url_for('plan.create_plan') }}" class="dashboard-action-link">
+                        <i class="fas fa-plus-circle"></i><span>Criar novo plano</span>
                     </a>
-                    <a href="{{ url_for('domain.create_domain') }}" class="btn btn-outline-info text-start">
-                        <i class="fas fa-globe me-2"></i> Registrar novo domínio
+                    <a href="{{ url_for('domain.create_domain') }}" class="dashboard-action-link">
+                        <i class="fas fa-globe"></i><span>Registrar novo domínio</span>
                     </a>
                     {% if user.role == 'super_admin' %}
-                    <a href="{{ url_for('admin.create_admin') }}" class="btn btn-outline-warning text-start">
-                        <i class="fas fa-user-shield me-2"></i> Adicionar novo administrador
+                    <a href="{{ url_for('admin.create_admin') }}" class="dashboard-action-link">
+                        <i class="fas fa-user-shield"></i><span>Adicionar novo administrador</span>
                     </a>
                     {% endif %}
+                    <a href="{{ url_for('client.list_clients') }}#payout-ready" class="dashboard-action-link" data-quick-action="payout">
+                        <i class="fas fa-coins"></i><span>Disparar payout</span>
+                    </a>
                 </div>
-            </div>
+            </article>
         </div>
-    </div>
-
-    <div class="col-lg-6 mb-4">
-        <div class="card h-100">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-user-circle text-primary me-2"></i>Perfil do administrador</h5>
-            </div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="bg-primary bg-opacity-10 rounded-circle p-3 me-3">
-                            <i class="fas fa-user fa-2x text-primary"></i>
-                        </div>
-                        <div>
-                            <h5 class="mb-0">{{ user.username }}</h5>
-                            <span class="badge bg-primary">{{ user.role }}</span>
-                        </div>
+        <div class="col-12 col-lg-6">
+            <article class="dashboard-card h-100">
+                <div class="dashboard-card-header">
+                    <h5 class="mb-0"><i class="fas fa-user-circle text-primary me-2"></i>Perfil do administrador</h5>
+                </div>
+                <div class="dashboard-profile">
+                    <div class="dashboard-profile-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-1">{{ user.username }}</h5>
+                        <span class="badge bg-primary">{{ user.role }}</span>
                     </div>
                 </div>
-                <div class="mb-3">
-                    <small class="text-muted d-block mb-1">Último acesso</small>
-                    <strong>{% if user.last_login %}{{ user.last_login.strftime('%Y-%m-%d %H:%M:%S') }}{% else %}N/D{% endif %}</strong>
-                </div>
-                <a href="{{ url_for('admin.profile') }}" class="btn btn-primary w-100">
-                    <i class="fas fa-user-edit me-2"></i> Editar perfil
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-12 mb-4">
-        <div class="card h-100">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="fas fa-database text-success me-2"></i>Informações de clientes</h5>
-                <span class="badge bg-light text-dark">{{ infos_detailed|length }} registros</span>
-            </div>
-            <div class="card-body p-0">
-                {% if infos_detailed %}
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead>
-                            <tr>
-                                <th>Cliente</th>
-                                <th>Agência</th>
-                                <th>Conta</th>
-                                <th>Saldo</th>
-                                <th>Status</th>
-                                <th>Atualizado</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for info in infos_detailed %}
-                            <tr>
-                                <td>
-                                    <div class="d-flex flex-column">
-                                        <strong>{{ info.client_username }}</strong>
-                                        <small class="text-muted text-uppercase">{{ info.client_status|default('N/D') }}</small>
-                                    </div>
-                                </td>
-                                <td>{{ info.agencia }}</td>
-                                <td>{{ info.conta }}</td>
-                                <td class="text-success fw-semibold">R$ {{ "%.2f"|format(info.saldo|default(0)) }}</td>
-                                <td>
-                                    {% if info.status == 'active' %}
-                                    <span class="badge bg-success">Ativo</span>
-                                    {% elif info.status == 'inactive' %}
-                                    <span class="badge bg-warning text-dark">Inativo</span>
-                                    {% else %}
-                                    <span class="badge bg-secondary">{{ info.status }}</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if info.updatedAt %}
-                                        {{ info.updatedAt.strftime('%Y-%m-%d %H:%M:%S') }}
-                                    {% else %}
-                                        —
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                {% else %}
-                <div class="text-center py-5">
-                    <i class="fas fa-database fa-3x text-muted mb-3"></i>
-                    <p class="text-muted mb-0">Nenhum registro de informação encontrado.</p>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
-    <div class="col-12 mb-4">
-        <div class="card h-100">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="fas fa-history text-info me-2"></i>Últimos logins</h5>
                 <div>
-                    <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-sm btn-outline-info me-2">
-                        <i class="fas fa-clipboard-list me-1"></i> Ver Logs de Auditoria
-                    </a>
-                    <span class="badge bg-light text-dark">{{ recent_login_logs|length }} registros</span>
+                    <small class="text-muted d-block mb-1">Último acesso</small>
+                    <strong>{% if user.last_login %}{{ user.last_login.strftime('%d/%m/%Y %H:%M') }}{% else %}N/D{% endif %}</strong>
                 </div>
-            </div>
-            <div class="card-body p-0">
-                {% if recent_login_logs %}
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead>
-                            <tr>
-                                <th>Usuário</th>
-                                <th>Função</th>
-                                <th>Tipo</th>
-                                <th>IP</th>
-                                <th>Data</th>
-                                <th>Agente</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for log in recent_login_logs %}
-                            <tr>
-                                <td><strong>{{ log.username }}</strong></td>
-                                <td>
-                                    <span class="badge bg-primary text-uppercase">{{ (log.role or 'client') }}</span>
-                                </td>
-                                <td>{{ log.user_type|default('client') }}</td>
-                                <td>{{ log.ip_address|default('—') }}</td>
-                                <td>
-                                    {% if log.created_at %}
-                                        {{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
-                                    {% else %}
-                                        —
-                                    {% endif %}
-                                </td>
-                                <td class="text-truncate" style="max-width: 280px;" title="{{ log.user_agent }}">
-                                    {{ log.user_agent|default('—') }}
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                {% else %}
-                <div class="text-center py-5">
-                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                    <p class="text-muted mb-0">Nenhum login registrado ainda.</p>
-                </div>
-                {% endif %}
-            </div>
+                <a href="{{ url_for('admin.profile') }}" class="btn btn-primary w-100 mt-3">
+                    <i class="fas fa-user-edit me-2"></i>Editar perfil
+                </a>
+            </article>
         </div>
     </div>
+</section>
 
-    <!-- Recent Clicks Log Section -->
-    <div class="col-12 mb-4">
-        <div class="card h-100">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="fas fa-mouse-pointer text-danger me-2"></i>Últimos Clicks Registrados</h5>
-                <span class="badge bg-danger">{{ recent_clicks|length }} registros</span>
-            </div>
-            <div class="card-body p-0">
-                {% if recent_clicks %}
-                <div class="table-responsive">
-                    <table class="table table-hover table-sm mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th class="text-nowrap"><i class="fas fa-clock me-1"></i>Data/Hora</th>
-                                <th class="text-nowrap"><i class="fas fa-user me-1"></i>Usuário</th>
-                                <th class="text-nowrap"><i class="fas fa-globe me-1"></i>Domínio</th>
-                                <th class="text-nowrap"><i class="fas fa-network-wired me-1"></i>IP</th>
-                                <th class="text-nowrap d-none d-lg-table-cell"><i class="fas fa-desktop me-1"></i>User Agent</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for click in recent_clicks %}
-                            <tr>
-                                <td class="text-nowrap">
-                                    <small>{{ click.timestamp.strftime('%d/%m/%Y %H:%M:%S') if click.timestamp else 'N/A' }}</small>
-                                </td>
-                                <td>
-                                    <strong class="text-primary">{{ click.username or 'Desconhecido' }}</strong>
-                                </td>
-                                <td class="text-truncate" style="max-width: 200px;">
-                                    {% if click.subdomain and click.domain_name %}
-                                        <code class="small">{{ click.subdomain }}.{{ click.domain_name }}</code>
-                                    {% else %}
-                                        <span class="text-muted">N/A</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <span class="badge bg-secondary">{{ click.ip_address or 'N/A' }}</span>
-                                </td>
-                                <td class="text-truncate d-none d-lg-table-cell" style="max-width: 300px;" title="{{ click.user_agent }}">
-                                    <small class="text-muted">{{ click.user_agent or 'N/A' }}</small>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+<section class="dashboard-section">
+    <article class="dashboard-card">
+        <div class="dashboard-card-header">
+            <h5 class="mb-0"><i class="fas fa-database text-success me-2"></i>Informações de clientes</h5>
+            <span class="badge bg-success-subtle text-success">{{ infos_detailed|length }} registros</span>
+        </div>
+        {% if infos_detailed %}
+        <div class="table-responsive dashboard-table" data-table-wrapper>
+            <table class="table table-hover align-middle mb-0" data-sortable-table>
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">
+                            <button type="button" class="table-sort" data-column-index="0" data-sort-type="text">
+                                Cliente <i class="fas fa-sort"></i>
+                            </button>
+                        </th>
+                        <th scope="col">
+                            <button type="button" class="table-sort" data-column-index="1" data-sort-type="text">
+                                Agência <i class="fas fa-sort"></i>
+                            </button>
+                        </th>
+                        <th scope="col">
+                            <button type="button" class="table-sort" data-column-index="2" data-sort-type="text">
+                                Conta <i class="fas fa-sort"></i>
+                            </button>
+                        </th>
+                        <th scope="col">
+                            <button type="button" class="table-sort" data-column-index="3" data-sort-type="number">
+                                Saldo <i class="fas fa-sort"></i>
+                            </button>
+                        </th>
+                        <th scope="col">
+                            <button type="button" class="table-sort" data-column-index="4" data-sort-type="text">
+                                Status <i class="fas fa-sort"></i>
+                            </button>
+                        </th>
+                        <th scope="col">
+                            <button type="button" class="table-sort" data-column-index="5" data-sort-type="number">
+                                Atualizado <i class="fas fa-sort"></i>
+                            </button>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for info in infos_detailed %}
+                    <tr>
+                        <td data-label="Cliente">
+                            <div class="d-flex flex-column">
+                                <strong>{{ info.client_username }}</strong>
+                                <small class="text-muted text-uppercase">{{ info.client_status|default('N/D') }}</small>
+                            </div>
+                        </td>
+                        <td data-label="Agência">{{ info.agencia }}</td>
+                        <td data-label="Conta">{{ info.conta }}</td>
+                        <td class="text-success fw-semibold" data-label="Saldo" data-sort-value="{{ info.saldo|default(0) }}">R$ {{ "%.2f"|format(info.saldo|default(0)) }}</td>
+                        <td data-label="Status">
+                            {% if info.status == 'active' %}
+                            <span class="badge bg-success">Ativo</span>
+                            {% elif info.status == 'inactive' %}
+                            <span class="badge bg-warning text-dark">Inativo</span>
+                            {% else %}
+                            <span class="badge bg-secondary">{{ info.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td data-label="Atualizado" data-sort-value="{% if info.updatedAt %}{{ info.updatedAt.timestamp() }}{% else %}0{% endif %}">{% if info.updatedAt %}{{ info.updatedAt.strftime('%d/%m/%Y %H:%M') }}{% else %}—{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="table-card-list d-lg-none" data-table-cards>
+            {% for info in infos_detailed %}
+            <article class="table-card">
+                <div class="table-card-row">
+                    <span class="table-card-label">Cliente</span>
+                    <span class="table-card-value">{{ info.client_username }}</span>
                 </div>
-                {% else %}
-                <div class="text-center py-5">
-                    <i class="fas fa-mouse-pointer fa-3x text-muted mb-3"></i>
-                    <p class="text-muted mb-0">Nenhum click registrado ainda.</p>
+                <div class="table-card-row">
+                    <span class="table-card-label">Status</span>
+                    <span class="table-card-value text-uppercase">{{ info.status|default('N/D') }}</span>
                 </div>
-                {% endif %}
+                <div class="table-card-row">
+                    <span class="table-card-label">Agência</span>
+                    <span class="table-card-value">{{ info.agencia }}</span>
+                </div>
+                <div class="table-card-row">
+                    <span class="table-card-label">Conta</span>
+                    <span class="table-card-value">{{ info.conta }}</span>
+                </div>
+                <div class="table-card-row">
+                    <span class="table-card-label">Saldo</span>
+                    <span class="table-card-value text-success fw-semibold">R$ {{ "%.2f"|format(info.saldo|default(0)) }}</span>
+                </div>
+                <div class="table-card-row">
+                    <span class="table-card-label">Atualizado</span>
+                    <span class="table-card-value">{% if info.updatedAt %}{{ info.updatedAt.strftime('%d/%m/%Y %H:%M') }}{% else %}—{% endif %}</span>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+    <div class="dashboard-empty" role="status" aria-live="polite">
+            <i class="fas fa-database"></i>
+            <p>Nenhum registro de informação encontrado.</p>
+        </div>
+        {% endif %}
+    </article>
+</section>
+
+<section class="dashboard-section">
+    <article class="dashboard-card">
+        <div class="dashboard-card-header flex-wrap gap-2">
+            <h5 class="mb-0"><i class="fas fa-history text-info me-2"></i>Últimos logins</h5>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-outline-info btn-sm">
+                    <i class="fas fa-clipboard-list me-1"></i>Ver Logs de Auditoria
+                </a>
+                <span class="badge bg-info-subtle text-info">{{ recent_login_logs|length }} registros</span>
             </div>
         </div>
-    </div>
+        {% if recent_login_logs %}
+        <div class="table-responsive dashboard-table" data-table-wrapper>
+            <table class="table table-hover align-middle mb-0" data-sortable-table>
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col">
+                            <button type="button" class="table-sort" data-column-index="0" data-sort-type="text">
+                                Usuário <i class="fas fa-sort"></i>
+                            </button>
+                        </th>
+                        <th scope="col">
+                            <button type="button" class="table-sort" data-column-index="1" data-sort-type="text">
+                                Função <i class="fas fa-sort"></i>
+                            </button>
+                        </th>
+                        <th scope="col">
+                            <button type="button" class="table-sort" data-column-index="2" data-sort-type="text">
+                                Tipo <i class="fas fa-sort"></i>
+                            </button>
+                        </th>
+                        <th scope="col">
+                            <button type="button" class="table-sort" data-column-index="3" data-sort-type="text">
+                                IP <i class="fas fa-sort"></i>
+                            </button>
+                        </th>
+                        <th scope="col">
+                            <button type="button" class="table-sort" data-column-index="4" data-sort-type="number">
+                                Data <i class="fas fa-sort"></i>
+                            </button>
+                        </th>
+                        <th scope="col" class="table-col-wide">
+                            <button type="button" class="table-sort" data-column-index="5" data-sort-type="text">
+                                Agente <i class="fas fa-sort"></i>
+                            </button>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in recent_login_logs %}
+                    <tr>
+                        <td data-label="Usuário"><strong>{{ log.username }}</strong></td>
+                        <td data-label="Função"><span class="badge bg-primary text-uppercase">{{ log.role or 'client' }}</span></td>
+                        <td data-label="Tipo">{{ log.user_type|default('client') }}</td>
+                        <td data-label="IP">{{ log.ip_address|default('—') }}</td>
+                        <td data-label="Data" data-sort-value="{% if log.created_at %}{{ log.created_at.timestamp() }}{% else %}0{% endif %}">{% if log.created_at %}{{ log.created_at.strftime('%d/%m/%Y %H:%M') }}{% else %}—{% endif %}</td>
+                        <td class="table-col-wide" data-label="Agente" title="{{ log.user_agent }}">{{ log.user_agent|default('—') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="table-card-list d-lg-none" data-table-cards>
+            {% for log in recent_login_logs %}
+            <article class="table-card">
+                <div class="table-card-row">
+                    <span class="table-card-label">Usuário</span>
+                    <span class="table-card-value">{{ log.username }}</span>
+                </div>
+                <div class="table-card-row">
+                    <span class="table-card-label">Função</span>
+                    <span class="table-card-value text-uppercase">{{ log.role or 'client' }}</span>
+                </div>
+                <div class="table-card-row">
+                    <span class="table-card-label">Tipo</span>
+                    <span class="table-card-value">{{ log.user_type|default('client') }}</span>
+                </div>
+                <div class="table-card-row">
+                    <span class="table-card-label">IP</span>
+                    <span class="table-card-value">{{ log.ip_address|default('—') }}</span>
+                </div>
+                <div class="table-card-row">
+                    <span class="table-card-label">Data</span>
+                    <span class="table-card-value">{% if log.created_at %}{{ log.created_at.strftime('%d/%m/%Y %H:%M') }}{% else %}—{% endif %}</span>
+                </div>
+                <div class="table-card-row">
+                    <span class="table-card-label">Agente</span>
+                    <span class="table-card-value">{{ log.user_agent|default('—') }}</span>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+    <div class="dashboard-empty" role="status" aria-live="polite">
+            <i class="fas fa-inbox"></i>
+            <p>Nenhum login registrado ainda.</p>
+        </div>
+        {% endif %}
+    </article>
+</section>
+
+<section class="dashboard-section">
+    <article class="dashboard-card">
+        <div class="dashboard-card-header">
+            <h5 class="mb-0"><i class="fas fa-mouse-pointer text-danger me-2"></i>Últimos clicks registrados</h5>
+            <span class="badge bg-danger-subtle text-danger">{{ recent_clicks|length }} registros</span>
+        </div>
+        {% if recent_clicks %}
+        <div class="table-responsive dashboard-table" data-table-wrapper>
+            <table class="table table-hover table-sm align-middle mb-0" data-sortable-table>
+                <thead class="table-light">
+                    <tr>
+                        <th class="text-nowrap" scope="col">
+                            <button type="button" class="table-sort" data-column-index="0" data-sort-type="number">
+                                Data/Hora <i class="fas fa-sort"></i>
+                            </button>
+                        </th>
+                        <th class="text-nowrap" scope="col">
+                            <button type="button" class="table-sort" data-column-index="1" data-sort-type="text">
+                                Usuário <i class="fas fa-sort"></i>
+                            </button>
+                        </th>
+                        <th class="text-nowrap" scope="col">
+                            <button type="button" class="table-sort" data-column-index="2" data-sort-type="text">
+                                Domínio <i class="fas fa-sort"></i>
+                            </button>
+                        </th>
+                        <th class="text-nowrap" scope="col">
+                            <button type="button" class="table-sort" data-column-index="3" data-sort-type="text">
+                                IP <i class="fas fa-sort"></i>
+                            </button>
+                        </th>
+                        <th class="text-nowrap d-none d-lg-table-cell" scope="col">
+                            <button type="button" class="table-sort" data-column-index="4" data-sort-type="text">
+                                User Agent <i class="fas fa-sort"></i>
+                            </button>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for click in recent_clicks %}
+                    <tr>
+                        <td class="text-nowrap" data-label="Data/Hora" data-sort-value="{% if click.timestamp %}{{ click.timestamp.timestamp() }}{% else %}0{% endif %}"><small>{{ click.timestamp.strftime('%d/%m/%Y %H:%M:%S') if click.timestamp else 'N/A' }}</small></td>
+                        <td data-label="Usuário"><strong class="text-primary">{{ click.username or 'Desconhecido' }}</strong></td>
+                        <td class="table-col-wide" data-label="Domínio">
+                            {% if click.subdomain and click.domain_name %}
+                                <code class="small">{{ click.subdomain }}.{{ click.domain_name }}</code>
+                            {% else %}
+                                <span class="text-muted">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td data-label="IP"><span class="badge bg-secondary">{{ click.ip_address or 'N/A' }}</span></td>
+                        <td class="table-col-wide d-none d-lg-table-cell" data-label="User Agent" title="{{ click.user_agent }}">
+                            <small class="text-muted">{{ click.user_agent|default('N/A') }}</small>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="table-card-list d-lg-none" data-table-cards>
+            {% for click in recent_clicks %}
+            <article class="table-card">
+                <div class="table-card-row">
+                    <span class="table-card-label">Data/Hora</span>
+                    <span class="table-card-value">{{ click.timestamp.strftime('%d/%m/%Y %H:%M:%S') if click.timestamp else 'N/A' }}</span>
+                </div>
+                <div class="table-card-row">
+                    <span class="table-card-label">Usuário</span>
+                    <span class="table-card-value">{{ click.username or 'Desconhecido' }}</span>
+                </div>
+                <div class="table-card-row">
+                    <span class="table-card-label">Domínio</span>
+                    <span class="table-card-value">
+                        {% if click.subdomain and click.domain_name %}
+                            {{ click.subdomain }}.{{ click.domain_name }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="table-card-row">
+                    <span class="table-card-label">IP</span>
+                    <span class="table-card-value">{{ click.ip_address or 'N/A' }}</span>
+                </div>
+                <div class="table-card-row">
+                    <span class="table-card-label">User Agent</span>
+                    <span class="table-card-value">{{ click.user_agent|default('N/A') }}</span>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+    <div class="dashboard-empty" role="status" aria-live="polite">
+            <i class="fas fa-mouse-pointer"></i>
+            <p>Nenhum click registrado ainda.</p>
+        </div>
+        {% endif %}
+    </article>
+</section>

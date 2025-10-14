@@ -2,15 +2,19 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 import hashlib
 import hmac
 from typing import Any, Dict, Optional
 
 from flask import Blueprint, Response, current_app, jsonify, request
+from flask_login import login_required
 
 from app import csrf
 from app.models.client_crypto_payout import ClientCryptoPayout
 from app.services.audit_service import AuditService
+from app.services.payout_reconciliation_service import PayoutReconciliationService
+from app.controllers.auth import admin_required
 
 
 payout = Blueprint("payout", __name__, url_prefix="/payouts")
@@ -57,24 +61,7 @@ def _resolve_target_payout(event_payload: Dict[str, Any]) -> Optional[Dict[str, 
 
 
 def _map_status(status: Optional[str]) -> Optional[str]:
-    if not status:
-        return None
-
-    status_normalized = status.lower()
-    mapping = {
-        "pending": ClientCryptoPayout.STATUS_PENDING,
-        "processing": ClientCryptoPayout.STATUS_PENDING,
-        "broadcast": ClientCryptoPayout.STATUS_BROADCAST,
-        "sent": ClientCryptoPayout.STATUS_BROADCAST,
-        "confirmed": ClientCryptoPayout.STATUS_CONFIRMED,
-        "completed": ClientCryptoPayout.STATUS_CONFIRMED,
-        "failed": ClientCryptoPayout.STATUS_FAILED,
-        "error": ClientCryptoPayout.STATUS_FAILED,
-        "cancelled": ClientCryptoPayout.STATUS_CANCELLED,
-        "canceled": ClientCryptoPayout.STATUS_CANCELLED,
-    }
-
-    return mapping.get(status_normalized, ClientCryptoPayout.STATUS_BROADCAST)
+    return ClientCryptoPayout.normalize_status(status)
 
 
 @payout.route("/webhook/health", methods=["GET"])
@@ -121,6 +108,12 @@ def handle_webhook() -> Response:
             "source": "webhook",
             "payload": payload,
         },
+        status_source="webhook",
+        status_details={"raw_status": payload.get("status"), "event": payload.get("event")},
+        extra_fields={
+            "lastStatusCheckAt": datetime.utcnow(),
+            "lastStatusCheckSource": "webhook",
+        },
     )
 
     if not success:
@@ -144,3 +137,51 @@ def handle_webhook() -> Response:
     )
 
     return jsonify({"success": True, "payout_id": payout_id, "status": status})
+
+
+@payout.route("/reconcile", methods=["POST"])
+@login_required
+@admin_required
+def reconcile_now() -> Response:
+    payload = request.get_json(silent=True) or {}
+
+    def _int_config(value: Optional[Any], default: Optional[int] = None) -> Optional[int]:
+        if value is None:
+            return default
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            return default
+
+    limit = _int_config(payload.get("limit"), 50)
+    min_delay = _int_config(payload.get("min_delay"))
+    interval = _int_config(payload.get("interval"))
+    alert_attempts = _int_config(payload.get("alert_attempts"))
+    alert_age = _int_config(payload.get("alert_age"))
+    lookback = _int_config(payload.get("lookback"))
+
+    results = PayoutReconciliationService.schedule_pending(
+        limit=limit or 50,
+        min_delay_minutes=min_delay,
+        poll_interval_minutes=interval,
+        alert_attempts=alert_attempts,
+        alert_age_minutes=alert_age,
+        lookback_days=lookback,
+    )
+
+    AuditService.log_action(
+        action="reconcile_manual",
+        entity_type="payout",
+        entity_id=None,
+        details={
+            "results": results,
+            "limit": limit,
+            "min_delay": min_delay,
+            "interval": interval,
+            "alert_attempts": alert_attempts,
+            "alert_age": alert_age,
+            "lookback": lookback,
+        },
+    )
+
+    return jsonify({"success": True, "results": results})

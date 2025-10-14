@@ -7,10 +7,12 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ---
 
-## [Unreleased] - 2025-10-16
+## [Unreleased] - 2025-10-14
 
 ### 🆕 Adicionado
 
+- (Sprint 3) Analytics de pagamentos: Dashboard administrativo exibe cards de KPIs, gráfico doughnut e distribuição de volume alimentados por agregações de `ClientCryptoPayout`, consumidos via `/dashboard/api/admin-stats`.
+- (Sprint 3) Reconciliação Heleket: Novo `PayoutReconciliationService` com métodos `schedule_pending`/`check_now`, comando CLI `flask reconcile-payouts` e endpoint admin `POST /payouts/reconcile` para disparo manual.
 - (Sprint 2) Workflow administrativo de payouts: Nova aba "Payouts" em `clients/manage.html` com formulário guiado, histórico de transações, âncoras de navegação e persistência de preferências de carteira por cliente via `Client.update_crypto_wallet_preferences`.
 - (Sprint 2) Endpoint `/payouts/webhook`: Blueprint dedicada com validação HMAC (`HELEKET_WEBHOOK_SECRET`), atualização de status em `ClientCryptoPayout.update_status` e registro de auditoria centralizado.
 - (Sprint 2) Testes automatizados de payouts: Novos cenários garantem fluxo administrativo (`tests/integration/test_admin_payout_workflow.py`) e callbacks Heleket (`tests/unit/test_payout_webhook.py`).
@@ -19,6 +21,12 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ### 🔄 Modificado
 
+- (Sprint 3) Modelo `ClientCryptoPayout` expandido com `statusHistory`, rastreio de polling (`lastStatusCheckAt`, `nextStatusCheckAt`, `retryCount`, `alertState`) e normalização de status compartilhada para webhooks/polling.
+- (Sprint 3) Blueprint de autenticação voltou a expor rotas em `/auth/*`, mantendo compatibilidade com fluxos administrativos e testes de integração.
+- (Sprint 3) Tabelas do dashboard admin: cabeçalhos clicáveis com ordenação client-side, sincronização com cards mobile e estilos refinados em `dashboard.js`, `dashboard.css` e `dashboard/admin.html`.
+- (Sprint 2) Dashboards administrativos: `dashboard.html`, `dashboard/admin.html` e `dashboard/admin_enterprise.html` agora compartilham o cabeçalho `dashboard-section`, cards reutilizáveis e quick actions consistentes.
+- (Sprint 2) Responsividade do dashboard: `dashboard.css` ganhou tipografia com `clamp()`, utilitário `metric-card`, ajustes `table-col-wide` e padding mobile para manter legibilidade em tablets.
+- (Sprint 2) Feedback assíncrono: `dashboard.js` passou a controlar `markChartLoading/markChartLoaded`, skeleton loaders e mensagens `aria-live` ao carregar gráficos (admin e cliente enterprise).
 - (Sprint 2) Dashboard Enterprise: Quick action "Disparar payout" agora aponta diretamente para o novo fluxo administrativo.
 - (Sprint 2) Documentação operacional: `TODO.md` e `.github/copilot-instructions.md` reforçam o workflow de sprints (auto-completar itens, registrar resumos e sinalizar próximos focos).
 - (Sprint 2) `docs/HELEKET_DATA_MAPPING.md`: Revisado para refletir requisitos de carteira/ativo/rede e próximos alinhamentos com Produto/Compliance.
@@ -121,6 +129,6 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 **📝 Mantido por**: [rootkitoriginal](https://github.com/rootkitoriginal)
 
-**📅 Última atualização**: 19 de Dezembro de 2024
+**📅 Última atualização**: 14 de Outubro de 2025
 
 </div>
