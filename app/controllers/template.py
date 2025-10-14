@@ -1,82 +1,57 @@
 from bson import ObjectId
-from flask import Blueprint, abort, current_app, flash, redirect, request, url_for, send_file
-from flask_login import current_user, login_required
+from flask import Blueprint, current_app, flash, redirect, request, send_file, url_for
+from flask_login import login_required
 
 from app.controllers.auth import admin_required
+from app.controllers.crud_mixin import CrudControllerMixin
 from app.models.template import Template
-from app.services.audit_service import AuditService
+from app.repositories.base import ModelCrudRepository
+from app.schemas.crud import TemplateCreateSchema, TemplateUpdateSchema
 from app.views.template_view import TemplateView
+from app.utils.crud import CrudOperationResult
+from app.services.audit_helper import log_change
 
 template = Blueprint("template", __name__, url_prefix="/templates")
 
 
-@template.route("/")
-@login_required
-@admin_required
-def list_templates():
-    """List all templates"""
-    templates = Template.get_all()
-    return TemplateView.render_list(templates)
+class TemplateCrudController(CrudControllerMixin):
+    entity_name = "Template"
+    audit_entity = "template"
+    list_endpoint = "template.list_templates"
+    detail_endpoint = "template.view_template"
+    create_schema = TemplateCreateSchema
+    update_schema = TemplateUpdateSchema
+    view = TemplateView
 
+    def perform_update(self, template_id: str, schema: TemplateUpdateSchema | None) -> CrudOperationResult:
+        base_payload = schema.to_payload() if schema else {}
+        pages = self._extract_pages_from_request()
+        base_payload["pages"] = pages
 
-@template.route("/create", methods=["GET", "POST"])
-@login_required
-@admin_required
-def create_template():
-    """Create a new template"""
-    if request.method == "POST":
-        name = request.form.get("name")
-        description = request.form.get("description")
-        content = request.form.get("content", "{}")
-        status = request.form.get("status", "active")
-
-        if not name:
-            flash("Please fill all required fields", "danger")
-            return TemplateView.render_create_form(
-                form_data={
-                    "name": name,
-                    "description": description,
-                    "content": content,
-                    "status": status,
-                }
-            )
-
-        # Create template
-        success, message = Template.create(name, description, content, status)
-
-        if success:
-            # Log template creation in audit trail
-            AuditService.log_template_action(
-                "create", message, {"name": name, "description": description, "status": status}
-            )
-            flash("Template created successfully", "success")
-            return redirect(url_for("template.list_templates"))
-        else:
-            flash(f"Error creating template: {message}", "danger")
-
-    return TemplateView.render_create_form()
-
-
-@template.route("/edit/<template_id>", methods=["GET", "POST"])
-@login_required
-@admin_required
-def edit_template(template_id):
-    """Edit template information"""
-    template_data = Template.get_by_id(template_id)
-    if not template_data:
-        flash("Template not found", "danger")
-        return redirect(url_for("template.list_templates"))
-
-    if request.method == "POST":
-        # Build the data object with all fields including slug
-        data = {
-            "name": request.form.get("name"),
-            "slug": request.form.get("slug"),  # Capture slug from form
-            "description": request.form.get("description"),
-            "status": request.form.get("status", "active"),
+        log_summary = {
+            "name": base_payload.get("name"),
+            "status": base_payload.get("status"),
+            "pages_count": len(pages),
         }
+        self.set_audit_payload({k: v for k, v in log_summary.items() if v is not None})
 
-        # Pages configuration
+        current_app.logger.info(f"Updating template {template_id} with {len(pages)} pages")
+        current_app.logger.debug(f"Template data: {base_payload}")
+
+        return self.repository.update(template_id, base_payload)
+
+    def perform_create(self, schema: TemplateCreateSchema | None, **route_kwargs) -> CrudOperationResult:
+        payload = schema.to_payload() if schema else {}
+        self.set_audit_payload(payload)
+        return self.repository.create(payload)
+
+    def update_success_message(self, result: CrudOperationResult) -> str:
+        return result.message or "Template atualizado com sucesso!"
+
+    def after_update_redirect(self, template_id: str, result: CrudOperationResult):
+        return redirect(url_for("template.edit_template", template_id=template_id))
+
+    def _extract_pages_from_request(self):
         pages = []
         page_index = 0
         has_home = False
@@ -86,24 +61,29 @@ def edit_template(template_id):
             if page_id is None:
                 break
 
-            page_name = request.form.get(f"pages[{page_index}][name]", "").strip()
+            page_name = (request.form.get(f"pages[{page_index}][name]", "") or "").strip()
             page_type_raw = request.form.get(f"pages[{page_index}][type]")
             page_type = page_type_raw.strip() if page_type_raw else ""
             page_content = request.form.get(f"pages[{page_index}][content]", "")
             page_order = request.form.get(f"pages[{page_index}][order]", str(page_index + 1))
             page_fixed = request.form.get(f"pages[{page_index}][fixed]") == "true"
-            page_slug_raw = request.form.get(f"pages[{page_index}][slug]", "").strip()
-            normalized_slug = Template.generate_slug(page_slug_raw) if page_slug_raw else Template.generate_slug(page_name) if page_name else ""
+            page_slug_raw = (request.form.get(f"pages[{page_index}][slug]", "") or "").strip()
+            normalized_slug = (
+                Template.generate_slug(page_slug_raw)
+                if page_slug_raw
+                else Template.generate_slug(page_name)
+                if page_name
+                else ""
+            )
 
-            # Skip empty pages
+            page_index += 1
+
             if not page_name:
-                page_index += 1
                 continue
 
-            # Validate only one home page
             if page_type == "home":
                 if has_home:
-                    page_type = "custom"  # Force to custom if there's already a home
+                    page_type = "custom"
                 else:
                     has_home = True
 
@@ -120,37 +100,35 @@ def edit_template(template_id):
                 page_data["type"] = page_type
 
             pages.append(page_data)
-            page_index += 1
 
-        # Always include pages in data, even if empty
-        data["pages"] = pages
+        return pages
 
-        # Debug logging
-        current_app.logger.info(f"Updating template {template_id} with {len(pages)} pages")
-        current_app.logger.debug(f"Template data: {data}")
 
-        # Update template
-        success, message = Template.update(template_id, data)
+template_crud = TemplateCrudController(ModelCrudRepository(Template))
 
-        if success:
-            # Log template update in audit trail
-            AuditService.log_template_action(
-                "update",
-                template_id,
-                {
-                    "name": data.get("name"),
-                    "description": data.get("description"),
-                    "status": data.get("status"),
-                    "pages_count": len(pages),
-                },
-            )
-            flash("Template atualizado com sucesso!", "success")
-            # Permanece na mesma página de edição
-            return redirect(url_for("template.edit_template", template_id=template_id))
-        else:
-            flash(f"Erro ao atualizar template: {message}", "danger")
 
-    return TemplateView.render_edit_form(template_data)
+@template.route("/")
+@login_required
+@admin_required
+def list_templates():
+    """List all templates"""
+    return template_crud.list_view()
+
+
+@template.route("/create", methods=["GET", "POST"])
+@login_required
+@admin_required
+def create_template():
+    """Create a new template"""
+    return template_crud.create_view()
+
+
+@template.route("/edit/<template_id>", methods=["GET", "POST"])
+@login_required
+@admin_required
+def edit_template(template_id):
+    """Edit template information"""
+    return template_crud.edit_view(template_id)
 
 @template.route("/download/<template_id>")
 @login_required
@@ -189,8 +167,8 @@ def download_template(template_id):
         filename = f"template_{template_data.get('slug', template_id)}_backup.json"
 
         # 3. Retorna o arquivo para o download
-        AuditService.log_template_action("download", template_id, {"name": template_data.get('name')})
-        
+        log_change("template", "download", template_id, payload={"name": template_data.get("name")})
+
         return send_file(
             buffer,
             mimetype='application/json',
@@ -242,10 +220,15 @@ def clone_template(template_id):
 
     if success:
         # 4. Log template creation in audit trail
-        AuditService.log_template_action(
-            "clone", 
-            new_id, 
-            {"original_id": template_id, "new_name": new_name, "pages_cloned": len(clone_data.get('pages', []))}
+        log_change(
+            "template",
+            "clone",
+            new_id,
+            payload={
+                "original_id": template_id,
+                "new_name": new_name,
+                "pages_cloned": len(clone_data.get("pages", [])),
+            },
         )
         flash(f"Template '{original_name}' clonado com sucesso como '{new_name}'.", "success")
         return redirect(url_for("template.edit_template", template_id=new_id))
@@ -258,21 +241,7 @@ def clone_template(template_id):
 @admin_required
 def delete_template(template_id):
     """Delete a template"""
-    if request.method == "POST":
-        # Get template data before deletion for audit log
-        template_data = Template.get_by_id(template_id)
-        template_name = template_data.get("name", "unknown") if template_data else "unknown"
-
-        success, message = Template.delete(template_id)
-
-        if success:
-            # Log template deletion in audit trail
-            AuditService.log_template_action("delete", template_id, {"name": template_name})
-            flash("Template deleted successfully", "success")
-        else:
-            flash(f"Error deleting template: {message}", "danger")
-
-    return redirect(url_for("template.list_templates"))
+    return template_crud.delete_view(template_id)
 
 
 @template.route("/view/<template_id>")

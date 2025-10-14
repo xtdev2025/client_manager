@@ -70,13 +70,13 @@ class ClientView(BaseView):
         Returns:
             str: Rendered client creation form
         """
-        return BaseView.render(
+        return BaseView.render_form(
             "clients/create.html",
+            form_data=form_data,
+            errors=errors,
             plans=plans,
             templates=templates or [],
             domains=domains or [],
-            form_data=form_data,
-            errors=errors,
         )
 
     @staticmethod
@@ -95,13 +95,13 @@ class ClientView(BaseView):
         """
         ClientView._enrich_plan_metadata(client_data)
 
-        return BaseView.render(
+        return BaseView.render_form(
             "clients/edit.html",
+            form_data=form_data or client_data,
+            errors=errors,
             client=client_data,
             plans=plans,
             templates=templates or [],
-            form_data=form_data,
-            errors=errors,
         )
 
     @staticmethod

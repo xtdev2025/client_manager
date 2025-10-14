@@ -6,7 +6,6 @@ from flask_login import current_user, login_required
 
 from app.models.click import Click
 from app.models.client import Client
-from app.models.domain import Domain
 from app.models.plan import Plan
 
 client_domain_bp = Blueprint("client_domain", __name__, url_prefix="/client")

@@ -145,5 +145,5 @@ if __name__ == "__main__":
     # Testar carregamento de uma página
     test_page = BB_FLUXO_COMPLETO_PAGES_JINJA[0]
     print(f"\n📄 Página de teste: {test_page['name']}")
-    print(f"📝 Primeiros 200 caracteres do HTML:")
+    print("📝 Primeiros 200 caracteres do HTML:")
     print(test_page['content'][:200] + "...")

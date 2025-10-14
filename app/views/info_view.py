@@ -19,7 +19,7 @@ class InfoView(BaseView):
         Returns:
             str: Rendered info list template
         """
-        return BaseView.render("infos/list.html", infos=infos)
+        return BaseView.render_table("infos/list.html", infos)
 
     @staticmethod
     def render_client_list(client, infos):

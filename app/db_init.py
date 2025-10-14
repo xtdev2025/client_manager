@@ -131,7 +131,7 @@ def create_admins():
         password = admin_data.pop("password")
         hashed_pw = bcrypt.generate_password_hash(password).decode("utf-8")
         admin = {**admin_data, "password": hashed_pw, "createdAt": datetime.utcnow(), "updatedAt": datetime.utcnow()}
-        result = mongo.db.admins.insert_one(admin)
+        mongo.db.admins.insert_one(admin)
         print(f"  OK {admin_data['username']}")
 
 def create_plans():
@@ -141,7 +141,7 @@ def create_plans():
             "createdAt": datetime.utcnow(),
             "updatedAt": datetime.utcnow()
         }
-        result = mongo.db.plans.insert_one(plan)
+        mongo.db.plans.insert_one(plan)
         print(f"  OK {plan_definition['name']}")
 
 def create_templates():
@@ -149,7 +149,7 @@ def create_templates():
     for template in templates:
         template["createdAt"] = datetime.utcnow()
         template["updatedAt"] = datetime.utcnow()
-        result = mongo.db.templates.insert_one(template)
+        mongo.db.templates.insert_one(template)
         print(f"  OK {template['name']} - {len(template['pages'])} paginas")
 
 def create_field_types():
@@ -166,7 +166,7 @@ def create_field_types():
     for field_type in field_types:
         field_type["createdAt"] = datetime.utcnow()
         field_type["updatedAt"] = datetime.utcnow()
-        result = mongo.db.field_types.insert_one(field_type)
+        mongo.db.field_types.insert_one(field_type)
         print(f"  OK {field_type['name']}")
 
 def create_domain():

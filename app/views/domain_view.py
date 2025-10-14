@@ -17,7 +17,7 @@ class DomainView(BaseView):
         Returns:
             str: Rendered domain list template
         """
-        return BaseView.render("domains/list.html", domains=domains)
+        return BaseView.render_table("domains/list.html", domains)
 
     @staticmethod
     def render_create_form(form_data=None, errors=None):
@@ -31,7 +31,7 @@ class DomainView(BaseView):
         Returns:
             str: Rendered domain creation form
         """
-        return BaseView.render("domains/create.html", form_data=form_data, errors=errors)
+        return BaseView.render_form("domains/create.html", form_data=form_data, errors=errors)
 
     @staticmethod
     def render_edit_form(domain_data, errors=None):
@@ -45,7 +45,7 @@ class DomainView(BaseView):
         Returns:
             str: Rendered domain edit form
         """
-        return BaseView.render("domains/edit.html", domain=domain_data, errors=errors)
+        return BaseView.render_form("domains/edit.html", form_data=domain_data, errors=errors, domain=domain_data)
 
     @staticmethod
     def render_view(domain_data, client_domains=None):

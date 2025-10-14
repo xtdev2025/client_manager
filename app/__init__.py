@@ -21,12 +21,7 @@ login_manager.login_message_category = "info"
 csrf = CSRFProtect()
 
 # Initialize rate limiter
-limiter = Limiter(
-    key_func=get_remote_address,
-    default_limits=["200 per day", "50 per hour"],
-    storage_uri=os.environ.get("RATELIMIT_STORAGE_URI", "memory://"),
-    enabled=os.environ.get("RATELIMIT_ENABLED", "true").lower() not in ["false", "0", "no"],
-)
+limiter = None
 
 
 def create_app(config_name=None, init_db=True):
@@ -42,8 +37,17 @@ def create_app(config_name=None, init_db=True):
     mongo.init_app(app)
     bcrypt.init_app(app)
     login_manager.init_app(app)
-    limiter.init_app(app)
     csrf.init_app(app)
+
+    # Initialize rate limiter after app config is loaded
+    global limiter
+    limiter = Limiter(
+        key_func=get_remote_address,
+        default_limits=["200 per day", "50 per hour"],
+        storage_uri=os.environ.get("RATELIMIT_STORAGE_URI", "memory://"),
+        enabled=app.config.get("RATELIMIT_ENABLED", True),
+    )
+    limiter.init_app(app)
 
     # Initialize user loader
     from app.utils.user_loader import init_user_loader

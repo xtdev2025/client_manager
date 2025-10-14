@@ -43,16 +43,16 @@
                         <td>{{ plan.duration_days }}</td>
                         <td class="text-end">
                             <div class="btn-group btn-group-sm" role="group">
-                                <a href="{{ url_for('plan.view_plan', plan_id=plan._id) }}" class="btn btn-info" title="Visualizar">
+                                <a href="{{ url_for('plan.view_plan', plan_id=plan._id) }}" class="btn btn-info" title="Visualizar" aria-label="Visualizar plano">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                <a href="{{ url_for('plan.edit_plan', plan_id=plan._id) }}" class="btn btn-warning" title="Editar">
+                                <a href="{{ url_for('plan.edit_plan', plan_id=plan._id) }}" class="btn btn-warning" title="Editar" aria-label="Editar plano">
                                     <i class="fas fa-edit"></i>
                                 </a>
                                                                 <form method="POST" action="{{ url_for('plan.delete_plan', plan_id=plan._id) }}" 
                                                                             class="d-inline" onsubmit="return confirm('Tem certeza que deseja excluir este plano?');">
                                                                         {% include "partials/csrf_field.html" %}
-                                    <button type="submit" class="btn btn-danger" title="Excluir">
+                                    <button type="submit" class="btn btn-danger" title="Excluir" aria-label="Excluir plano">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>

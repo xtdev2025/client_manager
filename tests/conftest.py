@@ -16,11 +16,12 @@ def app():
     """Create application for testing"""
     os.environ["FLASK_ENV"] = "testing"
     os.environ["MONGO_URI"] = "mongodb://localhost:27017/client_manager_test"
+    os.environ["RATELIMIT_ENABLED"] = "false"  # Disable rate limiting in tests
 
     app = create_app(init_db=False)  # Não inicializar o banco no create_app
     app.config["TESTING"] = True
     app.config["WTF_CSRF_ENABLED"] = False
-    app.config["RATELIMIT_ENABLED"] = False  # Disable rate limiting in tests
+    app.config["RATELIMIT_ENABLED"] = False  # Also set in config for consistency
 
     yield app
 

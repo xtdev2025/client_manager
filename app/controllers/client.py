@@ -2,22 +2,166 @@ import random
 import string
 
 from bson import ObjectId
-from flask import Blueprint, abort, flash, redirect, request, url_for
+from flask import Blueprint, flash, redirect, request, url_for
 from flask_login import current_user, login_required
 
 from app import mongo
 from app.controllers.auth import admin_required, super_admin_required
+from app.controllers.crud_mixin import CrudControllerMixin
 from app.models.client import Client
 from app.models.client_crypto_payout import ClientCryptoPayout
 from app.models.domain import Domain
 from app.models.plan import Plan
 from app.models.template import Template
-from app.models.user import User
+from app.repositories.base import ModelCrudRepository
+from app.schemas.crud import ClientCreateSchema, ClientUpdateSchema, parse_form
+from app.services.audit_helper import log_update
 from app.services.audit_service import AuditService
 from app.services.payout_orchestration_service import PayoutOrchestrationService
 from app.views.client_view import ClientView
+from app.utils.crud import CrudOperationResult
 
 client = Blueprint("client", __name__, url_prefix="/clients")
+
+
+class ClientCrudController(CrudControllerMixin):
+    entity_name = "Client"
+    audit_entity = "client"
+    list_endpoint = "client.list_clients"
+    detail_endpoint = "client.view_client"
+    create_schema = ClientCreateSchema
+    update_schema = ClientUpdateSchema
+    view = ClientView
+
+    def get_create_context(self, **route_kwargs):
+        plans = Plan.get_all()
+        templates = Template.get_all()
+        domains = Domain.get_all()
+        enriched_domains = []
+        for domain in domains:
+            if not domain:
+                continue
+            domain_copy = dict(domain)
+            domain_id = domain_copy.get("_id")
+            if domain_id:
+                subdomain_count = Domain.get_subdomain_count(domain_id)
+                domain_copy["subdomain_count"] = subdomain_count
+            enriched_domains.append(domain_copy)
+        return {
+            "plans": plans,
+            "templates": templates,
+            "domains": enriched_domains,
+        }
+
+    def get_create_render_args(self, **context):
+        plans = context.get("plans", [])
+        templates = context.get("templates", [])
+        domains = context.get("domains", [])
+        return (plans,), {"templates": templates, "domains": domains}
+
+    def perform_create(self, schema: ClientCreateSchema | None, **route_kwargs) -> CrudOperationResult:
+        if not schema:
+            return CrudOperationResult.fail("Invalid data")
+
+        payload = schema.to_payload()
+
+        username = payload.get("username")
+        password = payload.get("password")
+        plan_id = payload.get("plan_id")
+        template_id = payload.get("template_id")
+        domain_id = payload.get("domain_id")
+        status = payload.get("status", "active")
+        plan_activation_date = payload.get("plan_activation_date")
+        plan_expiration_date = payload.get("plan_expiration_date")
+        requested_domain = payload.get("domain")
+
+        success, response = Client.create(
+            username,
+            password,
+            plan_id,
+            template_id,
+            status,
+            plan_activation_date=plan_activation_date,
+            plan_expiration_date=plan_expiration_date,
+        )
+
+        if not success:
+            return CrudOperationResult.fail(response)
+
+        client_id = response
+        assigned_domain = None
+
+        if domain_id and requested_domain and template_id:
+            selected_domain = Domain.get_by_id(domain_id)
+            if selected_domain:
+                domain_name = selected_domain.get("name", "seusite.com")
+                unique_subdomain = generate_unique_subdomain(domain_id, requested_domain)
+
+                if not unique_subdomain:
+                    flash("Client created but failed to generate unique subdomain", "warning")
+                else:
+                    current_count = mongo.db.client_domains.count_documents(
+                        {"domain_id": ObjectId(domain_id)}
+                    )
+                    domain_limit = selected_domain.get("domain_limit", 5)
+
+                    if current_count >= domain_limit:
+                        flash(
+                            f"Client created but domain has reached its limit ({domain_limit} subdomains)",
+                            "warning",
+                        )
+                    else:
+                        domain_success, domain_message = Domain.assign_to_client(
+                            client_id=client_id,
+                            domain_id=domain_id,
+                            subdomain=unique_subdomain,
+                        )
+                        if domain_success:
+                            assigned_domain = f"{unique_subdomain}.{domain_name}"
+                            if unique_subdomain != requested_domain:
+                                flash(
+                                    f"Client created with domain {assigned_domain} ('{requested_domain}' já estava em uso)",
+                                    "success",
+                                )
+                            else:
+                                flash(
+                                    f"Client created with domain {assigned_domain}",
+                                    "success",
+                                )
+                        else:
+                            flash(
+                                f"Client created but domain assignment failed: {domain_message}",
+                                "warning",
+                            )
+            else:
+                flash("Client created but selected domain not found", "warning")
+        created_client = Client.get_by_id(client_id)
+        self.set_audit_payload(
+            {
+                "username": username,
+                "plan_id": plan_id,
+                "template_id": template_id,
+                "status": status,
+                "assigned_domain": assigned_domain,
+            }
+        )
+
+        return CrudOperationResult.ok(data=created_client, message="Client created successfully")
+
+    def delete_view(self, entity_id: str):
+        entity = self.repository.get_by_id(entity_id)
+        if entity:
+            sanitized = {
+                "username": entity.get("username"),
+                "plan_id": str(entity.get("plan_id")) if entity.get("plan_id") else None,
+                "template_id": str(entity.get("template_id")) if entity.get("template_id") else None,
+                "status": entity.get("status"),
+            }
+            self.set_audit_payload(sanitized)
+        return super().delete_view(entity_id)
+
+
+client_crud = ClientCrudController(ModelCrudRepository(Client))
 
 
 def generate_unique_subdomain(domain_id, base_subdomain="", max_attempts=10):
@@ -65,10 +209,7 @@ def generate_unique_subdomain(domain_id, base_subdomain="", max_attempts=10):
 @admin_required
 def list_clients():
     """List all clients"""
-    clients = Client.get_all()
-
-    # ClientView handles enriching client data with plan information
-    return ClientView.render_list(clients)
+    return client_crud.list_view()
 
 
 @client.route("/create", methods=["GET", "POST"])
@@ -76,131 +217,7 @@ def list_clients():
 @admin_required
 def create_client():
     """Create a new client"""
-    plans = Plan.get_all()
-    templates = Template.get_all()
-    domains = Domain.get_all()  # Get all available domains
-
-    # Enrich domains with subdomain counts
-    enriched_domains = []
-    for domain in domains:
-        domain_id = domain["_id"]
-        subdomain_count = mongo.db.client_domains.count_documents({"domain_id": domain_id})
-        domain["subdomain_count"] = subdomain_count
-        enriched_domains.append(domain)
-
-    if request.method == "POST":
-        username = request.form.get("username")
-        password = request.form.get("password")
-        plan_id = request.form.get("plan_id") or None
-        template_id = request.form.get("template_id") or None
-        domain_id = request.form.get("domain_id") or None  # Selected domain ID
-        status = request.form.get("status", "active")
-        plan_activation_date = request.form.get("plan_activation_date") or None
-        plan_expiration_date = request.form.get("plan_expiration_date") or None
-        domain = request.form.get("domain", "").strip()  # Subdomain
-
-        form_payload = {
-            "username": username,
-            "plan_id": plan_id,
-            "template_id": template_id,
-            "domain_id": domain_id,
-            "status": status,
-            "plan_activation_date": plan_activation_date,
-            "plan_expiration_date": plan_expiration_date,
-            "domain": domain,
-        }
-
-        if not username or not password:
-            flash("Please provide username and password", "danger")
-            return ClientView.render_create_form(
-                plans, templates, enriched_domains, form_data=form_payload
-            )
-
-        # Create client
-        success, message = Client.create(
-            username,
-            password,
-            plan_id,
-            template_id,
-            status,
-            plan_activation_date=plan_activation_date,
-            plan_expiration_date=plan_expiration_date,
-        )
-
-        if success:
-            client_id = message  # message contains the client_id on success
-
-            # Create domain association if domain_id, subdomain and template are provided
-            if domain_id and domain and template_id:
-                # Get the selected domain
-                selected_domain = Domain.get_by_id(domain_id)
-
-                if selected_domain:
-                    domain_name = selected_domain.get("name", "seusite.com")
-
-                    # Generate unique subdomain (try user input first, then add random suffix if needed)
-                    unique_subdomain = generate_unique_subdomain(domain_id, domain)
-
-                    if not unique_subdomain:
-                        flash("Client created but failed to generate unique subdomain", "warning")
-                    else:
-                        # Check if domain has reached its limit
-                        current_count = mongo.db.client_domains.count_documents(
-                            {"domain_id": ObjectId(domain_id)}
-                        )
-                        domain_limit = selected_domain.get("domain_limit", 5)
-
-                        if current_count >= domain_limit:
-                            flash(
-                                f"Client created but domain has reached its limit ({domain_limit} subdomains)",
-                                "warning",
-                            )
-                        else:
-                            # Assign subdomain to client
-                            domain_success, domain_message = Domain.assign_to_client(
-                                client_id=client_id, domain_id=domain_id, subdomain=unique_subdomain
-                            )
-
-                            if domain_success:
-                                actual_domain = f"{unique_subdomain}.{domain_name}"
-                                if unique_subdomain != domain:
-                                    flash(
-                                        f"Client created with domain {actual_domain} ('{domain}' já estava em uso)",
-                                        "success",
-                                    )
-                                else:
-                                    flash(f"Client created with domain {actual_domain}", "success")
-                            else:
-                                flash(
-                                    f"Client created but domain assignment failed: {domain_message}",
-                                    "warning",
-                                )
-                else:
-                    flash("Client created but selected domain not found", "warning")
-            else:
-                flash("Client created successfully", "success")
-
-            # Log client creation in audit trail
-            AuditService.log_client_action(
-                "create",
-                client_id,
-                {
-                    "username": username,
-                    "plan_id": plan_id,
-                    "template_id": template_id,
-                    "status": status,
-                    "domain": f"{domain}.seusite.com" if domain and template_id else None,
-                },
-            )
-
-            return redirect(url_for("client.list_clients"))
-        else:
-            flash(f"Error creating client: {message}", "danger")
-            return ClientView.render_create_form(
-                plans, templates, enriched_domains, form_data=form_payload
-            )
-
-    return ClientView.render_create_form(plans, templates, enriched_domains)
+    return client_crud.create_view()
 
 
 @client.route("/edit/<client_id>", methods=["GET", "POST"])
@@ -217,19 +234,7 @@ def edit_client(client_id):
 def delete_client(client_id):
     """Delete a client"""
     if request.method == "POST":
-        # Get client data before deletion for audit log
-        client_data = Client.get_by_id(client_id)
-        username = client_data.get("username", "unknown") if client_data else "unknown"
-
-        success, message = Client.delete(client_id)
-
-        if success:
-            # Log client deletion in audit trail
-            AuditService.log_client_action("delete", client_id, {"username": username})
-            flash("Client deleted successfully", "success")
-        else:
-            flash(f"Error deleting client: {message}", "danger")
-
+        return client_crud.delete_view(client_id)
     return redirect(url_for("client.list_clients"))
 
 
@@ -305,52 +310,10 @@ def view_client(client_id):
 
     # Handle POST request (edit form submission)
     if request.method == "POST":
-        plan_activation_date = request.form.get("plan_activation_date") or None
-        plan_expiration_date = request.form.get("plan_expiration_date") or None
-
-        plan_id_value = request.form.get("plan_id") or None
-        template_id_value = request.form.get("template_id") or None
-
-        data = {
-            "username": request.form.get("username"),
-            "plan_id": plan_id_value,
-            "template_id": template_id_value,
-            "status": request.form.get("status"),
-            "plan_activation_date": plan_activation_date,
-            "plan_expiration_date": plan_expiration_date,
-        }
-
-        # Only update password if provided
-        if request.form.get("password"):
-            data["password"] = request.form.get("password")
-
-        # Update client
-        success, message = Client.update(client_id, data)
-
-        if success:
-            # Log client update in audit trail
-            AuditService.log_client_action(
-                "update",
-                client_id,
-                {
-                    "username": data.get("username"),
-                    "plan_id": plan_id_value,
-                    "status": data.get("status"),
-                    "password_changed": "password" in data,
-                },
-            )
-            flash("Client updated successfully", "success")
-            return redirect(url_for("client.view_client", client_id=client_id))
-        else:
-            flash(f"Error updating client: {message}", "danger")
-            form_payload = {
-                "username": data.get("username"),
-                "plan_id": plan_id_value,
-                "template_id": template_id_value,
-                "status": data.get("status"),
-                "plan_activation_date": plan_activation_date,
-                "plan_expiration_date": plan_expiration_date,
-            }
+        schema, errors = parse_form(ClientUpdateSchema, request.form)
+        if errors:
+            for error in errors:
+                flash(error, "danger")
             return ClientView.render_manage(
                 client_data,
                 plans,
@@ -362,8 +325,41 @@ def view_client(client_id):
                 wallet_prefill,
                 payout_status_summary,
                 suggested_amount,
-                form_data=form_payload,
+                form_data=request.form.to_dict(),
             )
+
+        update_payload = schema.to_payload()
+
+        success, message = Client.update(client_id, update_payload)
+
+        if success:
+            log_update(
+                "client",
+                client_id,
+                {
+                    "username": update_payload.get("username", client_data.get("username")),
+                    "plan_id": update_payload.get("plan_id"),
+                    "status": update_payload.get("status"),
+                    "password_changed": "password" in update_payload,
+                },
+            )
+            flash("Client updated successfully", "success")
+            return redirect(url_for("client.view_client", client_id=client_id))
+
+        flash(f"Error updating client: {message}", "danger")
+        return ClientView.render_manage(
+            client_data,
+            plans,
+            templates,
+            client_domains,
+            enriched_domains,
+            domain_limit,
+            client_payouts,
+            wallet_prefill,
+            payout_status_summary,
+            suggested_amount,
+            form_data=request.form.to_dict(),
+        )
 
     # GET request - render the unified management page
     return ClientView.render_manage(

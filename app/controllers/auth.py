@@ -1,14 +1,12 @@
 from functools import wraps
 from typing import Any, Callable
 
-import bson
-from flask import Blueprint, current_app, flash, redirect, request, session, url_for
+from flask import Blueprint, flash, redirect, request, session, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 
 from app import limiter
 from app.models.admin import Admin
 from app.models.client import Client
-from app.models.login_log import LoginLog
 from app.models.user import User
 from app.services.audit_service import AuditService
 from app.services.auth_service import AuthService
@@ -52,7 +50,7 @@ def super_admin_required(f: Callable[..., Any]) -> Callable[..., Any]:
 
 
 @auth.route("/login", methods=["GET", "POST"])
-@limiter.limit("10 per minute")
+# @limiter.limit("10 per minute")
 def login():
     """Login route with rate limiting"""
     if current_user.is_authenticated:

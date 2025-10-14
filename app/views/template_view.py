@@ -17,7 +17,7 @@ class TemplateView(BaseView):
         Returns:
             str: Rendered template list template
         """
-        return BaseView.render("templates/list.html", templates=templates)
+        return BaseView.render_table("templates/list.html", templates)
 
     @staticmethod
     def render_create_form(form_data=None, errors=None):
@@ -31,7 +31,7 @@ class TemplateView(BaseView):
         Returns:
             str: Rendered template creation form
         """
-        return BaseView.render("templates/create.html", form_data=form_data, errors=errors)
+        return BaseView.render_form("templates/create.html", form_data=form_data, errors=errors)
 
     @staticmethod
     def render_edit_form(template_data, errors=None):
@@ -45,7 +45,7 @@ class TemplateView(BaseView):
         Returns:
             str: Rendered template edit form
         """
-        return BaseView.render("templates/edit.html", template=template_data, errors=errors)
+        return BaseView.render_form("templates/edit.html", form_data=template_data, errors=errors, template=template_data)
 
     @staticmethod
     def render_view(template_data):

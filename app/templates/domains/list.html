@@ -87,17 +87,17 @@
                         </td>
                         <td class="text-end">
                             <div class="btn-group btn-group-sm" role="group">
-                                <a href="{{ url_for('domain.view_domain', domain_id=domain._id) }}" class="btn btn-info" title="Visualizar">
+                                <a href="{{ url_for('domain.view_domain', domain_id=domain._id) }}" class="btn btn-info" title="Visualizar" aria-label="Visualizar domínio">
                                     <i class="fas fa-eye"></i>
                                 </a>
                                 {% if current_user.is_super_admin %}
-                                <a href="{{ url_for('domain.edit_domain', domain_id=domain._id) }}" class="btn btn-warning" title="Editar">
+                                <a href="{{ url_for('domain.edit_domain', domain_id=domain._id) }}" class="btn btn-warning" title="Editar" aria-label="Editar domínio">
                                     <i class="fas fa-edit"></i>
                                 </a>
                                                                 <form method="POST" action="{{ url_for('domain.delete_domain', domain_id=domain._id) }}" 
                                                                             class="d-inline" onsubmit="return confirm('Tem certeza que deseja excluir este domínio?');">
                                                                         {% include "partials/csrf_field.html" %}
-                                    <button type="submit" class="btn btn-danger" title="Excluir">
+                                    <button type="submit" class="btn btn-danger" title="Excluir" aria-label="Excluir domínio">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>

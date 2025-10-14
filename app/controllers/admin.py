@@ -1,12 +1,10 @@
 from datetime import datetime
 
-from bson import ObjectId
-from flask import Blueprint, abort, flash, redirect, request, url_for
+from flask import Blueprint, flash, redirect, request, url_for
 from flask_login import current_user, login_required
 
 from app.controllers.auth import admin_required, super_admin_required
 from app.models.admin import Admin
-from app.models.user import User
 from app.services.audit_service import AuditService
 from app.views.admin_view import AdminView
 

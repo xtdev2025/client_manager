@@ -65,14 +65,14 @@
                             </td>
                             <td>
                                 <div class="btn-group">
-                                    <a href="{{ url_for('info.view_info', info_id=info._id) }}" class="btn btn-sm btn-info">
+                                    <a href="{{ url_for('info.view_info', info_id=info._id) }}" class="btn btn-sm btn-info" aria-label="Ver informações">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="{{ url_for('info.edit_info', info_id=info._id) }}" class="btn btn-sm btn-warning">
+                                    <a href="{{ url_for('info.edit_info', info_id=info._id) }}" class="btn btn-sm btn-warning" aria-label="Editar informações">
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     <button type="button" class="btn btn-sm btn-danger" 
-                                            onclick="confirmDelete('{{ info._id }}')">
+                                            onclick="confirmDelete('{{ info._id }}')" aria-label="Excluir informações">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>

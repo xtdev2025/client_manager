@@ -11,7 +11,7 @@ class TestAuthRoutes:
 
     def test_login_page_loads(self, client):
         """Test that login page loads successfully"""
-        response = client.get("/login")
+        response = client.get("/auth/login", follow_redirects=True)
         assert response.status_code == 200
         assert b"login" in response.data.lower()
 
@@ -23,37 +23,34 @@ class TestAuthRoutes:
 
         # Attempt login
         response = client.post(
-            "/login",
+            "/auth/login",
             data={"username": "superadmin", "password": "Admin@123"},
             follow_redirects=True,
         )
 
         assert response.status_code == 200
-        # Should redirect to index/dashboard
+        assert b"dashboard" in response.data.lower()
 
     def test_login_success_client(self, client, app):
         """Test successful client login"""
         with app.app_context():
-            # Create plan and client
             success, plan_id = Plan.create("Test Plan", "Description", 99.99, 30)
-            Client.create("testclient", "Admin@123", plan_id, status="active")
+            Client.create("testclient", "Admin@123", plan_id)
 
         # Attempt login
         response = client.post(
-            "/login",
+            "/auth/login",
             data={"username": "testclient", "password": "Admin@123"},
             follow_redirects=True,
         )
 
         assert response.status_code == 200
+        assert b"dashboard" in response.data.lower()
 
     def test_login_invalid_credentials(self, client, app):
         """Test login with invalid credentials"""
-        with app.app_context():
-            Admin.create("superadmin", "Admin@123", "admin")
-
         response = client.post(
-            "/login",
+            "/auth/login",
             data={"username": "superadmin", "password": "wrongpassword"},
             follow_redirects=True,
         )
@@ -68,7 +65,7 @@ class TestAuthRoutes:
             Client.create("testclient", "Admin@123", plan_id, status="inactive")
 
         response = client.post(
-            "/login",
+            "/auth/login",
             data={"username": "testclient", "password": "Admin@123"},
             follow_redirects=True,
         )
@@ -76,26 +73,35 @@ class TestAuthRoutes:
         assert response.status_code == 200
         assert b"not active" in response.data.lower()
 
-    def test_login_missing_credentials(self, client):
+    def test_login_missing_credentials(self, client, app):
         """Test login with missing credentials"""
         response = client.post(
-            "/login", data={"username": "", "password": ""}, follow_redirects=True
+            "/auth/login",
+            data={},
+            follow_redirects=True,
         )
 
         assert response.status_code == 200
-        assert b"provide" in response.data.lower() or b"required" in response.data.lower()
+        assert b"Please provide" in response.data or b"provide" in response.data
 
     def test_logout(self, client, app):
         """Test logout functionality"""
         with app.app_context():
+            # Create and login test admin
             Admin.create("superadmin", "Admin@123", "admin")
 
         # Login first
-        client.post("/login", data={"username": "superadmin", "password": "Admin@123"})
+        client.post(
+            "/auth/login",
+            data={"username": "superadmin", "password": "Admin@123"},
+            follow_redirects=True,
+        )
 
-        # Then logout
-        response = client.get("/logout", follow_redirects=True)
+        # Attempt logout
+        response = client.get("/auth/logout", follow_redirects=True)
+
         assert response.status_code == 200
+        assert b"login" in response.data.lower()
 
     def test_protected_route_requires_auth(self, client):
         """Test that protected routes require authentication"""

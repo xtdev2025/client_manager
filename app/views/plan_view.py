@@ -17,7 +17,7 @@ class PlanView(BaseView):
         Returns:
             str: Rendered plan list template
         """
-        return BaseView.render("plans/list.html", plans=plans)
+        return BaseView.render_table("plans/list.html", plans)
 
     @staticmethod
     def render_create_form(form_data=None, errors=None):
@@ -31,7 +31,7 @@ class PlanView(BaseView):
         Returns:
             str: Rendered plan creation form
         """
-        return BaseView.render("plans/create.html", form_data=form_data, errors=errors)
+        return BaseView.render_form("plans/create.html", form_data=form_data, errors=errors)
 
     @staticmethod
     def render_edit_form(plan_data, errors=None):
@@ -45,7 +45,7 @@ class PlanView(BaseView):
         Returns:
             str: Rendered plan edit form
         """
-        return BaseView.render("plans/edit.html", plan=plan_data, errors=errors)
+        return BaseView.render_form("plans/edit.html", form_data=plan_data, errors=errors, plan=plan_data)
 
     @staticmethod
     def render_view(plan_data):

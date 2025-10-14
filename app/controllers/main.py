@@ -1,15 +1,8 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from flask import Blueprint, current_app, jsonify, redirect, url_for
 from flask_login import current_user, login_required
 
-from app.models.admin import Admin
-from app.models.client import Client
-from app.models.domain import Domain
-from app.models.info import Info
-from app.models.login_log import LoginLog
-from app.models.plan import Plan
-from app.models.user import User
 from app.views import MainView
 
 main = Blueprint("main", __name__)
@@ -43,3 +36,15 @@ def health_check():
             "timestamp": datetime.utcnow().isoformat() + "Z",
         }
     )
+
+
+@main.route("/login", methods=["GET", "POST"])
+def login():
+    """Redirect to auth login for convenience"""
+    return redirect(url_for("auth.login"))
+
+
+@main.route("/logout")
+def logout():
+    """Redirect to auth logout for convenience"""
+    return redirect(url_for("auth.logout"))

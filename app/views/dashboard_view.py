@@ -1,5 +1,4 @@
 from app.views.base_view import BaseView
-from app.views.main_view import MainView
 
 
 class DashboardView(BaseView):

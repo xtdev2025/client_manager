@@ -3,15 +3,12 @@ from datetime import datetime, timedelta
 from flask import Blueprint, jsonify, request
 from flask_login import current_user, login_required
 
-from app.models.admin import Admin
-from app.models.client import Client
 from app.models.client_crypto_payout import ClientCryptoPayout
 from app.models.click import Click
 from app.models.domain import Domain
 from app.models.info import Info
 from app.models.login_log import LoginLog
 from app.models.plan import Plan
-from app.models.template import Template
 from app.models.user import User
 from app.views.dashboard_view import DashboardView
 

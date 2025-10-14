@@ -242,3 +242,15 @@ class Domain:
         except Exception as e:
             current_app.logger.error(f"Error getting client domains: {e}")
             return []
+
+    @staticmethod
+    def get_subdomain_count(domain_id):
+        """Get the count of subdomains assigned to a domain"""
+        try:
+            if isinstance(domain_id, str):
+                domain_id = ObjectId(domain_id)
+
+            return mongo.db.client_domains.count_documents({"domain_id": domain_id})
+        except Exception as e:
+            current_app.logger.error(f"Error counting subdomains for domain {domain_id}: {e}")
+            return 0

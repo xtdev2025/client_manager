@@ -27,7 +27,7 @@
                 <div class="stat-number">{{ client_count }}</div>
                 <div class="stat-label">Total de Clientes</div>
                 <p class="stat-meta"><i class="fas fa-check-circle me-1"></i>{{ active_clients }} ativos</p>
-                <a class="stat-link" href="{{ url_for('client.list_clients') }}">Ver todos <i class="fas fa-arrow-right ms-1"></i></a>
+                <a class="stat-link" href="{{ url_for('client.list_clients') }}" data-cta="view-all-clients" data-section="dashboard-stats">Ver todos <i class="fas fa-arrow-right ms-1"></i></a>
             </article>
         </div>
         <div class="col-12 col-sm-6 col-xl-3">
@@ -38,7 +38,7 @@
                 <div class="stat-number">{{ plan_count }}</div>
                 <div class="stat-label">Total de Planos</div>
                 <p class="stat-meta"><i class="fas fa-tags me-1"></i>Planos ativos</p>
-                <a class="stat-link" href="{{ url_for('plan.list_plans') }}">Ver todos <i class="fas fa-arrow-right ms-1"></i></a>
+                <a class="stat-link" href="{{ url_for('plan.list_plans') }}" data-cta="view-all-plans" data-section="dashboard-stats">Ver todos <i class="fas fa-arrow-right ms-1"></i></a>
             </article>
         </div>
         <div class="col-12 col-sm-6 col-xl-3">
@@ -49,7 +49,7 @@
                 <div class="stat-number">{{ domain_count }}</div>
                 <div class="stat-label">Domínios</div>
                 <p class="stat-meta"><i class="fas fa-network-wired me-1"></i>{{ template_count }} templates</p>
-                <a class="stat-link" href="{{ url_for('domain.list_domains') }}">Ver todos <i class="fas fa-arrow-right ms-1"></i></a>
+                <a class="stat-link" data-cta="view-all-domains" data-section="dashboard-stats" href="{{ url_for('domain.list_domains') }}">Ver todos <i class="fas fa-arrow-right ms-1"></i></a>
             </article>
         </div>
         <div class="col-12 col-sm-6 col-xl-3">
@@ -60,7 +60,7 @@
                 <div class="stat-number">{{ admin_count }}</div>
                 <div class="stat-label">Administradores</div>
                 <p class="stat-meta"><i class="fas fa-shield-alt me-1"></i>Equipe do sistema</p>
-                <a class="stat-link" href="{{ url_for('admin.list_admins') }}">Ver todos <i class="fas fa-arrow-right ms-1"></i></a>
+                <a class="stat-link" data-cta="view-all-admins" data-section="dashboard-stats" href="{{ url_for('admin.list_admins') }}">Ver todos <i class="fas fa-arrow-right ms-1"></i></a>
             </article>
         </div>
     </div>
