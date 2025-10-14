@@ -49,8 +49,9 @@
                                 <a href="{{ url_for('plan.edit_plan', plan_id=plan._id) }}" class="btn btn-warning" title="Editar">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <form method="POST" action="{{ url_for('plan.delete_plan', plan_id=plan._id) }}" 
-                                      class="d-inline" onsubmit="return confirm('Tem certeza que deseja excluir este plano?');">
+                                                                <form method="POST" action="{{ url_for('plan.delete_plan', plan_id=plan._id) }}" 
+                                                                            class="d-inline" onsubmit="return confirm('Tem certeza que deseja excluir este plano?');">
+                                                                        {% include "partials/csrf_field.html" %}
                                     <button type="submit" class="btn btn-danger" title="Excluir">
                                         <i class="fas fa-trash"></i>
                                     </button>

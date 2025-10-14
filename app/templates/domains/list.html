@@ -94,8 +94,9 @@
                                 <a href="{{ url_for('domain.edit_domain', domain_id=domain._id) }}" class="btn btn-warning" title="Editar">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <form method="POST" action="{{ url_for('domain.delete_domain', domain_id=domain._id) }}" 
-                                      class="d-inline" onsubmit="return confirm('Tem certeza que deseja excluir este domínio?');">
+                                                                <form method="POST" action="{{ url_for('domain.delete_domain', domain_id=domain._id) }}" 
+                                                                            class="d-inline" onsubmit="return confirm('Tem certeza que deseja excluir este domínio?');">
+                                                                        {% include "partials/csrf_field.html" %}
                                     <button type="submit" class="btn btn-danger" title="Excluir">
                                         <i class="fas fa-trash"></i>
                                     </button>

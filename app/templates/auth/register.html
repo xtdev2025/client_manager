@@ -595,7 +595,7 @@
                 <h3 class="mb-4" style="color: var(--light);">Informações da conta</h3>
                 
                 <form method="POST" action="{{ url_for('auth.register') }}">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    {% include "partials/csrf_field.html" %}
                     <input type="hidden" id="selected_plan" name="plan" value="standard">
 
                     <div class="form-group">

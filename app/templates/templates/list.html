@@ -82,8 +82,7 @@
                                 {# Botão Clonar #}
                                 <form method="POST" action="{{ url_for('template.clone_template', template_id=template._id) }}"
                                     class="d-inline" onsubmit="return confirm('Tem certeza que deseja clonar este modelo?');">
-                                    {# Nota: O uso de {{ csrf_token() }} é o padrão Flask-WTF. Mantendo sua estrutura, mas otimizando: #}
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"> 
+                                    {% include "partials/csrf_field.html" %}
                                     <button type="submit" class="btn btn-sm btn-secondary" title="Clonar">
                                         <i class="fas fa-copy me-1"></i> Clonar
                                     </button>
@@ -95,9 +94,9 @@
                                 </a>
 
                                 {# Botão Excluir #}
-                                <form method="POST" action="{{ url_for('template.delete_template', template_id=template._id) }}" 
-                                      class="d-inline" onsubmit="return confirm('Tem certeza que deseja excluir este modelo?');">
-                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"> 
+                                                                <form method="POST" action="{{ url_for('template.delete_template', template_id=template._id) }}" 
+                                                                            class="d-inline" onsubmit="return confirm('Tem certeza que deseja excluir este modelo?');">
+                                                                        {% include "partials/csrf_field.html" %}
                                       <button type="submit" class="btn btn-sm btn-danger" title="Excluir">
                                         <i class="fas fa-trash me-1"></i> Excluir
                                     </button>

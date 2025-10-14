@@ -53,8 +53,9 @@
         </div>
 
         <div class="mt-4 d-flex justify-content-end">
-            <form method="POST" action="{{ url_for('plan.delete_plan', plan_id=plan._id) }}" 
-                  onsubmit="return confirm('Tem certeza que deseja excluir este plano? Esta ação não pode ser desfeita.');">
+                        <form method="POST" action="{{ url_for('plan.delete_plan', plan_id=plan._id) }}" 
+                                    onsubmit="return confirm('Tem certeza que deseja excluir este plano? Esta ação não pode ser desfeita.');">
+                                {% include "partials/csrf_field.html" %}
                 <button type="submit" class="btn btn-danger">
                     <i class="fas fa-trash me-2"></i>Excluir plano
                 </button>

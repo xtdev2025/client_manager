@@ -13,6 +13,7 @@
         </div>
         <div class="card-body">
             <form method="POST" action="{{ url_for('info.create_info', client_id=client._id) }}">
+                {% include "partials/csrf_field.html" %}
                 <div class="row">
                     <!-- Account Information -->
                     <div class="col-md-6">

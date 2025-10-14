@@ -89,6 +89,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <form id="deleteForm" action="" method="POST">
+                    {% include "partials/csrf_field.html" %}
                     <button type="submit" class="btn btn-danger">Delete</button>
                 </form>
             </div>

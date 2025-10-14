@@ -302,6 +302,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                 <form method="POST" action="{{ url_for('admin.clear_audit_logs') }}" style="display: inline;">
+                    {% include "partials/csrf_field.html" %}
                     <button type="submit" class="btn btn-danger" id="confirmClearBtn" disabled>
                         <i class="fas fa-trash-alt me-1"></i>Deletar Todos os Logs
                     </button>

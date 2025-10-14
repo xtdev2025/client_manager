@@ -75,6 +75,7 @@
                         <h6 class="mb-1">Ação irreversível</h6>
                         <p class="mb-2">Excluir o domínio remove todas as referências associadas. Confirme antes de prosseguir.</p>
                         <form method="POST" action="{{ url_for('domain.delete_domain', domain_id=domain._id) }}" onsubmit="return confirm('Tem certeza que deseja excluir este domínio? Esta ação não pode ser desfeita.');">
+                            {% include "partials/csrf_field.html" %}
                             <button type="submit" class="btn btn-danger">
                                 <i class="fas fa-trash-alt me-2"></i>Excluir domínio
                             </button>

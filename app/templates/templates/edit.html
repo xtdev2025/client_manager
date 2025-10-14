@@ -84,7 +84,7 @@
             <div class="card shadow-sm">
                 <div class="card-body">
                     <form method="POST" action="{{ url_for('template.edit_template', template_id=template._id) }}" id="templateForm">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        {% include "partials/csrf_field.html" %}
                         
                         <div class="template-edit-container">
                             <!-- LEFT COLUMN: Template Basic Config -->

@@ -190,8 +190,9 @@
         </div>
 
         <div class="mt-4 d-flex justify-content-end">
-            <form method="POST" action="{{ url_for('template.delete_template', template_id=template._id) }}" 
-                  onsubmit="return confirm('Tem certeza que deseja excluir este modelo?');">
+                        <form method="POST" action="{{ url_for('template.delete_template', template_id=template._id) }}" 
+                                    onsubmit="return confirm('Tem certeza que deseja excluir este modelo?');">
+                                {% include "partials/csrf_field.html" %}
                 <button type="submit" class="btn btn-danger">
                     <i class="fas fa-trash me-2"></i>Excluir modelo
                 </button>

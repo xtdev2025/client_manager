@@ -18,6 +18,7 @@
         </div>
         <div class="card-body">
             <form method="POST" action="{{ url_for('info.edit_info', info_id=info._id) }}">
+                {% include "partials/csrf_field.html" %}
                 <div class="row">
                     <!-- Account Information -->
                     <div class="col-md-6">

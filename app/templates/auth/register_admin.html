@@ -10,6 +10,7 @@
         <div class="card shadow">
             <div class="card-body p-4">
                 <form method="POST" action="{{ url_for('auth.register_admin') }}">
+                    {% include "partials/csrf_field.html" %}
                     <div class="mb-3">
                         <label for="username" class="form-label">Username</label>
                         <div class="input-group">

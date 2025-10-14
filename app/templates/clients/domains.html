@@ -38,8 +38,9 @@
                             <td>{{ cd.full_domain }}</td>
                             <td>{{ cd.createdAt.strftime('%d/%m/%Y %H:%M') if cd.createdAt else 'N/A' }}</td>
                             <td>
-                                <form method="POST" action="{{ url_for('client.remove_domain', client_id=client._id, client_domain_id=cd._id) }}" 
-                                      class="d-inline" onsubmit="return confirm('Are you sure you want to remove this domain?');">
+                      <form method="POST" action="{{ url_for('client.remove_domain', client_id=client._id, client_domain_id=cd._id) }}" 
+                          class="d-inline" onsubmit="return confirm('Are you sure you want to remove this domain?');">
+                        {% include "partials/csrf_field.html" %}
                                     <button type="submit" class="btn btn-sm btn-danger">
                                         <i class="fas fa-trash"></i> Remove
                                     </button>
@@ -69,6 +70,7 @@
             <hr>
             <h5 class="mb-3">Add New Domain</h5>
             <form method="POST" action="{{ url_for('client.add_domain', client_id=client._id) }}" class="row g-3">
+                {% include "partials/csrf_field.html" %}
                 <div class="col-md-4">
                     <label for="subdomain" class="form-label">Subdomain*</label>
                     <input type="text" class="form-control" id="subdomain" name="subdomain" required>
