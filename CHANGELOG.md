@@ -13,12 +13,33 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 - **Workflow Reminder**: Inserido aviso no `TODO.md` para reforçar auto-completar tarefas, registrar resumos de sprint e sinalizar o próximo foco.
 - **Doc Heleket Data Mapping**: Criado `docs/HELEKET_DATA_MAPPING.md` com inventário de campos orientado a `clients`, gatilhos propostos e lacunas para payouts em cripto.
+- **Heleket API Client**: Implementado módulo cliente dedicado (`app/services/heleket_client.py`) para integração com gateway de pagamentos Heleket, incluindo:
+  - Autenticação via headers (X-Merchant-ID, X-API-Key)
+  - Gerenciamento de chaves de idempotência (SHA256)
+  - Retry automático com backoff exponencial (max 3 tentativas)
+  - Tratamento estruturado de erros (HeleketError, HeleketAuthenticationError)
+  - Métodos para criar, consultar e cancelar payouts
+  - Placeholder para verificação de assinatura de webhooks
+  - Testes unitários completos com mocks (16 casos de teste)
+- **Client Crypto Payout Model**: Criado modelo `app/models/client_crypto_payout.py` para persistir requisições de pagamento, incluindo:
+  - Registro de payloads enviados ao Heleket
+  - Rastreamento de IDs de transação e status on-chain
+  - Campos para asset, network, amount, wallet_address
+  - Suporte a diferentes origens (manual, scheduled, bonus)
+  - Histórico de callbacks e atualizações (responseLogs)
+  - Helpers de repositório para consultas por status/data/cliente
+  - Métodos de estatísticas agregadas
+  - Índices MongoDB para performance (client_id, status, idempotency_key único)
+  - Testes unitários completos (18 casos de teste)
+- **Documentação Técnica**: Criado `docs/HELEKET_CLIENT.md` com guia completo de uso do cliente Heleket, incluindo exemplos de integração, boas práticas e referência de API.
 
 ### 🔄 Modificado
 
 - **Guidelines de Contribuição**: Atualização de `.github/copilot-instructions.md` para alinhar o trabalho com `TODO.md`, exigir sugestões contextuais, resumos de sprint e sincronização com `CHANGELOG.md`.
 - **TODO.md**: Item "Confirmar gatilhos de negócio e mapeamento de dados" mantém status concluído com foco em ativos digitais, introduzindo `client_wallet_profile` e `client_crypto_payouts` como entregáveis futuros.
 - **docs/HELEKET_DATA_MAPPING.md**: Revisado para refletir o Heleket como gateway cripto, trocar requisitos bancários por carteira/ativo/rede e adicionar pauta de alinhamento com Produto/Compliance.
+- **config.py**: Já contém variáveis de ambiente para credenciais Heleket (HELEKET_PROJECT_URL, HELEKET_MERCHANT_ID, HELEKET_API_KEY).
+- **tests/conftest.py**: Adicionada coleção `client_crypto_payouts` à lista de limpeza de banco de dados nos testes.
 
 ---
 

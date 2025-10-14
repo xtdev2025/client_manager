@@ -27,6 +27,13 @@ Guia completo para fazer deploy da aplicação Flask na Amazon Web Services (AWS
 - AWS Systems Manager Parameter Store
 - Arquivos `.env` (apenas desenvolvimento)
 
+**Credenciais Heleket**: Configure as seguintes variáveis de ambiente para integração de pagamentos:
+- `HELEKET_PROJECT_URL`: URL base da API Heleket
+- `HELEKET_MERCHANT_ID`: ID do comerciante Heleket
+- `HELEKET_API_KEY`: Chave de API para autenticação
+
+Em produção, armazene essas credenciais no AWS Secrets Manager ou cofre equivalente.
+
 ### Comparação das Opções
 
 | Opção | Dificuldade | Controle | Custo/mês | Melhor Para |

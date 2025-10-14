@@ -195,7 +195,9 @@ def clean_db(app):
             "login_logs",
             "audit_logs",
             "client_domains",
-            "field_types"
+            "field_types",
+            "client_crypto_payouts",
+            "clicks"
         ]
         
         # Clean before test

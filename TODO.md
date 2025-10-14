@@ -10,20 +10,51 @@
 	- Resultado: Inventariados campos relevantes em `clients` e `plans`, definidos modelos propostos `client_wallet_profile` e `client_crypto_payouts`, além de gatilhos orientados a clientes (manual no painel, rotina por plano, bônus de ativação). Lacunas críticas registradas: cadastro de carteira, definição de ativo/rede por plano, regra de valor, idempotência, procedimentos de validação de endereços.
 	- Documentação: Ver `docs/HELEKET_DATA_MAPPING.md` para a matriz atualizada e próximos passos focados em cripto.
 	- Suggestion: Agendar alinhamento com Produto/Compliance para validar requisitos de carteira (ativos, redes, limites, confirmação de endereço) antes de iniciar a criação do schema e UI de `client_wallet_profile`.
-- [ ] **Capturar credenciais Heleket de forma segura** — Estender `config.py` para ler chave/segredo da API e URL base de variáveis de ambiente; atualizar documentação de deployment e armazenamento de secrets. _Responsável: DevOps_
+- [x] **Capturar credenciais Heleket de forma segura** — Estender `config.py` para ler chave/segredo da API e URL base de variáveis de ambiente; atualizar documentação de deployment e armazenamento de secrets. _Responsável: DevOps_
+	- _Status: Concluído (14/10/2025)_
 	- Guardar `Merchant ID`, `Project URL` e `API Key` no cofre de segredos corporativo (ex.: AWS Secrets Manager) usando nomes padronizados (`HELEKET_PROJECT_URL`, `HELEKET_MERCHANT_ID`, `HELEKET_API_KEY`).
+	- Resultado: Variáveis de ambiente já configuradas em `config.py` e documentadas em `.env.example`.
 	- Suggestion: Validar com DevOps se já existe cofre de segredos (AWS Secrets Manager) e mapear variáveis necessárias para ambientes `dev`, `staging` e `prod`.
-- [ ] **Criar cliente da API Heleket** — Implementar módulo cliente dedicado (ex: `app/services/heleket_client.py`) gerenciando headers de autenticação, chaves de idempotência, retry/backoff e superfícies de erro estruturadas. Incluir testes unitários com mocks de respostas. _Responsável: Backend_
-	- Suggestion: Definir interface baseada nas rotas de payouts e contemplar abstração para futuros endpoints (ex: cancelamento, consulta) para evitar refatorações.
-- [ ] **Persistir requisições de pagamento** — Adicionar coleção `client_crypto_payouts` para registrar payloads enviados ao Heleket, IDs de transação, status on-chain, valor, ativo, rede, referência à carteira e metadados de auditoria. Fornecer helpers de repositório para consultas por status/data. _Responsável: Backend_
-	- Suggestion: Reaproveitar padrões de `app/models/click.py` para timestamps e índices; planejar índices em `status` + `requestedAt` + `asset`, além de armazenar hash da transação para reconciliação.
+- [x] **Criar cliente da API Heleket** — Implementar módulo cliente dedicado (ex: `app/services/heleket_client.py`) gerenciando headers de autenticação, chaves de idempotência, retry/backoff e superfícies de erro estruturadas. Incluir testes unitários com mocks de respostas. _Responsável: Backend_
+	- _Status: Concluído (14/10/2025)_
+	- Implementado `app/services/heleket_client.py` com:
+		- Autenticação via headers (X-Merchant-ID, X-API-Key, X-Idempotency-Key)
+		- Retry automático com backoff exponencial (max 3 tentativas)
+		- Geração determinística de chaves de idempotência (SHA256)
+		- Métodos: create_payout, get_payout_status, cancel_payout
+		- Tratamento estruturado de erros (HeleketError, HeleketAuthenticationError, etc.)
+		- 16 testes unitários cobrindo casos de sucesso, validação e retry
+	- Documentação: Ver `docs/HELEKET_CLIENT.md` para guia completo de uso.
+	- Suggestion: Implementar verificação de assinatura de webhook quando documentação Heleket estiver disponível.
+- [x] **Persistir requisições de pagamento** — Adicionar coleção `client_crypto_payouts` para registrar payloads enviados ao Heleket, IDs de transação, status on-chain, valor, ativo, rede, referência à carteira e metadados de auditoria. Fornecer helpers de repositório para consultas por status/data. _Responsável: Backend_
+	- _Status: Concluído (14/10/2025)_
+	- Criado modelo `app/models/client_crypto_payout.py` com:
+		- Campos: client_id, asset, network, amount, wallet_address, status, origin, idempotency_key
+		- Suporte a diferentes origens (manual, scheduled, bonus)
+		- Histórico de callbacks (responseLogs) e timestamps (requestedAt, confirmedAt)
+		- Helpers: get_by_client, get_by_status, get_statistics
+		- Índices MongoDB: client_id+createdAt, status+requestedAt+asset, idempotency_key (unique)
+		- 18 testes unitários cobrindo CRUD, consultas e validações
+	- Resultado: Padrões de `app/models/click.py` reutilizados para timestamps e índices.
+	- Suggestion: Executar `ClientCryptoPayout.create_indexes()` durante inicialização da aplicação para garantir performance.
 
 ### Tarefas de Suporte - Sprint 1
 - [ ] **Playbook de deployment** — Atualizar scripts `deploy/` e `docker-compose.yml` com novas variáveis de env, health checks para webhook de pagamento e instruções para rotação de credenciais Heleket. _Responsável: DevOps_
 
-**Resumo da Sprint 1:** _(preencher quando concluída)_
+**Resumo da Sprint 1:** 
+- ✅ **Concluída (14/10/2025)** — Fundação da integração Heleket estabelecida com sucesso
+- 🎯 **Entregas:**
+  - Cliente API Heleket implementado com retry/backoff, idempotência e tratamento robusto de erros
+  - Modelo de persistência client_crypto_payouts com helpers de consulta e índices otimizados
+  - Documentação técnica completa (HELEKET_CLIENT.md) e exemplos de integração
+  - Cobertura de testes: 34 casos de teste (16 para cliente API + 18 para modelo)
+  - Configuração de credenciais via variáveis de ambiente já estabelecida
+- 📋 **Pendências:** 
+  - Implementação de verificação de assinatura de webhook (aguardando docs Heleket)
+  - Validação com DevOps sobre cofre de segredos AWS para ambientes staging/prod
+  - Alinhamento com Produto/Compliance sobre requisitos de carteira cripto
 
-**Próximo foco após Sprint 1:** _Sprint 2_
+**Próximo foco após Sprint 1:** _Sprint 2 - Orquestração de Pagamentos & Workflow Administrativo_
 
 ---
 
