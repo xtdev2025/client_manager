@@ -3,6 +3,7 @@ from datetime import datetime
 from flask import Blueprint, current_app, jsonify, redirect, url_for
 from flask_login import current_user, login_required
 
+from app.models.plan import Plan
 from app.views import MainView
 
 main = Blueprint("main", __name__)
