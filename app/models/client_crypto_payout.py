@@ -116,7 +116,8 @@ class ClientCryptoPayout:
                 "confirmedAt": None,
                 "heleketPayload": None,  # Set when request is made
                 "responseLogs": [],
-                "createdBy": created_by,
+                "created_by": created_by,
+                "createdBy": created_by,  # manter compatibilidade com seeds antigos
                 "createdAt": now,
                 "updatedAt": now,
             }
@@ -178,6 +179,21 @@ class ClientCryptoPayout:
             return None
 
     @staticmethod
+    def get_by_transaction_id(heleket_transaction_id: str) -> Optional[Dict[str, Any]]:
+        """Retrieve a payout by Heleket transaction identifier."""
+        try:
+            if not heleket_transaction_id:
+                return None
+
+            return mongo.db.client_crypto_payouts.find_one(
+                {"heleket_transaction_id": heleket_transaction_id}
+            )
+
+        except Exception as e:
+            current_app.logger.error(f"Error getting payout by Heleket transaction id: {e}")
+            return None
+
+    @staticmethod
     def update_status(
         payout_id: str,
         status: str,
@@ -203,32 +219,30 @@ class ClientCryptoPayout:
             if isinstance(payout_id, str):
                 payout_id = ObjectId(payout_id)
 
-            update_data = {
+            set_data = {
                 "status": status,
                 "updatedAt": datetime.utcnow(),
             }
 
             if heleket_transaction_id:
-                update_data["heleket_transaction_id"] = heleket_transaction_id
+                set_data["heleket_transaction_id"] = heleket_transaction_id
 
             if status == ClientCryptoPayout.STATUS_CONFIRMED:
-                update_data["confirmedAt"] = datetime.utcnow()
+                set_data["confirmedAt"] = datetime.utcnow()
 
-            # Add response to logs
-            if response_data:
+            update_doc: Dict[str, Any] = {"$set": set_data}
+
+            if response_data is not None:
                 log_entry = {
                     "timestamp": datetime.utcnow(),
                     "status": status,
                     "data": response_data,
                 }
-                update_data["$push"] = {"responseLogs": log_entry}
+                update_doc["$push"] = {"responseLogs": log_entry}
 
             result = mongo.db.client_crypto_payouts.update_one(
                 {"_id": payout_id},
-                {"$set": update_data} if not response_data else {
-                    "$set": {k: v for k, v in update_data.items() if k != "$push"},
-                    **update_data
-                }
+                update_doc
             )
 
             if result.modified_count > 0:
@@ -448,3 +462,22 @@ class ClientCryptoPayout:
 
         except Exception as e:
             current_app.logger.error(f"Error creating indexes: {e}")
+
+    @staticmethod
+    def mark_webhook_received(payout_id: str) -> None:
+        """Annotate payout document with latest webhook timestamp."""
+        try:
+            if isinstance(payout_id, str):
+                payout_id = ObjectId(payout_id)
+
+            mongo.db.client_crypto_payouts.update_one(
+                {"_id": payout_id},
+                {
+                    "$set": {
+                        "lastWebhookAt": datetime.utcnow(),
+                        "updatedAt": datetime.utcnow(),
+                    }
+                },
+            )
+        except Exception as e:
+            current_app.logger.error(f"Error marking webhook reception: {e}")

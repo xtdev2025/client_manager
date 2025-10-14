@@ -180,7 +180,7 @@ def init_db(app):
             mongo.db.client_domains.insert_one(client_domain)
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="function", autouse=True)
 def clean_db(app):
     """Clean database before each test"""
     with app.app_context():
