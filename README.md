@@ -1465,7 +1465,7 @@ Vá ao GitHub e clique em "New Pull Request".
 - `aws_ec2_deploy.sh` → `aws_ec2_deploy.py`
 - `azure_deploy.sh` → `azure_deploy.py`
 
-📚 **Documentação**: [Migração Shell → Python](docs/MIGRATION_SHELL_TO_PYTHON.md) | [Scripts Documentation](docs/SCRIPTS_DOCUMENTATION.md)
+📚 **Documentação**: [Scripts Documentation](docs/SCRIPTS_DOCUMENTATION.md) | [Modernization Summary](docs/MODERNIZATION_SUMMARY.md)
 
 ### Camada de Serviços (`app/services/`)
 
@@ -1587,7 +1587,7 @@ tests/
 - 📘 **[Arquitetura do Sistema](docs/ARCHITECTURE.md)** - Visão geral da arquitetura MVC + Services
 - 🌐 **[Documentação de Rotas](docs/ROUTES_DOCUMENTATION.md)** - Todas as rotas da aplicação
 - 🔧 **[Scripts Python](docs/SCRIPTS_DOCUMENTATION.md)** - Documentação completa dos scripts
-- 🔄 **[Migração Shell→Python](docs/MIGRATION_SHELL_TO_PYTHON.md)** - Detalhes da conversão
+
 - 📋 **[Sistema de Templates](docs/TEMPLATE_FIELDS_SYSTEM.md)** - Campos de templates e páginas customizadas
 - 📊 **[Dashboard](docs/DASHBOARD_README.md)** - Dashboard administrativo e KPIs
 - ⚡ **[API Quick Reference](docs/API_QUICK_REFERENCE.md)** - Referência rápida da API

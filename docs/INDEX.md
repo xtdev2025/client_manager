@@ -38,8 +38,7 @@
 
 ## 🔄 Migração e Modernização
 
-- [Migration Shell to Python](MIGRATION_SHELL_TO_PYTHON.md) - Migração de scripts Shell para Python
-- [Modernization Summary](MODERNIZATION_SUMMARY.md) - Resumo da modernização do projeto
+- [Modernization Summary](MODERNIZATION_SUMMARY.md) - Resumo completo da modernização (Shell→Python + Heleket)
 
 ## 🔧 Scripts e Desenvolvimento
 
@@ -92,7 +91,7 @@ docs/
 │
 ├── 🔄 Modernização
 │   ├── MODERNIZATION_SUMMARY.md          # Resumo da modernização
-│   └── MIGRATION_SHELL_TO_PYTHON.md      # Migração Shell→Python
+
 │
 ├── 🔧 Scripts e CI/CD
 │   ├── SCRIPTS_DOCUMENTATION.md          # Scripts Python

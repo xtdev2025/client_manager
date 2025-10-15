@@ -32,7 +32,6 @@ O projeto Client Manager passou por modernizações sucessivas, iniciando com a 
 **Novos documentos criados:**
 
 - ✅ `docs/SCRIPTS_DOCUMENTATION.md` - Documentação completa dos scripts
-- ✅ `docs/MIGRATION_SHELL_TO_PYTHON.md` - Detalhes técnicos da migração
 - ✅ `CHANGELOG.md` - Histórico de mudanças do projeto
 - ✅ `MODERNIZATION_SUMMARY.md` - Este resumo
 
@@ -240,7 +239,7 @@ python scripts/startup.py
 ### Documentação
 
 - **Scripts**: `docs/SCRIPTS_DOCUMENTATION.md`
-- **Migração**: `docs/MIGRATION_SHELL_TO_PYTHON.md`
+- **Migração**: Veja `MODERNIZATION_SUMMARY.md` (este arquivo)
 - **Arquitetura**: `docs/ARCHITECTURE.md`
 - **Heleket**: `docs/HELEKET_README.md`, `docs/HELEKET_CLIENT.md`, `docs/HELEKET_DATA_MAPPING.md`
 - **Dashboard**: `docs/DASHBOARD_README.md`
