@@ -5,7 +5,7 @@ from app.controllers.auth import admin_required
 from app.controllers.crud_mixin import CrudControllerMixin
 from app.models.plan import Plan
 from app.repositories.base import ModelCrudRepository
-from app.schemas.crud import PlanCreateSchema, PlanUpdateSchema
+from app.schemas.plan import PlanCreateSchema, PlanUpdateSchema
 from app.views.plan_view import PlanView
 
 plan = Blueprint("plan", __name__, url_prefix="/plans")

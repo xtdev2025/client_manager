@@ -5,6 +5,7 @@ from flask_login import current_user, login_required
 
 from app.controllers.auth import admin_required, super_admin_required
 from app.models.admin import Admin
+from app.services.audit_helper import log_change, log_creation, log_deletion, log_update
 from app.services.audit_service import AuditService
 from app.views.admin_view import AdminView
 
@@ -39,7 +40,11 @@ def create_admin():
 
         if success:
             # Log admin creation in audit trail
-            AuditService.log_admin_action("create", message, {"username": username, "role": role})
+            log_creation(
+                "admin",
+                entity_id=str(message),
+                payload={"username": username, "role": role},
+            )
             flash("Admin created successfully", "success")
             return redirect(url_for("admin.list_admins"))
         else:
@@ -75,7 +80,11 @@ def edit_admin(admin_id):
 
         if success:
             # Log admin update in audit trail
-            AuditService.log_admin_action("update", admin_id, {"username": data.get("username")})
+            log_update(
+                "admin",
+                entity_id=admin_id,
+                payload={"username": data.get("username"), "role": data.get("role")},
+            )
             flash("Admin updated successfully", "success")
             return redirect(url_for("admin.list_admins"))
         else:
@@ -103,7 +112,7 @@ def delete_admin(admin_id):
 
         if success:
             # Log admin deletion in audit trail
-            AuditService.log_admin_action("delete", admin_id, {"username": username})
+            log_deletion("admin", entity_id=admin_id, payload={"username": username})
             flash("Admin deleted successfully", "success")
         else:
             flash(f"Error deleting admin: {message}", "danger")
@@ -226,10 +235,11 @@ def clear_audit_logs():
         result = mongo.db.audit_logs.delete_many({})
 
         # Log this critical action (creates a new log entry after clearing)
-        AuditService.log_admin_action(
+        log_change(
+            "admin",
             "delete_all",
-            "audit_logs",
-            {
+            entity_id="audit_logs",
+            payload={
                 "deleted_count": result.deleted_count,
                 "previous_count": count,
                 "reason": "Manual clear all logs by super admin",

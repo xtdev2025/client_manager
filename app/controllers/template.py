@@ -6,7 +6,7 @@ from app.controllers.auth import admin_required
 from app.controllers.crud_mixin import CrudControllerMixin
 from app.models.template import Template
 from app.repositories.base import ModelCrudRepository
-from app.schemas.crud import TemplateCreateSchema, TemplateUpdateSchema
+from app.schemas.template import TemplateCreateSchema, TemplateUpdateSchema
 from app.views.template_view import TemplateView
 from app.utils.crud import CrudOperationResult
 from app.services.audit_helper import log_change

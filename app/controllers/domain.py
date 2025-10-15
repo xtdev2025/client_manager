@@ -7,7 +7,7 @@ from app.controllers.auth import admin_required, super_admin_required
 from app.controllers.crud_mixin import CrudControllerMixin
 from app.models.domain import Domain
 from app.repositories.base import ModelCrudRepository
-from app.schemas.crud import DomainCreateSchema, DomainUpdateSchema
+from app.schemas.domain import DomainCreateSchema, DomainUpdateSchema
 from app.views.domain_view import DomainView
 
 domain = Blueprint("domain", __name__, url_prefix="/domains")

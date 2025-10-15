@@ -5,6 +5,9 @@ This service manages communication with the Heleket payment gateway,
 including authentication, request signing, retry logic, and error handling.
 """
 import hashlib
+import json
+import re
+import textwrap
 import time
 from typing import Any, Dict, Optional, Tuple
 from datetime import datetime
@@ -150,12 +153,14 @@ class HeleketClient:
 
                 # Handle client errors (4xx) - don't retry
                 if 400 <= response.status_code < 500:
-                    error_message = f"Client error {response.status_code}: {response.text}"
+                    error_detail = self._format_error_message(response)
+                    error_message = f"Client error {response.status_code}: {error_detail}"
                     current_app.logger.error(error_message)
                     return False, None, error_message
 
                 # Handle server errors (5xx) - retry
-                last_error = f"Server error {response.status_code}: {response.text}"
+                error_detail = self._format_error_message(response)
+                last_error = f"Server error {response.status_code}: {error_detail}"
                 current_app.logger.warning(
                     f"Heleket API error (attempt {attempt + 1}/{self.max_retries}): {last_error}"
                 )
@@ -187,6 +192,57 @@ class HeleketClient:
         error_message = f"Request failed after {self.max_retries} attempts: {last_error}"
         current_app.logger.error(error_message)
         return False, None, error_message
+
+    @staticmethod
+    def _format_error_message(response: Any) -> str:
+        """Return a concise, human-friendly error extracted from a response."""
+        content_type = ""
+        headers = getattr(response, "headers", None)
+        if isinstance(headers, dict):
+            content_type = headers.get("Content-Type", "")
+        elif headers is not None:
+            # Some mocking frameworks use CaseInsensitiveDict-like objects
+            content_type = headers.get("Content-Type", "")
+
+        if not isinstance(content_type, str):
+            content_type = ""
+
+        text_payload = ""
+        if "application/json" in content_type.lower():
+            try:
+                payload = response.json()
+            except Exception:  # pragma: no cover - safeguard for malformed JSON
+                payload = None
+
+            if isinstance(payload, dict):
+                text_payload = payload.get("message") or payload.get("error") or json.dumps(payload)
+            elif payload is not None:
+                text_payload = json.dumps(payload)
+        else:
+            raw_text = getattr(response, "text", "") or ""
+            if raw_text:
+                # Strip HTML tags to avoid leaking markup to the UI
+                if "<" in raw_text and ">" in raw_text:
+                    text_payload = getattr(response, "reason", "") or re.sub(r"<[^>]+>", " ", raw_text)
+                else:
+                    text_payload = raw_text
+
+        if not text_payload:
+            text_payload = getattr(response, "reason", "") or ""
+
+        text_payload = re.sub(r"\s+", " ", text_payload).strip()
+        if response is not None and hasattr(response, "status_code"):
+            status_str = str(getattr(response, "status_code", ""))
+            if text_payload.startswith(status_str):
+                text_payload = text_payload[len(status_str):].strip(" -:")
+
+        if not text_payload:
+            text_payload = "Erro desconhecido"
+
+        if len(text_payload) > 200:
+            text_payload = textwrap.shorten(text_payload, width=200, placeholder="…")
+
+        return text_payload
 
     def create_payout(
         self,

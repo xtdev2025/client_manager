@@ -6,7 +6,7 @@ from inspect import signature
 from flask import flash, redirect, request, url_for
 
 from app.repositories.base import CrudRepositoryProtocol
-from app.schemas.crud import FormModel, parse_form
+from app.schemas.forms import FormModel, parse_form
 from app.services.audit_helper import log_creation, log_deletion, log_update
 from app.utils.crud import CrudOperationResult
 

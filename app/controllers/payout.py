@@ -12,7 +12,7 @@ from flask_login import login_required
 
 from app import csrf
 from app.models.client_crypto_payout import ClientCryptoPayout
-from app.services.audit_service import AuditService
+from app.services.audit_helper import log_change
 from app.services.payout_reconciliation_service import PayoutReconciliationService
 from app.controllers.auth import admin_required
 
@@ -124,15 +124,15 @@ def handle_webhook() -> Response:
 
     ClientCryptoPayout.mark_webhook_received(payout_id)
 
-    AuditService.log_action(
-        action="webhook",
-        entity_type="payout",
+    log_change(
+        "payout",
+        "webhook",
         entity_id=payout_id,
-        details={
+        payload={
             "status": status,
             "heleket_transaction_id": transaction_id,
         },
-        user_id="heleket_webhook",
+        actor_user_id="heleket_webhook",
         ip_address=request.remote_addr,
     )
 
@@ -169,11 +169,11 @@ def reconcile_now() -> Response:
         lookback_days=lookback,
     )
 
-    AuditService.log_action(
-        action="reconcile_manual",
-        entity_type="payout",
+    log_change(
+        "payout",
+        "reconcile_manual",
         entity_id=None,
-        details={
+        payload={
             "results": results,
             "limit": limit,
             "min_delay": min_delay,

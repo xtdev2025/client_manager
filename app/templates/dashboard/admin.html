@@ -1,4 +1,12 @@
 {% set info_active_percentage = (active_infos / info_count * 100) if info_count > 0 else 0 %}
+{% set payout_summary = payout_insights.summary %}
+{% set payout_total = payout_summary['total_count'] %}
+{% set payout_amount = payout_summary['total_amount'] %}
+{% set payout_confirmed = payout_summary['confirmed']['count'] %}
+{% set payout_pending = payout_summary['pending']['count'] %}
+{% set payout_failed = payout_summary['failed']['count'] %}
+{% set payout_success_rate = payout_summary['confirmation_rate'] %}
+{% set payout_trend_is_positive = payout_success_rate >= 70 and payout_summary['failed_rate'] <= 10 %}
 
 <section class="dashboard-section">
     <div class="dashboard-header">
@@ -19,6 +27,38 @@
 
 <section class="dashboard-section">
     <div class="row g-3">
+        <div class="col-12 col-sm-6 col-xl-3">
+            <article class="stat-card dashboard-stat success">
+                <div class="stat-card-icon bg-success-subtle text-success">
+                    <i class="fas fa-coins"></i>
+                </div>
+                <div class="stat-number">
+                    {% if payout_total > 0 %}
+                        R$ {{ "%.2f"|format(payout_amount|float) }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </div>
+                <div class="stat-label">Pagamentos {{ payout_summary['period_days'] }} dias</div>
+                {% if payout_total > 0 %}
+                <p class="stat-meta">
+                    <i class="fas fa-check-circle me-1 text-success"></i>{{ payout_confirmed }} confirmados · {{ payout_pending }} pendentes · {{ payout_failed }} atenção
+                </p>
+                <span class="badge {% if payout_trend_is_positive %}bg-success-subtle text-success{% else %}bg-warning-subtle text-warning{% endif %}">
+                    <i class="fas {% if payout_trend_is_positive %}fa-arrow-trend-up{% else %}fa-arrow-trend-down{% endif %} me-1"></i>
+                    Taxa de sucesso {{ payout_success_rate|round(1) }}%
+                </span>
+                {% else %}
+                <p class="stat-meta text-muted">Integração Heleket aguardando movimentação.</p>
+                <span class="badge bg-secondary-subtle text-secondary">
+                    <i class="fas fa-plug me-1"></i>Configure credenciais Heleket
+                </span>
+                {% endif %}
+                <a class="stat-link" href="{{ url_for('client.list_clients') }}#payout-ready" data-cta="view-payout-history" data-section="dashboard-stats">
+                    Ver histórico <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </article>
+        </div>
         <div class="col-12 col-sm-6 col-xl-3">
             <article class="stat-card dashboard-stat">
                 <div class="stat-card-icon bg-primary-subtle text-primary">

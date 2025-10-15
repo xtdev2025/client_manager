@@ -11,7 +11,7 @@ from flask import current_app
 
 from app import mongo
 from app.models.client_crypto_payout import ClientCryptoPayout
-from app.services.audit_service import AuditService
+from app.services.audit_helper import log_change
 from app.services.heleket_client import HeleketClient, HeleketError
 
 
@@ -339,11 +339,11 @@ class PayoutReconciliationService:
 
     @staticmethod
     def _log_audit(action: str, payout_id: str, details: Dict[str, Any]) -> None:
-        AuditService.log_action(
-            action=action,
-            entity_type="payout",
+        log_change(
+            "payout",
+            action,
             entity_id=payout_id,
-            details=details,
-            user_id="payout_reconciliation",
+            payload=details,
+            actor_user_id="payout_reconciliation",
             ip_address="system",
         )

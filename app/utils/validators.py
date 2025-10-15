@@ -5,14 +5,12 @@ from typing import Any, Dict, Optional, Tuple
 
 from pydantic import ValidationError
 
-from app.schemas.user_schemas import (
-    AdminCreateSchema,
-    ClientCreateSchema,
-    DomainCreateSchema,
-    LoginSchema,
-    PlanCreateSchema,
-    UserCreateSchema,
-)
+from app.schemas.admin import AdminCreateSchema
+from app.schemas.auth import LoginSchema
+from app.schemas.client import ClientCreateSchema
+from app.schemas.domain import DomainCreateSchema
+from app.schemas.plan import PlanCreateSchema
+from app.schemas.user import UserCreateSchema
 
 
 def validate_user_create(

@@ -138,31 +138,39 @@ logs = AuditService.get_recent_logs(limit=50, entity_type='admin')
 
 ### 3. Schemas (`app/schemas/`)
 
-Validação de dados usando Pydantic.
+A camada de validação está dividida em módulos por domínio, todos apoiados por um núcleo comum para serialização e normalização de dados.
 
-**Schemas Disponíveis:**
+**Infraestrutura compartilhada**
 
-- `UserCreateSchema` - Criação de usuários
-- `AdminCreateSchema` - Criação de admins
-- `ClientCreateSchema` - Criação de clientes
-- `PlanCreateSchema` - Criação de planos
-- `DomainCreateSchema` - Criação de domínios
+- `base.py`: fornece `MongoDocumentSchema`, `MongoPayloadSchema`, `MongoUpdateSchema` e `PyObjectId` para interoperar com o MongoDB.
+- `forms.py`: expõe `FormModel`, `UpdateFormModel` e `parse_form()` para consumir `request.form` do Flask, tratar strings vazias e gerar payloads prontos para persistência.
+
+**Módulos por domínio**
+
+- `user.py`: `UserCreateSchema`, `UserUpdateSchema`
+- `admin.py`: `AdminCreateSchema`
+- `auth.py`: `LoginSchema`
+- `client.py`: `ClientCreateSchema`, `ClientUpdateSchema`
+- `info.py`: `InfoCreateSchema`, `InfoUpdateSchema`
+- `plan.py`: `PlanCreateSchema`, `PlanUpdateSchema`
+- `domain.py`: `DomainCreateSchema`, `DomainUpdateSchema`
+- `template.py`: `TemplateCreateSchema`, `TemplateUpdateSchema`
+
+Os módulos históricos `crud.py` e `user_schemas.py` foram mantidos como shims com `DeprecationWarning`, facilitando a migração de código legado.
 
 ```python
-from app.schemas.user_schemas import ClientCreateSchema
-from pydantic import ValidationError
+from app.schemas.forms import parse_form
+from app.schemas.plan import PlanCreateSchema
+from app.models.plan import Plan
 
-try:
-    validated = ClientCreateSchema(
-        username='testuser',
-        password=os.getenv('DEFAULT_PASSWORD', 'secure_password'),
-        plan_id='507f1f77bcf86cd799439011',
-        status='active'
-    )
-    # Dados válidos, prosseguir
-except ValidationError as e:
-    # Tratar erros de validação
-    print(e.errors())
+schema, errors = parse_form(PlanCreateSchema, request.form)
+if errors:
+    current_app.logger.warning("Erro de validação: %s", errors)
+else:
+    payload = schema.to_payload()  # Campos normalizados, prontos para o serviço
+    success, result = Plan.create(**payload)
+    if not success:
+        current_app.logger.error("Falha ao criar plano: %s", result)
 ```
 
 ### 4. Controllers (`app/controllers/`)

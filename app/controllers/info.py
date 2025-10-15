@@ -8,7 +8,7 @@ from app.models.domain import Domain
 from app.models.info import Info
 from app.models.template import Template
 from app.repositories.base import ModelCrudRepository
-from app.schemas.crud import InfoCreateSchema, InfoUpdateSchema
+from app.schemas.info import InfoCreateSchema, InfoUpdateSchema
 from app.views.info_view import InfoView
 from app.utils.crud import CrudOperationResult
 

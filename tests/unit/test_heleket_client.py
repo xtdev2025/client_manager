@@ -173,6 +173,8 @@ class TestHeleketClient:
             mock_response = Mock()
             mock_response.status_code = 400
             mock_response.text = "Invalid wallet address"
+            mock_response.headers = {"Content-Type": "text/plain"}
+            mock_response.reason = "Bad Request"
             mock_request.return_value = mock_response
 
             success, data, error = client.create_payout(
@@ -187,6 +189,30 @@ class TestHeleketClient:
             assert data is None
             assert "Client error 400" in error
             # Should not retry on client errors
+            assert mock_request.call_count == 1
+
+    @patch("app.services.heleket_client.requests.request")
+    def test_create_payout_client_error_html(self, mock_request, client, app):
+        """Test payout creation with HTML error response is sanitized."""
+        with app.app_context():
+            mock_response = Mock()
+            mock_response.status_code = 404
+            mock_response.text = "<html><title>404 Not Found</title><body>Not Found</body></html>"
+            mock_response.headers = {"Content-Type": "text/html"}
+            mock_response.reason = "Not Found"
+            mock_request.return_value = mock_response
+
+            success, data, error = client.create_payout(
+                wallet_address="invalid",
+                asset="USDT",
+                network="TRON",
+                amount=100,
+                idempotency_key="key123",
+            )
+
+            assert success is False
+            assert data is None
+            assert error == "Client error 404: Not Found"
             assert mock_request.call_count == 1
 
     @patch("app.services.heleket_client.requests.request")

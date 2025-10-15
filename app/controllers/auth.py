@@ -8,7 +8,7 @@ from app import limiter
 from app.models.admin import Admin
 from app.models.client import Client
 from app.models.user import User
-from app.services.audit_service import AuditService
+from app.services.audit_helper import log_change, log_creation
 from app.services.auth_service import AuthService
 from app.views.auth_view import AuthView
 
@@ -108,7 +108,7 @@ def logout():
     )
 
     if user_id:
-        AuditService.log_admin_action("logout", user_id, {"username": username})
+        log_change("admin", "logout", entity_id=str(user_id), payload={"username": username})
 
     logout_user()
     session.pop("user_type", None)
@@ -184,7 +184,11 @@ def register_admin():
 
         if success:
             # Log the admin creation in audit trail
-            AuditService.log_admin_action("create", message, {"role": role})
+            log_creation(
+                "admin",
+                entity_id=message,
+                payload={"username": username, "role": role},
+            )
             flash("Admin registration successful!", "success")
             return redirect(url_for("admin.list_admins"))
         else:

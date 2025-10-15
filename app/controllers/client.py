@@ -14,9 +14,9 @@ from app.models.domain import Domain
 from app.models.plan import Plan
 from app.models.template import Template
 from app.repositories.base import ModelCrudRepository
-from app.schemas.crud import ClientCreateSchema, ClientUpdateSchema, parse_form
-from app.services.audit_helper import log_update
-from app.services.audit_service import AuditService
+from app.schemas.client import ClientCreateSchema, ClientUpdateSchema
+from app.schemas.forms import parse_form
+from app.services.audit_helper import log_creation, log_update
 from app.services.payout_orchestration_service import PayoutOrchestrationService
 from app.views.client_view import ClientView
 from app.utils.crud import CrudOperationResult
@@ -433,11 +433,10 @@ def initiate_payout(client_id):
     payout_id = payload.get("payout_id") if payload else None
     status = payload.get("status") if payload else None
 
-    AuditService.log_action(
-        action="create",
-        entity_type="payout",
+    log_creation(
+        "payout",
         entity_id=payout_id,
-        details={
+        payload={
             "client_id": str(client_id),
             "asset": asset,
             "network": network,

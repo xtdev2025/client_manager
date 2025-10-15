@@ -7,7 +7,7 @@ import pytest
 
 from app.controllers.crud_mixin import CrudControllerMixin
 from app.repositories.base import CrudRepositoryProtocol
-from app.schemas.crud import FormModel
+from app.schemas.forms import FormModel
 from app.utils.crud import CrudOperationResult
 from app.views.base_view import BaseView
 

@@ -30,7 +30,17 @@ Adicione ao seu `.env` ou `.env.local`:
 HELEKET_PROJECT_URL=https://api.heleket.com
 HELEKET_MERCHANT_ID=your-merchant-id
 HELEKET_API_KEY=your-api-key
+HELEKET_WEBHOOK_SECRET=shared-secret-for-hmac
 ```
+
+> ✅ **Checklist de ambiente**
+>
+> | Variável | Finalidade |
+> | --- | --- |
+> | `HELEKET_PROJECT_URL` | Endpoint base da API Heleket |
+> | `HELEKET_MERCHANT_ID` | Identificador fornecido pela Heleket |
+> | `HELEKET_API_KEY` | Chave de acesso à API |
+> | `HELEKET_WEBHOOK_SECRET` | Segredo para validar `X-Heleket-Signature` no webhook |
 
 ### 2. Exemplo de Uso
 
@@ -80,17 +90,58 @@ if success:
 - [x] Mapeamento de dados e gatilhos de negócio
 - [x] Configuração segura de credenciais
 - [x] Cliente da API Heleket
-- [x] Modelo de persistência client_crypto_payouts
+- [x] Modelo de persistência `client_crypto_payouts`
 
-### 🔄 Sprint 2: Orquestração (Próxima)
-- [ ] Serviço de orquestração de pagamentos
-- [ ] Workflow administrativo (UI)
-- [ ] Tratamento de callbacks/webhooks
+### ✅ Sprint 2: Orquestração (Concluída)
+- [x] Serviço `PayoutOrchestrationService` integrando formulário admin + API Heleket
+- [x] Workflow administrativo (`clients/manage.html`) com CTA de payout
+- [x] Webhook `/payouts/webhook` com validação `HELEKET_WEBHOOK_SECRET`
 
-### 📋 Sprint 3: Monitoramento (Planejada)
-- [ ] Reconciliação e monitoramento
-- [ ] Analytics e KPIs
-- [ ] Testes e QA completos
+### 🔄 Sprint 3: Monitoramento (Em andamento)
+- [x] Reconciliação automática (`PayoutReconciliationService` + comando CLI `flask reconcile-payouts`)
+- [x] Analytics e KPIs expostos nos dashboards administrativos
+- [ ] Testes end-to-end e QA exploratório
+
+> **Próximos passos**: expandir cenários de testes integrados (simulação end-to-end com dados reais) e instrumentar alertas de falha em canais internos.
+
+## 🔄 Fluxo ponta a ponta (Dashboard ⇄ Heleket)
+
+```mermaid
+sequenceDiagram
+    participant Admin as Admin
+    participant Dashboard as Dashboard UI
+    participant Backend as Flask Backend
+    participant Orchestration as PayoutOrchestrationService
+    participant Heleket as Heleket API
+    participant Webhook as /payouts/webhook
+
+    Admin->>Dashboard: Solicita payout para um cliente
+    Dashboard->>Backend: POST /clients/{id}/payout
+    Backend->>Orchestration: orchestrate(payload)
+    Orchestration->>Heleket: POST /payouts (credenciais HELEKET_*)
+    Heleket-->>Orchestration: status + transaction_id
+    Orchestration->>Backend: Atualiza ClientCryptoPayout + auditoria
+    Backend-->>Dashboard: Feedback para o operador
+    Heleket-->>Webhook: POST atualização de status
+    Webhook->>Backend: Valida HMAC (HELEKET_WEBHOOK_SECRET)
+    Backend->>Dashboard: Atualiza métricas e logs
+```
+
+## 🧱 Arquitetura & Schemas
+
+- **Pydantic + Forms**: Os formulários administrativos reutilizam `FormModel`/`UpdateFormModel` (`app/schemas/forms.py`) para validar entradas, gerar payloads e mascarar campos sensíveis. Schemas específicos de payout vivem em `app/schemas/client.py` e `app/schemas/domain.py`, seguindo o padrão modular estabelecido na refatoração CRUD.
+- **Persistência**: `ClientCryptoPayout` centraliza regras, índices (`heleket_transaction_id`) e auditoria. Utilize os métodos da model para atualizar status e payloads.
+- **Serviços**: `PayoutOrchestrationService` e `PayoutReconciliationService` encapsulam chamadas Heleket, mantendo idempotência e logging consistente via `audit_helper`.
+- **Dashboards**: Métricas expostas na UI consomem as agregações do modelo (`ClientCryptoPayout.get_statistics`) e geram `payout_insights` para os templates.
+- **Extensibilidade**: Novos fluxos (ex.: bônus por campanha) devem criar seus próprios schemas/formulários, reutilizando o mesmo pipeline de orquestração.
+
+## 🌐 Endpoints & Rotinas
+
+- `POST /clients/<client_id>/payout`: dispara orquestração manual (administrativo)
+- `POST /payouts/reconcile`: reconciliação manual via painel admin
+- `POST /payouts/webhook`: recebe callbacks Heleket (assinado com `HELEKET_WEBHOOK_SECRET`)
+- `flask reconcile-payouts`: comando CLI para agendar reconciliação automática
+- Dashboards consomem `GET /dashboard/api/admin-stats` e `GET /dashboard/api/admin-clicks` para alimentar KPIs de payout
 
 ## 🔐 Segurança
 

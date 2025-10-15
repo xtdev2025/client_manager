@@ -1365,19 +1365,42 @@ O projeto agora implementa uma **camada de serviços** para separar a lógica de
 
 ### Validação com Pydantic (`app/schemas/`)
 
-Schemas de validação para garantir integridade dos dados:
+Os schemas agora são organizados por domínio e compartilham um núcleo comum.
 
-- **UserCreateSchema**: Validação de criação de usuários
-- **ClientCreateSchema**: Validação específica para clientes
-- **AdminCreateSchema**: Validação específica para admins
-- **PlanCreateSchema**: Validação de planos
-- **DomainCreateSchema**: Validação de domínios
+**Camada central**
+
+- `base.py`: helpers `MongoDocumentSchema`, `MongoPayloadSchema`, `MongoUpdateSchema` e `PyObjectId` para serializar ObjectIds com segurança.
+- `forms.py`: `FormModel`, `UpdateFormModel` e `parse_form()` normalizam `request.form`, convertem strings vazias em `None` e produzem payloads prontos para o MongoDB.
+
+**Schemas por domínio**
+
+- `user.py`: `UserCreateSchema`, `UserUpdateSchema`
+- `admin.py`: `AdminCreateSchema`
+- `auth.py`: `LoginSchema`
+- `client.py`: `ClientCreateSchema`, `ClientUpdateSchema`
+- `info.py`: `InfoCreateSchema`, `InfoUpdateSchema`
+- `plan.py`: `PlanCreateSchema`, `PlanUpdateSchema`
+- `domain.py`: `DomainCreateSchema`, `DomainUpdateSchema`
+- `template.py`: `TemplateCreateSchema`, `TemplateUpdateSchema`
+
+Os arquivos legados `crud.py` e `user_schemas.py` permanecem como *shims* com `DeprecationWarning`, permitindo migração gradual.
+
+```python
+from app.schemas.forms import parse_form
+from app.schemas.client import ClientCreateSchema
+
+schema, errors = parse_form(ClientCreateSchema, request.form)
+if errors:
+  flash(errors[0], "danger")
+else:
+  payload = schema.to_payload()  # Campos normalizados e sem valores vazios
+```
 
 **Benefícios**:
 
-- ✅ Validação robusta e centralizada
-- ✅ Type safety com hints
-- ✅ Mensagens de erro descritivas
+- ✅ Validação robusta e centralizada por domínio
+- ✅ Payloads coerentes para controllers, services e repositórios
+- ✅ Mensagens de erro descritivas com cobertura de testes
 
 ### Rate Limiting com Flask-Limiter
 

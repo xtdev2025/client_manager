@@ -8,13 +8,16 @@ O novo sistema de dashboard enterprise foi desenvolvido para fornecer uma visão
 
 ### Dashboard Administrativo
 
-- **Estatísticas Gerais**: Total de clientes, infos, domínios, planos e templates
+- **Spotlight de Pagamentos**: Faixa superior dedicada aos KPIs Heleket (pagos, pendentes, intervenção) com CTA direto para o funil de payouts e indicador de tendência.
+- **Cards Estatísticos**: Total de clientes, infos, domínios, planos, templates, admins e clicks recentes em layout responsivo.
 - **Gráficos Interativos**:
   - Distribuição de planos (gráfico de rosca)
   - Status dos clientes (gráfico de barras)
-- **Atividade Recente**: Logs de login dos usuários
-- **Ações Rápidas**: Links diretos para criação de novos recursos
-- **Métricas de Crescimento**: Novos clientes e infos no mês
+  - Status dos pagamentos (gráfico de rosca)
+  - Evolução de clicks administrativos (gráfico de linha)
+- **Atividade Recente**: Logs de login, últimos clicks e resumo do sistema em painéis dedicados.
+- **Ações Rápidas**: Links diretos para criação de recursos, disparo de payouts e navegação para logs.
+- **Métricas de Crescimento**: Novos clientes e infos no mês, com badges de variação.
 
 ### Dashboard do Cliente
 
@@ -26,12 +29,9 @@ O novo sistema de dashboard enterprise foi desenvolvido para fornecer uma visão
 - **Visão Geral**: Domínios e infos recentes
 - **Ações Rápidas**: Acesso direto às funcionalidades principais
 
-### Dashboard Simplificado
+### Layout legacy
 
-- Versão básica sem gráficos para usuários que preferem simplicidade
-- Estatísticas essenciais em formato de cards
-- Ações rápidas organizadas
-- Interface limpa e responsiva
+Uma versão pré-Enterprise (`dashboard/admin.html` e `dashboard/client.html`) permanece no código para compatibilidade, mas o fluxo padrão aponta para os templates `*_enterprise.html`. Use apenas como fallback.
 
 ## Estrutura Técnica
 
@@ -64,19 +64,20 @@ O novo sistema de dashboard enterprise foi desenvolvido para fornecer uma visão
 
 #### Endpoints para Gráficos
 
-- `GET /dashboard/api/clicks-chart?days=30` - Dados para gráfico de clicks
-- `GET /dashboard/api/domain-stats` - Estatísticas por domínio
-- `GET /dashboard/api/admin-stats` - Estatísticas administrativas
+- `GET /dashboard/api/admin-stats` - Estatísticas administrativas agregadas (planos, status, totais)
+- `GET /dashboard/api/admin-clicks` - Série temporal de clicks globais (30 dias)
+- `GET /dashboard/api/clicks-chart?days=30` - Dados de clicks para o dashboard do cliente
+- `GET /dashboard/api/domain-stats` - Estatísticas de clicks por domínio para clientes
 
 ### Tecnologias Utilizadas
 
 #### Frontend
 
-- **Chart.js** - Biblioteca para gráficos interativos
-- **Bootstrap 4** - Framework CSS para responsividade
-- **Font Awesome** - Ícones
-- **CSS3** - Gradientes e animações modernas
-- **JavaScript ES6** - Funcionalidades interativas
+- **Chart.js 4** - Biblioteca para gráficos interativos (distribuições, linha, status payouts)
+- **Bootstrap 5.3** - Framework CSS para responsividade e componentes utilitários
+- **Font Awesome 6** - Ícones
+- **CSS3/SCSS** - Gradientes, skeleton loaders e animações modernas
+- **JavaScript ES6** - Funcionalidades interativas e acessibilidade
 
 #### Backend
 
@@ -117,14 +118,16 @@ O novo sistema de dashboard enterprise foi desenvolvido para fornecer uma visão
 
 - **Distribuição de Planos**: Rosca mostrando quantos clientes por plano
 - **Status dos Clientes**: Barras mostrando clientes ativos/inativos
+- **Status dos Pagamentos**: Rosca destacando pendentes, confirmados e falhos
+- **Clicks Administrativos**: Linha temporal dos últimos 30 dias
 
 ## Responsividade
 
-O dashboard foi desenvolvido com design responsivo:
+O dashboard foi desenvolvido com design responsivo e mobile-first:
 
-- **Desktop**: Layout completo com gráficos lado a lado
+- **Desktop**: Layout completo com gráficos lado a lado, KPI de pagamentos em destaque
 - **Tablet**: Gráficos empilhados, cards redimensionados
-- **Mobile**: Interface otimizada para toque, gráficos menores
+- **Mobile**: Interface otimizada para toque, colunas viram carrosséis verticais e skeleton loaders adaptam a altura
 
 ## Performance
 
@@ -160,9 +163,9 @@ O dashboard foi desenvolvido com design responsivo:
 
 ### Atualizações Futuras
 
-- Novos tipos de gráficos podem ser facilmente adicionados
-- Sistema modular permite extensões
-- APIs RESTful facilitam integrações
+- Evoluir alertas proativos para pagamentos (webhooks Heleket) com notificações no dashboard
+- Permitir alternância de períodos nos charts administrativos (7/30/90 dias)
+- Integrar testes A/B para textos e CTAs principais via atributos `data-cta`
 
 ## Como Usar
 
