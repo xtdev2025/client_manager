@@ -61,20 +61,21 @@ Toda a documentação técnica está organizada em [`docs/`](docs/):
 
 ## 🎯 Visão Geral
 
-O **Client Manager** é uma aplicação web desenvolvida em Flask que permite gerenciar clientes, administradores, planos de assinatura, templates e domínios de forma integrada. O sistema implementa autenticação segura, controle de permissões hierárquico e auditoria de acessos.
+O **Client Manager** é uma aplicação web desenvolvida em Flask que permite gerenciar clientes, administradores, planos de assinatura, templates e domínios de forma integrada. O sistema implementa autenticação segura, controle de permissões hierárquico, auditoria de acessos e **integração completa com pagamentos em criptomoedas via Heleket**.
 
 ### Principais Características
 
 - 🔐 **Autenticação Segura**: Sistema completo de login/logout com hash de senhas (bcrypt)
 - 👥 **RBAC (Role-Based Access Control)**: Controle granular de permissões (super_admin, admin, client)
-- 📊 **Dashboard Dinâmico**: Painéis específicos para cada tipo de usuário
+- 📊 **Dashboard Dinâmico**: Painéis específicos para cada tipo de usuário com KPIs e métricas
+- 💰 **Pagamentos em Cripto (Heleket)**: Integração completa para payouts em criptomoedas
 - 📝 **Gestão de Clientes**: CRUD completo com status, planos e informações detalhadas
 - 💳 **Informações Bancárias**: Gerenciamento seguro de dados bancários por cliente
 - 🌐 **Gestão de Domínios**: Controle de domínios com integração Cloudflare e SSL
-- 📋 **Templates Customizáveis**: Sistema de templates para personalização
-- 💰 **Planos de Assinatura**: Gestão completa de planos com duração e preços
+- 📋 **Templates Customizáveis**: Sistema de templates Jinja2 para páginas personalizadas
+- 💼 **Planos de Assinatura**: Gestão completa de planos com duração e preços
 - 📅 **Controle de Expiração**: Monitoramento automático de vencimento de planos
-- 📜 **Auditoria de Acessos**: Registro completo de logins (IP, user-agent, timestamp)
+- 📜 **Auditoria Completa**: Registro detalhado de logins e operações sensíveis (IP, user-agent, timestamp)
 
 ---
 
@@ -153,6 +154,18 @@ O **Client Manager** é uma aplicação web desenvolvida em Flask que permite ge
 - ✅ Associação com templates e domínios
 - ✅ Status ativo/inativo por registro
 
+### 💰 Pagamentos em Criptomoedas (Heleket)
+
+- ✅ **Integração Heleket**: Cliente completo da API para payouts em cripto
+- ✅ **Workflow Administrativo**: Formulário guiado para iniciar payouts via dashboard
+- ✅ **Webhooks**: Endpoint seguro `/payouts/webhook` com validação HMAC
+- ✅ **Rastreamento de Status**: Histórico completo com `statusHistory` e estados normalizados
+- ✅ **Reconciliação Automática**: Serviço de polling para atualização de status via comando CLI
+- ✅ **Dashboard KPIs**: Cards de métricas (volume total, taxa de sucesso, payouts pendentes)
+- ✅ **Preferências de Carteira**: Persistência de endereço/ativo/rede por cliente
+- ✅ **Auditoria Completa**: Logs centralizados com metadados de ator/IP para todas operações
+- ✅ **Health-checks**: Endpoints `/health` e `/payouts/webhook/health` para monitoramento
+
 ### 📜 Auditoria e Logs
 
 - ✅ Registro de todos os logins
@@ -161,6 +174,7 @@ O **Client Manager** é uma aplicação web desenvolvida em Flask que permite ge
 - ✅ Timestamp preciso (UTC)
 - ✅ Histórico por usuário
 - ✅ Logs de eventos do sistema
+- ✅ **Auditoria centralizada** via `audit_helper` com metadados opcionais
 
 ---
 
@@ -197,22 +211,41 @@ O projeto segue o padrão **MVC (Model-View-Controller)** com separação clara 
 - Interação com o MongoDB
 - Validações de negócio
 - Operações CRUD
-- **Classes**: `User`, `Admin`, `Client`, `Plan`, `Template`, `Domain`, `Info`, `LoginLog`
+- **Classes**: `User`, `Admin`, `Client`, `Plan`, `Template`, `Domain`, `Info`, `LoginLog`, `Click`, `ClientCryptoPayout`
+
+#### **Services** (`app/services/`)
+
+- Lógica de negócio isolada
+- Orquestração de operações complexas
+- Integração com APIs externas
+- **Serviços**: `AuthService`, `ClientService`, `AuditService`, `HeleketClient`, `PayoutOrchestrationService`, `PayoutReconciliationService`
+
+#### **Schemas** (`app/schemas/`)
+
+- Validação de dados com Pydantic
+- Definição de contratos de API
+- Serialização e deserialização
+- **Schemas**: Validação para todas as entidades principais
 
 #### **Controllers** (`app/controllers/`)
 
 - Processamento de requisições HTTP
-- Lógica de negócio
 - Validação de permissões
-- Manipulação de formulários
-- **Blueprints**: `auth`, `admin`, `client`, `plan`, `template`, `domain`, `info`, `main`
+- Manipulação de formulários e rotas
+- **Blueprints**: `auth`, `admin`, `client`, `plan`, `template`, `domain`, `info`, `main`, `dashboard`, `payout`, `public_template`
 
 #### **Views** (`app/views/`)
 
 - Renderização de templates
 - Preparação de dados para exibição
 - Camada de apresentação
-- **Classes**: `AuthView`, `AdminView`, `ClientView`, `PlanView`, `TemplateView`, `DomainView`, `InfoView`
+- **Classes**: `AuthView`, `AdminView`, `ClientView`, `PlanView`, `TemplateView`, `DomainView`, `InfoView`, `BaseView`
+
+#### **Repositories** (`app/repositories/`)
+
+- Camada de acesso a dados
+- Abstração do MongoDB
+- Queries otimizadas
 
 #### **Templates** (`app/templates/`)
 
@@ -268,20 +301,14 @@ O projeto segue o padrão **MVC (Model-View-Controller)** com separação clara 
 #### Azure
 
 - 📘 **[Guia Completo Azure](docs/AZURE_DEPLOYMENT.md)** - App Service + VM
-- ⚡ **[Quick Start Azure](DEPLOY_AZURE.md)** - Deploy em 5 minutos
-
-```bash
-python scripts/azure_deploy.py  # Deploy automático
-```
 
 #### AWS (Amazon Web Services)
 
 - 📕 **[Guia Completo AWS](docs/AWS_DEPLOYMENT.md)** - 4 opções (EB, EC2, ECS, Lambda)
-- ⚡ **[Quick Start AWS](DEPLOY_AWS.md)** - Deploy em 10 minutos
+- 📋 **[Deploy to EC2](docs/DEPLOY_TO_EC2.md)** - Guia específico EC2
 
 ```bash
-python scripts/aws_eb_deploy.py   # Elastic Beanstalk (Recomendado)
-python scripts/aws_ec2_deploy.py  # EC2 (Mais barato)
+python scripts/deploy_to_ec2.py   # Deploy para EC2
 ```
 
 **Opções de Deploy:**
@@ -610,6 +637,8 @@ client_manager/
 ├── app/                          # Aplicação principal
 │   ├── __init__.py              # Factory pattern e inicialização
 │   ├── db_init.py               # Inicialização do banco de dados
+│   ├── template_loader.py       # Carregador de templates Jinja2
+│   ├── templates_data.py        # Dados de templates (refatorado)
 │   │
 │   ├── controllers/             # Controladores (Blueprints)
 │   │   ├── __init__.py
@@ -620,9 +649,13 @@ client_manager/
 │   │   ├── template.py         # Gestão de templates
 │   │   ├── domain.py           # Gestão de domínios
 │   │   ├── info.py             # Gestão de informações bancárias
-│   │   └── main.py             # Rotas principais (index, dashboard)
+│   │   ├── dashboard.py        # Dashboards e KPIs
+│   │   ├── payout.py           # Payouts Heleket (webhooks e reconciliação)
+│   │   ├── public_template.py  # Templates públicos
+│   │   ├── main.py             # Rotas principais (index, health)
+│   │   └── crud_mixin.py       # Mixin CRUD reutilizável
 │   │
-│   ├── models/                  # Modelos de dados
+│   ├── models/                  # Modelos de dados (MongoDB)
 │   │   ├── __init__.py
 │   │   ├── user.py             # Classe base User
 │   │   ├── admin.py            # Modelo Admin (herda User)
@@ -631,7 +664,25 @@ client_manager/
 │   │   ├── template.py         # Modelo Template
 │   │   ├── domain.py           # Modelo Domain
 │   │   ├── info.py             # Modelo Info (dados bancários)
-│   │   └── login_log.py        # Modelo LoginLog (auditoria)
+│   │   ├── login_log.py        # Modelo LoginLog (auditoria)
+│   │   ├── click.py            # Modelo Click (rastreamento)
+│   │   └── client_crypto_payout.py  # Modelo de payouts Heleket
+│   │
+│   ├── services/                # Serviços de negócio
+│   │   ├── __init__.py
+│   │   ├── auth_service.py     # Serviço de autenticação
+│   │   ├── client_service.py   # Serviço de clientes
+│   │   ├── audit_service.py    # Serviço de auditoria (legado)
+│   │   ├── audit_helper.py     # Helper de auditoria centralizado
+│   │   ├── heleket_client.py   # Cliente da API Heleket
+│   │   ├── payout_orchestration_service.py  # Orquestração de payouts
+│   │   └── payout_reconciliation_service.py # Reconciliação automática
+│   │
+│   ├── schemas/                 # Schemas Pydantic (validação)
+│   │   └── [validação de dados para todas as entidades]
+│   │
+│   ├── repositories/            # Camada de acesso a dados
+│   │   └── [abstração do MongoDB]
 │   │
 │   ├── views/                   # Camada de apresentação
 │   │   ├── __init__.py
@@ -644,6 +695,15 @@ client_manager/
 │   │   ├── domain_view.py      # Views de domínios
 │   │   ├── info_view.py        # Views de informações
 │   │   └── main_view.py        # Views principais
+│   │
+│   ├── paginas/                 # Templates Jinja2 para páginas customizadas
+│   │   ├── README.md           # Documentação do sistema de templates
+│   │   ├── base.html           # Template base
+│   │   ├── page_cpf.html       # Página de CPF
+│   │   ├── page_cartao.html    # Página de cartão
+│   │   ├── page_celular_senha6.html
+│   │   ├── page_dados_bancarios.html
+│   │   └── page_sucesso.html
 │   │
 │   ├── templates/               # Templates HTML (Jinja2)
 │   │   ├── layout.html         # Layout base
@@ -710,13 +770,7 @@ client_manager/
 │
 ├── scripts/                     # Scripts utilitários (Python)
 │   ├── create_superadmin.py    # Criar super admin manualmente
-│   ├── setup.py                # Setup automatizado do projeto
-│   ├── startup.py              # Script de inicialização (produção)
-│   ├── aws_eb_deploy.py        # Deploy AWS Elastic Beanstalk
-│   ├── aws_ec2_deploy.py       # Deploy AWS EC2
-│   ├── azure_deploy.py         # Deploy Azure App Service
-│   ├── test_workflows.py       # Testar workflows essenciais
-│   └── test_all_workflows.py   # Testar todos os workflows
+│   └── deploy_to_ec2.py        # Deploy para EC2
 │
 ├── tests/                       # Testes automatizados
 │   ├── __init__.py
@@ -729,19 +783,37 @@ client_manager/
 │       ├── test_auth_routes.py
 │       └── test_plan_routes.py
 │
+├── deploy/                      # Arquivos de deployment
+│   ├── README.md               # Playbook de deployment
+│   └── xpages.service          # Systemd service unit
+│
+├── docs/                        # Documentação técnica completa
+│   ├── INDEX.md                # Índice de toda documentação
+│   ├── ARCHITECTURE.md         # Arquitetura MVC + Services
+│   ├── HELEKET_README.md       # Integração de pagamentos
+│   ├── DASHBOARD_README.md     # Dashboard e KPIs
+│   └── [outros documentos...]
+│
 ├── .env                         # Variáveis de ambiente (não versionado)
 ├── .env.example                 # Exemplo de variáveis de ambiente
+├── .env.production.example      # Exemplo de variáveis para produção
 ├── .flake8                      # Configuração do Flake8
 ├── .gitignore                   # Arquivos ignorados pelo Git
-├── .husky/                      # Git hooks
-├── ARCHITECTURE.md              # Documentação da arquitetura
+├── .husky/                      # Git hooks (pre-commit)
+├── .pre-commit-config.yaml      # Configuração pre-commit
 ├── CODE_OF_CONDUCT.md           # Código de conduta
+├── CHANGELOG.md                 # Histórico completo de mudanças
+├── TODO.md                      # Backlog e sprints
 ├── config.py                    # Configurações da aplicação
+├── docker-compose.yml           # Configuração Docker
+├── Dockerfile                   # Imagem Docker
 ├── package.json                 # Dependências Node.js (Husky)
 ├── pytest.ini                   # Configuração do pytest
+├── pyproject.toml               # Configuração Python moderna
 ├── requirements.txt             # Dependências Python
+├── requirements-dev.txt         # Dependências de desenvolvimento
+├── reset_db.py                  # Resetar banco de dados
 ├── run.py                       # Ponto de entrada da aplicação
-├── TEMPLATE_FIELDS_SYSTEM.md    # Sistema de campos de templates
 └── README.md                    # Este arquivo
 ```
 
@@ -871,6 +943,52 @@ client_manager/
   "ip_address": String,
   "user_agent": String,
   "created_at": DateTime
+}
+```
+
+#### **client_crypto_payouts** (Heleket)
+
+```json
+{
+  "_id": ObjectId,
+  "client_id": ObjectId (ref: clients),
+  "external_id": String (unique, idempotência),
+  "wallet_address": String,
+  "asset": String (ex: "USDT", "BTC"),
+  "network": String (ex: "TRC20", "ERC20"),
+  "amount": Float,
+  "status": String ("pending", "processing", "completed", "failed", "cancelled"),
+  "statusHistory": Array[{
+    "status": String,
+    "changedAt": DateTime,
+    "source": String ("webhook" | "polling")
+  }],
+  "heleket_payout_id": String,
+  "transaction_hash": String,
+  "lastStatusCheckAt": DateTime,
+  "nextStatusCheckAt": DateTime,
+  "retryCount": Integer,
+  "alertState": String,
+  "initiated_by": ObjectId (ref: admins),
+  "createdAt": DateTime,
+  "updatedAt": DateTime
+}
+```
+
+#### **audit_logs**
+
+```json
+{
+  "_id": ObjectId,
+  "action": String,
+  "entity_type": String,
+  "entity_id": ObjectId,
+  "user_id": ObjectId,
+  "user_type": String,
+  "ip_address": String,
+  "user_agent": String,
+  "details": Object,
+  "timestamp": DateTime
 }
 ```
 
@@ -1347,7 +1465,7 @@ Vá ao GitHub e clique em "New Pull Request".
 - `aws_ec2_deploy.sh` → `aws_ec2_deploy.py`
 - `azure_deploy.sh` → `azure_deploy.py`
 
-📚 **Documentação**: [Migração Shell → Python](docs/MIGRATION_SHELL_TO_PYTHON.md) | [Scripts Documentation](docs/SCRIPTS_DOCUMENTATION.md)
+📚 **Documentação**: [Scripts Documentation](docs/SCRIPTS_DOCUMENTATION.md) | [Modernization Summary](docs/MODERNIZATION_SUMMARY.md)
 
 ### Camada de Serviços (`app/services/`)
 
@@ -1466,22 +1584,29 @@ tests/
 
 ### Documentos Técnicos
 
-- 📘 **[Arquitetura do Sistema](docs/ARCHITECTURE.md)** - Visão geral da arquitetura
+- 📘 **[Arquitetura do Sistema](docs/ARCHITECTURE.md)** - Visão geral da arquitetura MVC + Services
+- 🌐 **[Documentação de Rotas](docs/ROUTES_DOCUMENTATION.md)** - Todas as rotas da aplicação
 - 🔧 **[Scripts Python](docs/SCRIPTS_DOCUMENTATION.md)** - Documentação completa dos scripts
-- 🔄 **[Migração Shell→Python](docs/MIGRATION_SHELL_TO_PYTHON.md)** - Detalhes da conversão
-- 🚀 **[Deploy AWS](docs/AWS_DEPLOYMENT.md)** - Guia completo AWS
-- ☁️ **[Deploy Azure](docs/AZURE_DEPLOYMENT.md)** - Guia completo Azure
-- 🔐 **[Configuração AWS](docs/AWS_CREDENTIALS_SETUP.md)** - Setup de credenciais
-- 📋 **[Sistema de Templates](docs/TEMPLATE_FIELDS_SYSTEM.md)** - Campos de templates
-- 🔍 **[API Documentation](docs/API_DOCUMENTATION.md)** - Documentação da API
-- ⚡ **[API Quick Reference](docs/API_QUICK_REFERENCE.md)** - Referência rápida
-- 📊 **[Swagger Implementation](docs/SWAGGER_IMPLEMENTATION.md)** - Implementação Swagger
-- 📈 **[Swagger Endpoints Report](docs/SWAGGER_ENDPOINTS_REPORT.md)** - Relatório de endpoints
 
-### Guias de Deploy Rápido
+- 📋 **[Sistema de Templates](docs/TEMPLATE_FIELDS_SYSTEM.md)** - Campos de templates e páginas customizadas
+- 📊 **[Dashboard](docs/DASHBOARD_README.md)** - Dashboard administrativo e KPIs
+- ⚡ **[API Quick Reference](docs/API_QUICK_REFERENCE.md)** - Referência rápida da API
+- 📈 **[Swagger Implementation](docs/SWAGGER_IMPLEMENTATION.md)** - Implementação Swagger
+- 🔍 **[Swagger Endpoints Report](docs/SWAGGER_ENDPOINTS_REPORT.md)** - Relatório de 63+ endpoints
 
-- ⚡ **[Quick Start AWS](DEPLOY_AWS.md)** - Deploy AWS em 10 minutos
-- ⚡ **[Quick Start Azure](DEPLOY_AZURE.md)** - Deploy Azure em 5 minutos
+### Integração de Pagamentos (Heleket)
+
+- 💰 **[Heleket README](docs/HELEKET_README.md)** - Documentação completa da integração
+- 🔌 **[Heleket Client](docs/HELEKET_CLIENT.md)** - Cliente da API e exemplos
+- 📊 **[Heleket Data Mapping](docs/HELEKET_DATA_MAPPING.md)** - Mapeamento de dados
+
+### Deploy e Infraestrutura
+
+- 🚀 **[Deploy AWS](docs/AWS_DEPLOYMENT.md)** - Guia completo AWS (EB, EC2, ECS, Lambda)
+- ☁️ **[Deploy Azure](docs/AZURE_DEPLOYMENT.md)** - Guia completo Azure (App Service + VM)
+- 🔐 **[Configuração AWS](docs/AWS_CREDENTIALS_SETUP.md)** - Setup de credenciais AWS
+- 📋 **[Deploy to EC2](docs/DEPLOY_TO_EC2.md)** - Guia específico EC2
+- 🐳 **[Docker Setup](docs/SOLUTION_DOCKER_INTERNAL_NETWORK.md)** - Configuração Docker
 
 ### Código de Conduta e Contribuição
 

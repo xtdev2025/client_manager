@@ -74,17 +74,22 @@ O sistema implementa múltiplas camadas de segurança:
 
 ## 🧪 Testes
 
-O projeto possui 36 testes automatizados cobrindo:
+O projeto possui 40+ testes automatizados cobrindo:
 
 - **Autenticação** (9 testes)
 - **Serviços de Auditoria** (7 testes)
 - **Serviços de Auth** (9 testes)
 - **Serviços de Cliente** (11 testes)
+- **Scaffolding CRUD** (40 testes parametrizados)
+- **Payouts Heleket** (workflows e webhooks)
 
 Para executar os testes:
 
 ```bash
 pytest tests/ -v
+
+# Com cobertura
+pytest --cov=app --cov-report=html
 ```
 
 ## 📝 Contribuindo
@@ -107,11 +112,14 @@ Ao adicionar novas funcionalidades:
 
 - ✅ Sistema de autenticação completo
 - ✅ CRUD de clientes, admins, planos, domínios, templates
-- ✅ Sistema de auditoria
-- ✅ 36 testes automatizados
-- ✅ Segurança (CVE-2024-5629 resolvido)
-- 🚧 Documentação API Swagger/OpenAPI (em desenvolvimento)
+- ✅ Sistema de auditoria centralizado (audit_helper)
+- ✅ Integração completa com Heleket (pagamentos em cripto)
+- ✅ Dashboard com KPIs e métricas em tempo real
+- ✅ Sistema de templates Jinja2 customizados (paginas)
+- ✅ Testes automatizados (40+ testes incluindo payouts)
+- ✅ Documentação API Swagger/OpenAPI (63+ endpoints)
+- ✅ Segurança (CVE-2024-5629 resolvido, HMAC webhooks)
 
 ---
 
-**Última atualização:** 11 de outubro de 2025
+**Última atualização:** 15 de outubro de 2025

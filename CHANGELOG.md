@@ -7,7 +7,7 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ---
 
-## [Unreleased] - 2025-10-14
+## [Unreleased] - 2025-10-15
 
 ### 🆕 Adicionado
 
@@ -27,6 +27,7 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ### 🔄 Modificado
 
+- (Documentação) Atualização completa de toda documentação para refletir o estado atual do projeto: `README.md`, `docs/INDEX.md`, `docs/ARCHITECTURE.md`, `docs/README.md`, `docs/MODERNIZATION_SUMMARY.md` e `docs/SCRIPTS_DOCUMENTATION.md` foram atualizados removendo referências a arquivos inexistentes (`DEPLOY_AWS.md`, `DEPLOY_AZURE.md`, `MIGRATION_GUIDE.md`, `API_DOCUMENTATION.md`) e adicionando documentação completa da integração Heleket, sistema de paginas (templates Jinja2), estrutura atual (controllers, services, schemas, repositories) e estado dos scripts (atuais vs. descontinuados).
 - (Sprint 3) Modelo `ClientCryptoPayout` expandido com `statusHistory`, rastreio de polling (`lastStatusCheckAt`, `nextStatusCheckAt`, `retryCount`, `alertState`) e normalização de status compartilhada para webhooks/polling.
 - (Sprint 3) Blueprint de autenticação voltou a expor rotas em `/auth/*`, mantendo compatibilidade com fluxos administrativos e testes de integração.
 - (Sprint 3) Tabelas do dashboard admin: cabeçalhos clicáveis com ordenação client-side, sincronização com cards mobile e estilos refinados em `dashboard.js`, `dashboard.css` e `dashboard/admin.html`.
