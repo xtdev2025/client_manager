@@ -8,7 +8,7 @@
 
 - **Swagger UI (Interativo):** <http://localhost:5000/api/docs>
 - **OpenAPI JSON Spec:** <http://localhost:5000/api/swagger.json>
-- **Documentação Markdown:** [API_DOCUMENTATION.md](./API_DOCUMENTATION.md)
+- **Implementação Swagger:** [SWAGGER_IMPLEMENTATION.md](./SWAGGER_IMPLEMENTATION.md)
 - **Referência Rápida:** [API_QUICK_REFERENCE.md](./API_QUICK_REFERENCE.md)
 
 ## 📈 Estatísticas

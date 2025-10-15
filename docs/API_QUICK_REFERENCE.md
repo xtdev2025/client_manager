@@ -185,6 +185,8 @@ POST /client/my-change-password    # Change password
 
 ## Support
 
-- 📚 [Full API Documentation](API_DOCUMENTATION.md)
-- 🏗️ [Architecture Guide](../ARCHITECTURE.md)
+- 📚 [Swagger Implementation](SWAGGER_IMPLEMENTATION.md)
+- 📊 [Swagger Endpoints Report](SWAGGER_ENDPOINTS_REPORT.md)
+- 🏗️ [Architecture Guide](ARCHITECTURE.md)
+- 🌐 [Routes Documentation](ROUTES_DOCUMENTATION.md)
 - 📖 [Main README](../README.md)

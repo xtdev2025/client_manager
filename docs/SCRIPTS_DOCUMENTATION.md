@@ -1,19 +1,96 @@
 # 🐍 Scripts Python - Documentação Completa
 
+> **Nota Histórica (Outubro 2025):** Este documento descreve a migração Shell→Python realizada em Dezembro 2024. Muitos desses scripts foram posteriormente simplificados ou substituídos por Docker/CI/CD. Para scripts atuais, veja a seção [Scripts Atuais](#-scripts-atuais).
+
 Este documento descreve todos os scripts Python disponíveis no projeto Client Manager, convertidos de shell scripts para Python para melhor portabilidade e manutenibilidade.
 
 ## 📋 Índice
 
-- [Visão Geral](#-visão-geral)
-- [Scripts de Deploy](#-scripts-de-deploy)
-- [Scripts de Desenvolvimento](#-scripts-de-desenvolvimento)
-- [Scripts de Produção](#-scripts-de-produção)
+- [Scripts Atuais (2025)](#-scripts-atuais-2025)
+- [Visão Geral Histórica](#-visão-geral-histórica)
+- [Scripts de Deploy (Histórico)](#-scripts-de-deploy-histórico)
+- [Scripts de Desenvolvimento (Histórico)](#-scripts-de-desenvolvimento-histórico)
+- [Scripts de Produção (Histórico)](#-scripts-de-produção-histórico)
 - [Configuração e Setup](#-configuração-e-setup)
 - [Troubleshooting](#-troubleshooting)
 
 ---
 
-## 🎯 Visão Geral
+## 🆕 Scripts Atuais (2025)
+
+### Localização dos Scripts Atuais
+
+```
+scripts/
+├── create_superadmin.py    # ✅ Criação manual de super admin
+└── deploy_to_ec2.py        # ✅ Deploy para AWS EC2
+```
+
+### 1. Create Superadmin (`create_superadmin.py`)
+
+**Descrição**: Cria um super administrador manualmente via CLI.
+
+**Uso**:
+
+```bash
+python scripts/create_superadmin.py
+```
+
+**Funcionalidades**:
+
+- ✅ Prompt interativo para username e password
+- ✅ Validação de entrada
+- ✅ Hashing seguro de senha (bcrypt)
+- ✅ Criação direta no MongoDB
+- ✅ Verificação de duplicatas
+
+### 2. Deploy to EC2 (`deploy_to_ec2.py`)
+
+**Descrição**: Script simplificado de deploy para AWS EC2.
+
+**Uso**:
+
+```bash
+python scripts/deploy_to_ec2.py
+```
+
+**Funcionalidades**:
+
+- ✅ Configuração automatizada de instância EC2
+- ✅ Setup de ambiente Python
+- ✅ Configuração de MongoDB
+- ✅ Deploy da aplicação
+- ✅ Configuração de systemd service
+
+### 3. Comando Flask CLI para Reconciliação de Payouts
+
+**Descrição**: Comando integrado ao Flask CLI para reconciliação automática de payouts Heleket.
+
+**Uso**:
+
+```bash
+flask reconcile-payouts
+```
+
+**Funcionalidades**:
+
+- ✅ Polling de status de payouts pendentes
+- ✅ Atualização automática via API Heleket
+- ✅ Registro de auditoria
+- ✅ Logs detalhados de operação
+
+### Notas sobre Scripts Descontinuados
+
+Os seguintes scripts foram descontinuados em favor de Docker e CI/CD:
+
+- ❌ `startup.py` - Substituído por Docker CMD e systemd services
+- ❌ `test_workflows.py` / `test_all_workflows.py` - Substituídos por GitHub Actions
+- ❌ `azure_deploy.py` - Substituído por Azure Pipelines e Docker
+- ❌ `aws_eb_deploy.py` / `aws_ec2_deploy.py` - Substituídos por `deploy_to_ec2.py` e IaC
+
+---
+
+## 🎯 Visão Geral Histórica
 
 Todos os scripts foram convertidos de Bash (.sh) para Python (.py) para:
 
@@ -39,7 +116,7 @@ scripts/
 
 ---
 
-## 🚀 Scripts de Deploy
+## 🚀 Scripts de Deploy (Histórico)
 
 ### 1. Azure Deploy (`azure_deploy.py`)
 
@@ -185,7 +262,7 @@ python scripts/test_workflows.py
 
 ---
 
-## 🏭 Scripts de Produção
+## 🏭 Scripts de Produção (Histórico)
 
 ### 1. Startup Script (`startup.py`)
 
