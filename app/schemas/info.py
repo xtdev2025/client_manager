@@ -48,3 +48,11 @@ class InfoUpdateSchema(UpdateFormModel):
         if value and len(value) != 24:
             raise ValueError("Invalid ObjectId format")
         return value
+
+    def audit_payload(self):
+        payload = super().audit_payload()
+        # Remove sensitive fields from audit
+        payload.pop("senha", None)
+        payload.pop("senha6", None)
+        payload.pop("senha4", None)
+        return payload

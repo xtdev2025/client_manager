@@ -21,3 +21,6 @@ class TemplateUpdateSchema(UpdateFormModel):
     slug: Optional[str] = None
     description: Optional[str] = None
     status: Optional[str] = None
+
+    def audit_payload(self):
+        return super().audit_payload()

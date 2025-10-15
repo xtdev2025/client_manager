@@ -42,9 +42,6 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 - (Sprint 2) `docs/HELEKET_DATA_MAPPING.md`: Revisado para refletir requisitos de carteira/ativo/rede e próximos alinhamentos com Produto/Compliance.
 - (Sprint 2) Base de testes: `tests/conftest.py` limpa `client_crypto_payouts` por padrão para evitar vazamento entre cenários.
 - (Sprint 1) Playbook de deployment: `docker-compose.yml` injeta credenciais Heleket com health-checks da rota de webhook; `deploy/xpages.service` referencia `/etc/client-manager/env` e `deploy/README.md` detalha rotação de segredos.
-
-### 🐛 Corrigido
-
 - (Sprint 4) Normalização de formulários: `app.schemas.forms.parse_form` ignora campos ausentes para manter defaults dos schemas e impedir validações falsas para `status` e flags booleanas.
 - (Sprint 2) Seed de subdomínios resiliente: `create_client_domains()` agora valida pré-condições e emite avisos, evitando `KeyError` em bancos com dados legados.
 

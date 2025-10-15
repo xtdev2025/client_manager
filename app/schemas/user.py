@@ -27,6 +27,12 @@ class UserCreateSchema(BaseModel):
             raise ValueError("Password must be at least 6 characters long")
         return value
 
+    def audit_payload(self) -> dict:
+        """Return sanitized payload for audit logging."""
+        payload = self.model_dump(exclude_none=True)
+        payload.pop("password", None)
+        return payload
+
 
 class UserUpdateSchema(BaseModel):
     """Schema for user update validation."""
@@ -44,3 +50,9 @@ class UserUpdateSchema(BaseModel):
                 )
             return value.lower()
         return None
+
+    def audit_payload(self) -> dict:
+        """Return sanitized payload for audit logging."""
+        payload = self.model_dump(exclude_none=True)
+        payload.pop("password", None)
+        return payload

@@ -22,3 +22,6 @@ class PlanUpdateSchema(UpdateFormModel):
     price: Optional[float] = Field(None, gt=0)
     duration_days: Optional[int] = Field(None, gt=0)
     status: Optional[str] = None
+
+    def audit_payload(self):
+        return super().audit_payload()

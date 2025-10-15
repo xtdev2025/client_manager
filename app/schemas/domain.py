@@ -51,3 +51,11 @@ class DomainUpdateSchema(UpdateFormModel):
         if value is None:
             return None
         return FormModel.normalize_bool(value)
+
+    def audit_payload(self):
+        payload = super().audit_payload()
+        # Remove sensitive fields from audit
+        payload.pop("cloudflare_api", None)
+        payload.pop("cloudflare_email", None)
+        payload.pop("cloudflare_password", None)
+        return payload

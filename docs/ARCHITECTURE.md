@@ -136,6 +136,38 @@ AuditService.log_admin_action('create', admin_id, {'username': os.getenv('ADMIN_
 logs = AuditService.get_recent_logs(limit=50, entity_type='admin')
 ```
 
+#### AuditHelper
+
+Wrapper centralizado para auditoria consistente, fornecendo funções especializadas para operações CRUD com metadados opcionais de ator e IP.
+
+```python
+from app.services.audit_helper import log_creation, log_update, log_deletion
+
+# Registrar criação com metadados
+log_creation(
+    "client",
+    entity_id=client_id,
+    payload={"username": username, "plan_id": plan_id},
+    actor_user_id=current_user.id,
+    ip_address=request.remote_addr
+)
+
+# Registrar atualização
+log_update(
+    "plan",
+    entity_id=plan_id,
+    payload={"price": new_price},
+    actor_user_id=current_user.id
+)
+
+# Registrar exclusão
+log_deletion(
+    "domain",
+    entity_id=domain_id,
+    payload={"name": domain_name}
+)
+```
+
 ### 3. Schemas (`app/schemas/`)
 
 A camada de validação está dividida em módulos por domínio, todos apoiados por um núcleo comum para serialização e normalização de dados.
@@ -240,6 +272,46 @@ def create_plan():
         flash(f'Erro ao criar plano: {result}', 'danger')
     
     return redirect(url_for('plan.list_plans'))
+```
+
+#### CrudControllerMixin
+
+Classe base para padronizar operações CRUD em controllers, reduzindo boilerplate e garantindo auditoria consistente.
+
+```python
+from app.controllers.crud_mixin import CrudControllerMixin
+from app.repositories.base import ModelCrudRepository
+from app.models.plan import Plan
+from app.schemas.plan import PlanCreateSchema, PlanUpdateSchema
+from app.views.plan_view import PlanView
+
+class PlanCrudController(CrudControllerMixin):
+    entity_name = "Plan"
+    audit_entity = "plan"
+    list_endpoint = "plan.list_plans"
+    detail_endpoint = "plan.view_plan"
+    create_schema = PlanCreateSchema
+    update_schema = PlanUpdateSchema
+    view = PlanView
+
+    def perform_create(self, schema, **route_kwargs):
+        payload = schema.to_payload()
+        return Plan.create(**payload)
+
+plan_crud = PlanCrudController(ModelCrudRepository(Plan))
+
+# Uso em rotas
+@plan.route("/")
+@login_required
+@admin_required
+def list_plans():
+    return plan_crud.list_view()
+
+@plan.route("/create", methods=["GET", "POST"])
+@login_required
+@admin_required
+def create_plan():
+    return plan_crud.create_view()
 ```
 
 ### 5. Views (`app/views/`)
@@ -356,8 +428,8 @@ Scripts utilitários para administração do sistema.
                         ▼
 ┌─────────────────────────────────────────────────────────────┐
 │ 7. Controller registra auditoria (operações sensíveis)     │
-│    - AuditService.log_action()                              │
-│    - Logs de segurança                                      │
+│    - audit_helper.log_*() com metadados de ator/IP         │
+│    - Logs de segurança padronizados                         │
 └───────────────────────┬─────────────────────────────────────┘
                         ▼
 ┌─────────────────────────────────────────────────────────────┐
@@ -382,18 +454,39 @@ Scripts utilitários para administração do sistema.
 
 ### Exemplo Prático: Criar um Cliente
 
-1. **Usuário** acessa `/clients/create` (GET) → visualiza formulário
+1. **Usuário** acessa `/clients/create` (GET) → `CrudControllerMixin.create_view()` renderiza formulário
 2. **Usuário** preenche e submete formulário (POST)
-3. **Controller** (`client.py`) recebe requisição
+3. **Controller** (`ClientCrudController`) recebe requisição via `CrudControllerMixin`
 4. **Controller** valida permissões (`@admin_required`)
-5. **Controller** valida dados (schema ou manualmente)
-6. **Service** (`ClientService`) valida regras de negócio
-7. **Model** (`Client`) cria registro no MongoDB
-8. **Service** retorna sucesso/erro
-9. **Controller** registra log de auditoria
-10. **Controller** redireciona com mensagem flash
-11. **View** renderiza página de listagem
-12. **Template** mostra lista atualizada com novo cliente
+5. **Controller** valida dados com `ClientCreateSchema` via `parse_form()`
+6. **Controller** chama `perform_create()` → `Client.create()` no Model
+7. **Model** cria registro no MongoDB
+8. **Controller** registra auditoria via `audit_helper.log_creation()` com metadados
+9. **Controller** redireciona com mensagem flash
+10. **View** renderiza página de listagem
+11. **Template** mostra lista atualizada com novo cliente
+
+**Fluxo Moderno (com CrudControllerMixin):**
+
+```python
+# app/controllers/client.py
+class ClientCrudController(CrudControllerMixin):
+    entity_name = "Client"
+    audit_entity = "client"
+    create_schema = ClientCreateSchema
+    update_schema = ClientUpdateSchema
+    view = ClientView
+
+    def perform_create(self, schema, **route_kwargs):
+        payload = schema.to_payload()
+        return Client.create(**payload)
+
+# Auditoria automática via mixin
+def create_view(self, **route_kwargs):
+    # ... validação e criação ...
+    if success:
+        log_creation(self.audit_entity, entity_id, self._consume_audit_payload(schema))
+```
 
 ## Segurança
 
